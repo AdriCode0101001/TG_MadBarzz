@@ -12,9 +12,20 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    <a href="{{ route('rutinas.create') }}" class="btn btn-primary mb-3">
-        <i class="fa-solid fa-circle-plus me-2"></i> Subir nueva rutina
-    </a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        {{-- Botón Subir nueva rutina --}}
+        <a href="{{ route('rutinas.create') }}" class="btn btn-primary">
+            <i class="fa-solid fa-circle-plus me-2"></i> Subir nueva rutina
+        </a>
+
+        {{-- Buscador --}}
+        <form method="GET" action="{{ route('rutinas.index') }}" class="d-flex">
+            <input type="text" name="buscar" class="form-control me-2"
+                   placeholder="Buscar por título, entrenador o fecha"
+                   value="{{ $buscar ?? '' }}" style="width: 400px;">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </form>
+    </div>
 
     <div class="table-responsive">
         <table class="table table-bordered table-hover align-middle">
@@ -48,7 +59,7 @@
                             {{ $rutina->entrenador->persona->apellido_materno ?? '' }}
                         </td>
                         <td>
-                            {{ $rutina->fecha_subida ? \Carbon\Carbon::parse($rutina->fecha_subida)->format('Y-m-d H:i') : ($rutina->created_at ? $rutina->created_at->format('Y-m-d H:i') : '') }}
+                            {{ $rutina->fecha_subida ? \Carbon\Carbon::parse($rutina->fecha_subida)->format('d/m/Y') : ($rutina->created_at ? $rutina->created_at->format('d/m/Y') : '') }}
                         </td>
                         <td class="text-center">
                             <div class="d-inline-flex gap-1">

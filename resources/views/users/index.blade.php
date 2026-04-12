@@ -3,14 +3,25 @@
 @section('contenido')
 <div class="container">
     <h2>Listado de Usuarios</h2>
-
+<BR></BR>
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <a href="{{ route('users.create') }}" class="btn btn-primary mb-3">
-        <i class="fa-solid fa-circle-plus me-2"></i> Agregar Usuario
-    </a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        {{-- Botón Agregar Usuario --}}
+        <a href="{{ route('users.create') }}" class="btn btn-primary">
+            <i class="fa-solid fa-circle-plus me-2"></i> Agregar Usuario
+        </a>
+
+ {{-- Buscador un poco más largo --}}
+        <form method="GET" action="{{ route('users.index') }}" class="d-flex">
+            <input type="text" name="buscar" class="form-control me-2" 
+                   placeholder="Buscar por nombre o email" 
+                   value="{{ request('buscar') }}" style="width: 400px;">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </form>
+    </div>
 
     <table class="table table-bordered table-striped">
         <thead>

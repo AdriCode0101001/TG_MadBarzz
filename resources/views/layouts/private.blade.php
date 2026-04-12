@@ -770,8 +770,8 @@
                              <li><a href="{{ route('pagos.mis-pagos') }}">Mis Pagos</a></li>
                             <li><a href="{{ route('rutinas.show', Auth::user()->id) }}">Mi Rutina</a></li>
                         @else
-                            <li><a href="{{ route('asistencias.index') }}">Asistencias</a></li>
-                            <li><a href="{{ route('notificaciones.index') }}">Notificaciones</a></li>
+                          <!--  <li><a href="{{ route('asistencias.index') }}">Asistencias</a></li> -->
+                           <!-- <li><a href="{{ route('notificaciones.index') }}">Notificaciones</a></li> -->
                             <li><a href="{{ route('pagos.index') }}">Pagos</a></li>
                             <li><a href="{{ route('rutinas.index') }}">Rutinas</a></li>
                         @endif

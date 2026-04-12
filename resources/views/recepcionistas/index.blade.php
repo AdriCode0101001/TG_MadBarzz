@@ -3,8 +3,7 @@
 @section('contenido')
 <div class="container">
     <h2 class="mb-4">Lista de Recepcionistas</h2>
-
-
+<BR></BR>
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
@@ -13,12 +12,20 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        {{-- Botón Agregar Recepcionista --}}
+        <a href="{{ route('recepcionistas.create') }}" class="btn btn-primary">
+            <i class="fa-solid fa-circle-plus me-2"></i> Agregar Recepcionista
+        </a>
 
-
-
-    <a href="{{ route('recepcionistas.create') }}" class="btn btn-primary mb-3">
-        <i class="fa-solid fa-circle-plus me-2"></i> Agregar Recepcionista
-    </a>
+        {{-- Buscador por nombre completo, CI o correo --}}
+        <form method="GET" action="{{ route('recepcionistas.index') }}" class="d-flex">
+            <input type="text" name="buscar" class="form-control me-2" 
+                   placeholder="Buscar por nombre, CI o email" 
+                   value="{{ request('buscar') }}" style="width: 400px;">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </form>
+    </div>
 
     <div class="table-responsive">
         <table class="table table-bordered table-hover align-middle w-100">
@@ -45,7 +52,7 @@
                             {{ $recepcionista->persona->apellido_paterno ?? '' }}
                             {{ $recepcionista->persona->apellido_materno ?? '' }}
                         </td>
-                            <td>{{ $recepcionista->persona->ci ?? 'Sin CI' }}</td>
+                        <td>{{ $recepcionista->persona->ci ?? 'Sin CI' }}</td>
                         <td>{{ $recepcionista->persona->telefono ?? 'Sin teléfono' }}</td>
                         <td>{{ $recepcionista->user->email ?? 'Sin correo' }}</td>
                         <td>{{ $recepcionista->user->name ?? 'Sin usuario' }}</td>

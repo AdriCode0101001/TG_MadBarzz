@@ -12,11 +12,49 @@ use Illuminate\Support\Facades\Auth;
 class RutinaController extends Controller
 {
     # =================== INDEX (ADMIN) ===================
-    public function index()
-    {
-        $rutinas = Rutina::with('entrenador.persona')->latest()->get();
-        return view('rutinas.index', compact('rutinas'));
-    }
+public function index(Request $request)
+{
+    $buscar = $request->get('buscar');
+
+    $rutinas = Rutina::with('entrenador.persona')
+        ->when($buscar, function($query, $buscar) {
+
+            // Buscar por título o entrenador
+            $query->where('titulo', 'like', "%{$buscar}%")
+                  ->orWhereHas('entrenador.persona', function($q) use ($buscar) {
+                      $q->where('nombre_completo', 'like', "%{$buscar}%")
+                        ->orWhere('apellido_paterno', 'like', "%{$buscar}%")
+                        ->orWhere('apellido_materno', 'like', "%{$buscar}%");
+                  });
+
+            // Buscar por fechas flexibles
+            if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $buscar, $matches)) {
+                // Formato dd/mm/yyyy
+                $fecha = "{$matches[3]}-{$matches[2]}-{$matches[1]}";
+                $query->orWhereDate('fecha_subida', $fecha);
+            } elseif (preg_match('/^(\d{2})\/(\d{2})$/', $buscar, $matches)) {
+                // Formato dd/mm (ignora año)
+                $dia = $matches[1];
+                $mes = $matches[2];
+                $query->orWhereRaw('DAY(fecha_subida) = ? AND MONTH(fecha_subida) = ?', [$dia, $mes]);
+            } elseif (preg_match('/^(\d{2})\/(\d{4})$/', $buscar, $matches)) {
+                // Formato mm/yyyy
+                $mes = $matches[1];
+                $anio = $matches[2];
+                $query->orWhereRaw('MONTH(fecha_subida) = ? AND YEAR(fecha_subida) = ?', [$mes, $anio]);
+            } elseif (preg_match('/^\d{4}$/', $buscar, $matches)) {
+                // Solo año
+                $anio = $buscar;
+                $query->orWhereYear('fecha_subida', $anio);
+            }
+        })
+        ->latest()
+        ->get();
+
+    return view('rutinas.index', compact('rutinas', 'buscar'));
+}
+
+
 
     # =================== CREATE ===================
     public function create()

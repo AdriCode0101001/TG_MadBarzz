@@ -3,6 +3,7 @@
 @section('contenido')
 <div class="container">
     <h2>Listado de Clientes</h2>
+    <br>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -12,9 +13,20 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    <a href="{{ route('clientes.create') }}" class="btn btn-primary mb-3">
-        <i class="fa-solid fa-circle-plus me-2"></i> Agregar Cliente
-    </a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        {{-- Botón Agregar Cliente --}}
+        <a href="{{ route('clientes.create') }}" class="btn btn-primary">
+            <i class="fa-solid fa-circle-plus me-2"></i> Agregar Cliente
+        </a>
+
+        {{-- Buscador --}}
+        <form method="GET" action="{{ route('clientes.index') }}" class="d-flex">
+            <input type="text" name="buscar" class="form-control me-2" 
+                   placeholder="Buscar por nombre, CI o correo" 
+                   value="{{ request('buscar') }}" style="width: 400px;">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </form>
+    </div>
 
     <table class="table table-bordered table-striped">
         <thead>

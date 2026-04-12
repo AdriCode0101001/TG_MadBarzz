@@ -21,6 +21,7 @@ use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\PagoController;
 use App\Http\Controllers\RutinaController;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\PromocionController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -171,7 +172,7 @@ Route::post('/notificaciones/enviar', [NotificacionController::class, 'sendWhats
 
 Route::resource('pagos', PagoController::class);
 Route::resource('rutinas', RutinaController::class);
-
+Route::resource('promociones', PromocionController::class);
 
 // Rutas para que el cliente vea solo sus asistencias
 

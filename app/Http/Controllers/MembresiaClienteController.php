@@ -10,12 +10,25 @@ use Illuminate\Http\Request;
 class MembresiaClienteController extends Controller
 {
     // LISTAR
-    public function index()
-    {
-        $membresiasClientes = MembresiaCliente::with(['cliente.persona', 'membresia'])->get();
+public function index(Request $request)
+{
+    $buscar = $request->input('buscar');
 
-        return view('membresia_cliente.index', compact('membresiasClientes'));
-    }
+    $membresiasClientes = MembresiaCliente::with(['cliente.persona', 'membresia'])
+        ->when($buscar, function($query, $buscar) {
+            $query->whereHas('cliente.persona', function($q) use ($buscar) {
+                $q->whereRaw("CONCAT(nombre_completo, ' ', apellido_paterno, ' ', apellido_materno) LIKE ?", ["%{$buscar}%"])
+                  ->orWhere('ci', 'LIKE', "%{$buscar}%");
+            })
+            ->orWhereHas('membresia', function($q) use ($buscar) {
+                $q->where('tipo_membresia', 'LIKE', "%{$buscar}%");
+            });
+        })
+        ->get();
+
+    return view('membresia_cliente.index', compact('membresiasClientes'));
+}
+
 
     // FORMULARIO CREAR
     public function create()
@@ -122,4 +135,3 @@ class MembresiaClienteController extends Controller
             ->with('success', 'Membresía del cliente eliminada correctamente.');
     }
 }
-    

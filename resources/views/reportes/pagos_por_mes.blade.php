@@ -14,33 +14,35 @@
     <h2 class="text-center">Pagos del Mes</h2>
     <br>
 
-    <div class="d-flex justify-content-between mb-3">
-        {{-- Botón Exportar PDF --}}
-        <a href="{{ route('reportes.pagos.mes.pdf', request()->all()) }}" class="btn btn-danger">Exportar PDF</a>
+ <div class="d-flex justify-content-between mb-3">
+    <!-- 🔹 Botón Exportar PDF -->
+    <a href="{{ route('reportes.pagos.mes.pdf', request()->all()) }}" class="btn btn-danger">
+        Exportar PDF
+    </a>
 
-        {{-- Formulario de filtro --}}
-        <form method="GET" action="{{ route('reportes.pagos.mes') }}" class="d-flex">
-            <select name="mes" class="me-2 form-control">
-                <option value="">Mes</option>
-                @for($m=1; $m<=12; $m++)
-                    <option value="{{ $m }}" {{ request('mes') == $m ? 'selected' : '' }}>
-                        {{ \Carbon\Carbon::create()->month($m)->locale('es')->isoFormat('MMMM') }}
-                    </option>
-                @endfor
-            </select>
+    <!-- 🔹 Formulario de filtro -->
+    <form method="GET" action="{{ route('reportes.pagos.mes') }}" class="d-flex">
+        <select name="mes" class="me-2">
+            <option value="">Mes</option>
+            @for($m = 1; $m <= 12; $m++)
+                <option value="{{ $m }}" {{ request('mes') == $m ? 'selected' : '' }}>
+                    {{ \Carbon\Carbon::create()->month($m)->locale('es')->isoFormat('MMMM') }}
+                </option>
+            @endfor
+        </select>
 
-<select name="anio" class="me-2 form-control">
+<select name="anio" class="me-2">
     <option value="">Año</option>
-    @for($y = 2025; $y <= 2045; $y++)
+    @for($y = 2025; $y <= 2040; $y++)
         <option value="{{ $y }}" {{ request('anio') == $y ? 'selected' : '' }}>{{ $y }}</option>
     @endfor
 </select>
 
 
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+    </form>
+</div>
 
-            <button type="submit" class="btn btn-primary">Filtrar</button>
-        </form>
-    </div>
 
     <table class="table table-bordered table-striped">
         <thead class="table-dark">

@@ -3,8 +3,8 @@
 @section('contenido')
 <div class="container">
     <h2>Membresías por Cliente</h2>
+    <br>
 
-    
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
@@ -13,9 +13,20 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    <a href="{{ route('membresia_cliente.create') }}" class="btn btn-primary mb-3">
-        <i class="fa-solid fa-circle-plus me-2"></i> Asignar Membresía
-    </a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        {{-- Botón Asignar Membresía --}}
+        <a href="{{ route('membresia_cliente.create') }}" class="btn btn-primary">
+            <i class="fa-solid fa-circle-plus me-2"></i> Asignar Membresía
+        </a>
+
+        {{-- Buscador --}}
+        <form method="GET" action="{{ route('membresia_cliente.index') }}" class="d-flex">
+            <input type="text" name="buscar" class="form-control me-2" 
+                   placeholder="Buscar por cliente, CI o membresía" 
+                   value="{{ request('buscar') }}" style="width: 400px;">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </form>
+    </div>
 
     <div class="table-responsive">
         <table class="table table-bordered table-hover align-middle">

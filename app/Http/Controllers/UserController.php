@@ -12,11 +12,21 @@ class UserController extends Controller
     // =========================
     // Mostrar todos los usuarios (excepto los eliminados)
     // =========================
-    public function index()
-    {
-            $usuarios = User::all();
-        return view('users.index', compact('usuarios'));
-    }
+public function index(Request $request)
+{
+    $buscar = $request->input('buscar');
+
+    $usuarios = User::with('rol')
+        ->when($buscar, function($query, $buscar) {
+            $query->where('name', 'like', "%{$buscar}%")
+                  ->orWhere('email', 'like', "%{$buscar}%");
+        })
+        ->orderBy('id', 'desc')
+        ->get();
+
+    return view('users.index', compact('usuarios'));
+}
+
 
     // =========================
     // Mostrar formulario para crear

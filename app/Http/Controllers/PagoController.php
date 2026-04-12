@@ -6,14 +6,56 @@ use App\Models\Pago;
 use App\Models\Cliente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Membresia;
 
 class PagoController extends Controller
 {
-    public function index()
-    {
-        $pagos = Pago::with(['cliente.persona', 'membresia'])->latest()->get();
-        return view('pagos.index', compact('pagos'));
-    }
+public function index(Request $request)
+{
+    $buscar = $request->input('buscar');
+
+    $pagos = Pago::with(['cliente.persona', 'membresia'])
+        ->when($buscar, function($query, $buscar) {
+
+            // Buscar por cliente o membresía
+            $query->whereHas('cliente.persona', function($q) use ($buscar) {
+                $q->where('nombre_completo', 'like', "%{$buscar}%")
+                  ->orWhere('apellido_paterno', 'like', "%{$buscar}%")
+                  ->orWhere('apellido_materno', 'like', "%{$buscar}%");
+            })
+            ->orWhereHas('membresia', function($q) use ($buscar) {
+                $q->where('tipo_membresia', 'like', "%{$buscar}%");
+            });
+
+            // Buscar por fechas flexibles
+            if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $buscar, $matches)) {
+                // Formato dd/mm/yyyy
+                $fecha = "{$matches[3]}-{$matches[2]}-{$matches[1]}";
+                $query->orWhereDate('fecha_pago', $fecha);
+            } elseif (preg_match('/^(\d{2})\/(\d{2})$/', $buscar, $matches)) {
+                // Formato dd/mm (ignora año)
+                $dia = $matches[1];
+                $mes = $matches[2];
+                $query->orWhereRaw('DAY(fecha_pago) = ? AND MONTH(fecha_pago) = ?', [$dia, $mes]);
+            } elseif (preg_match('/^(\d{2})\/(\d{4})$/', $buscar, $matches)) {
+                // Formato mm/yyyy
+                $mes = $matches[1];
+                $anio = $matches[2];
+                $query->orWhereRaw('MONTH(fecha_pago) = ? AND YEAR(fecha_pago) = ?', [$mes, $anio]);
+            } elseif (preg_match('/^\d{4}$/', $buscar, $matches)) {
+                // Solo año
+                $anio = $buscar;
+                $query->orWhereYear('fecha_pago', $anio);
+            }
+        })
+        ->latest()
+        ->get();
+
+    return view('pagos.index', compact('pagos', 'buscar'));
+}
+
+
+
 
     public function create()
     {
@@ -66,13 +108,15 @@ class PagoController extends Controller
         return view('pagos.mis-pagos', compact('pagos', 'cliente'));
     }
 
-    public function edit(Pago $pago)
-    {
-        // Clientes con su última membresía asignada
-        $clientes = Cliente::with(['persona', 'membresiasClientes.membresia'])->get();
+public function edit($id)
+{
+    $pago = Pago::with(['cliente.persona', 'membresia'])->findOrFail($id);
+    $clientes = Cliente::with('persona')->get();
+    $membresias = Membresia::all(); // <--- Aquí traemos todas las membresías
 
-        return view('pagos.edit', compact('pago', 'clientes'));
-    }
+    return view('pagos.edit', compact('pago', 'clientes', 'membresias'));
+}
+
 
     public function update(Request $request, Pago $pago)
     {

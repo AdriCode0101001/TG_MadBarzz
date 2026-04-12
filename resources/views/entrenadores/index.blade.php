@@ -3,8 +3,7 @@
 @section('contenido')
 <div class="container">
     <h2 class="mb-4">Lista de Entrenadores</h2>
-
-
+<br>
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
@@ -13,9 +12,20 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    <a href="{{ route('entrenadores.create') }}" class="btn btn-primary mb-3">
-        <i class="fa-solid fa-circle-plus me-2"></i> Nuevo Entrenador
-    </a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        {{-- Botón Nuevo Entrenador --}}
+        <a href="{{ route('entrenadores.create') }}" class="btn btn-primary">
+            <i class="fa-solid fa-circle-plus me-2"></i> Nuevo Entrenador
+        </a>
+
+        {{-- Buscador por nombre completo, CI o correo --}}
+        <form method="GET" action="{{ route('entrenadores.index') }}" class="d-flex">
+            <input type="text" name="buscar" class="form-control me-2" 
+                   placeholder="Buscar por nombre, CI o email" 
+                   value="{{ request('buscar') }}" style="width: 400px;">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </form>
+    </div>
 
     <div class="table-responsive">
         <table class="table table-bordered table-hover align-middle">
@@ -23,6 +33,8 @@
                 <tr>
                     <th>ID</th>
                     <th>Nombre Completo</th>
+                    <th>CI</th>
+                    <th>Email</th>
                     <th>Especialidad</th>
                     <th>Experiencia</th>
                     <th>Disponibilidad</th>
@@ -39,6 +51,8 @@
                             {{ $entrenador->persona->apellido_paterno ?? '' }}
                             {{ $entrenador->persona->apellido_materno ?? '' }}
                         </td>
+                        <td>{{ $entrenador->persona->ci ?? 'Sin CI' }}</td>
+                        <td>{{ optional($entrenador->user)->email ?? 'Sin correo' }}</td>
                         <td>{{ $entrenador->especialidad }}</td>
                         <td>{{ $entrenador->experiencia }}</td>
                         <td>
@@ -73,7 +87,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="text-center">No hay entrenadores registrados.</td>
+                        <td colspan="9" class="text-center">No hay entrenadores registrados.</td>
                     </tr>
                 @endforelse
             </tbody>

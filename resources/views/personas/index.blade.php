@@ -3,8 +3,7 @@
 @section('contenido')
 <div class="container">
     <h2>Listado de Personas</h2>
-
-
+<BR></BR>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -14,10 +13,20 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        {{-- Botón Agregar Persona --}}
+        <a href="{{ route('personas.create') }}" class="btn btn-primary">
+            <i class="fa-solid fa-circle-plus me-2"></i> Agregar Persona
+        </a>
 
-    <a href="{{ route('personas.create') }}" class="btn btn-primary mb-3">
-        <i class="fa-solid fa-circle-plus me-2"></i> Agregar Persona
-    </a>
+        {{-- Buscador por nombre completo o CI --}}
+        <form method="GET" action="{{ route('personas.index') }}" class="d-flex">
+            <input type="text" name="buscar" class="form-control me-2" 
+                   placeholder="Buscar por nombre o CI" 
+                   value="{{ request('buscar') }}" style="width: 400px;">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </form>
+    </div>
 
     <table class="table table-bordered table-striped">
         <thead>

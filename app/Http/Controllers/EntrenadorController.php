@@ -10,12 +10,24 @@ use Illuminate\Support\Facades\Hash;
 
 class EntrenadorController extends Controller
 {
-    public function index()
-    {
-        // Solo entrenadores activos (no eliminados)
-        $entrenadores = Entrenador::with(['persona', 'user'])->get();
-        return view('entrenadores.index', compact('entrenadores'));
-    }
+public function index(Request $request)
+{
+    $buscar = $request->input('buscar');
+
+    $entrenadores = Entrenador::with(['persona', 'user'])
+        ->when($buscar, function($query, $buscar) {
+            $query->whereHas('persona', function($q) use ($buscar) {
+                $q->whereRaw("CONCAT(nombre_completo, ' ', apellido_paterno, ' ', apellido_materno) LIKE ?", ["%{$buscar}%"])
+                  ->orWhere('ci', 'LIKE', "%{$buscar}%");
+            })
+            ->orWhereHas('user', function($q) use ($buscar) {
+                $q->where('email', 'LIKE', "%{$buscar}%");
+            });
+        })
+        ->get();
+
+    return view('entrenadores.index', compact('entrenadores'));
+}
 
     public function create()
     {

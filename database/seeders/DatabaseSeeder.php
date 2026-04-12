@@ -20,9 +20,8 @@ class DatabaseSeeder extends Seeder
             ClienteSeeder::class,
             EntrenadorSeeder::class,
             RecepcionistaSeeder::class,
-            AdministradorSeeder::class
-
-
+            AdministradorSeeder::class,
+            Clientes70Seeder::class
         ]);
     }
 }

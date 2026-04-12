@@ -13,21 +13,52 @@ class ReporteController extends Controller
     // =============================
     // 1. Clientes activos e inactivos
     // =============================
-    public function clientesEstado()
-    {
-        $clientes = Cliente::with('persona')->get();
-        return view('reportes.clientes_estado', compact('clientes'));
+public function clientesEstado(Request $request)
+{
+    // Obtener el valor del filtro (por defecto 'todos')
+    $filtro = $request->get('filtro', 'todos');
+
+    // Consulta base con relación persona
+    $query = Cliente::with('persona');
+
+    // Aplicar filtro según el estado
+    if ($filtro === 'activos') {
+        $query->where('estado', 'activo');
+    } elseif ($filtro === 'inactivos') {
+        $query->where('estado', 'inactivo');
     }
 
-    public function exportClientesEstadoPDF()
-    {
-        $clientes = Cliente::with('persona')->get();
+    // Obtener los clientes filtrados
+    $clientes = $query->get();
 
-        $pdf = Pdf::loadView('reportes.pdf.clientes_estado', compact('clientes'))
-                  ->setPaper('a4', 'landscape');
+    // Retornar la vista con los datos y el filtro seleccionado
+    return view('reportes.clientes_estado', compact('clientes', 'filtro'));
+}
 
-        return $pdf->download('clientes_estado.pdf');
+public function exportClientesEstadoPDF(Request $request)
+{
+    // Tomar el mismo filtro usado en la vista
+    $filtro = $request->get('filtro', 'todos');
+
+    $query = Cliente::with('persona');
+
+    if ($filtro === 'activos') {
+        $query->where('estado', 'activo');
+    } elseif ($filtro === 'inactivos') {
+        $query->where('estado', 'inactivo');
     }
+
+    $clientes = $query->get();
+
+    // Generar PDF con los datos filtrados
+    $pdf = Pdf::loadView('reportes.pdf.clientes_estado', compact('clientes', 'filtro'))
+              ->setPaper('a4', 'landscape');
+
+    // Nombre del archivo dinámico según filtro
+    $nombreArchivo = 'clientes_' . $filtro . '.pdf';
+
+    return $pdf->download($nombreArchivo);
+}
 
     // =============================
     // 2. Clientes nuevos por mes

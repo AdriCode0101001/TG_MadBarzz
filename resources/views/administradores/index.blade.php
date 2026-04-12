@@ -8,9 +8,20 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <a href="{{ route('administradores.create') }}" class="btn btn-primary mb-3">
-        <i class="fa-solid fa-circle-plus me-2"></i> Nuevo Administrador
-    </a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        {{-- Botón Nuevo Administrador --}}
+        <a href="{{ route('administradores.create') }}" class="btn btn-primary">
+            <i class="fa-solid fa-circle-plus me-2"></i> Nuevo Administrador
+        </a>
+
+        {{-- Buscador --}}
+        <form method="GET" action="{{ route('administradores.index') }}" class="d-flex">
+            <input type="text" name="buscar" class="form-control me-2" 
+                   placeholder="Buscar por nombre, CI o correo" 
+                   value="{{ request('buscar') }}" style="width: 400px;">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </form>
+    </div>
 
     <div class="table-responsive">
         <table class="table table-bordered table-hover align-middle w-100">
@@ -29,7 +40,11 @@
                 @forelse($administradores as $admin)
                     <tr>
                         <td>{{ $admin->id_administrador }}</td>
-                        <td>{{ $admin->persona->nombre_completo ?? '' }} {{ $admin->persona->apellido_paterno ?? '' }} {{ $admin->persona->apellido_materno ?? '' }}</td>
+                        <td>
+                            {{ $admin->persona->nombre_completo ?? '' }} 
+                            {{ $admin->persona->apellido_paterno ?? '' }} 
+                            {{ $admin->persona->apellido_materno ?? '' }}
+                        </td>
                         <td>{{ $admin->user->email ?? 'Sin correo' }}</td>
                         <td>{{ ucfirst($admin->nivel_acceso ?? 'N/A') }}</td>
                         <td>{{ $admin->area_responsable ?? 'N/A' }}</td>

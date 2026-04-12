@@ -28,12 +28,13 @@
                 @endfor
             </select>
 
-            <select name="anio" class=" me-2">
-                <option value="">Año</option>
-                @for($y = date('Y'); $y >= date('Y')-10; $y--)
-                    <option value="{{ $y }}" {{ request('anio') == $y ? 'selected' : '' }}>{{ $y }}</option>
-                @endfor
-            </select>
+<select name="anio" class="me-2">
+    <option value="">Año</option>
+    @for($y = 2025; $y <= 2040; $y++)
+        <option value="{{ $y }}" {{ request('anio') == $y ? 'selected' : '' }}>{{ $y }}</option>
+    @endfor
+</select>
+
 
             <button type="submit" class="btn btn-primary">Filtrar</button>
         </form>

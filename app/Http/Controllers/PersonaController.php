@@ -9,11 +9,23 @@ use Illuminate\Http\Request;
 
 class PersonaController extends Controller
 {
-   public function index()
-    {
-        $personas = Persona::all(); // SoftDeletes ya filtra los eliminados
-        return view('personas.index', compact('personas'));
-    }
+public function index(Request $request)
+{
+    $buscar = $request->input('buscar');
+
+    $personas = Persona::query()
+        ->when($buscar, function($query, $buscar) {
+            $query->where(function($q) use ($buscar) {
+                // Buscar por nombre completo
+                $q->whereRaw("CONCAT(nombre_completo, ' ', apellido_paterno, ' ', apellido_materno) LIKE ?", ["%{$buscar}%"])
+                  // O por CI
+                  ->orWhere('ci', 'LIKE', "%{$buscar}%");
+            });
+        })
+        ->get(); // SoftDeletes ya filtra los eliminados si está habilitado
+
+    return view('personas.index', compact('personas'));
+}
 
     public function create()
     {

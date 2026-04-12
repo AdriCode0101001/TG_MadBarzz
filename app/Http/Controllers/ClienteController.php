@@ -16,11 +16,24 @@ use Illuminate\Support\Facades\Hash;
 class ClienteController extends Controller
 {
     // INDEX
-    public function index()
-    {
-        $clientes = Cliente::with(['persona', 'user'])->get();
-        return view('clientes.index', compact('clientes'));
-    }
+public function index(Request $request)
+{
+    $buscar = $request->input('buscar');
+
+    $clientes = Cliente::with(['persona', 'user'])
+        ->when($buscar, function($query, $buscar) {
+            $query->whereHas('persona', function($q) use ($buscar) {
+                $q->whereRaw("CONCAT(nombre_completo, ' ', apellido_paterno, ' ', apellido_materno) LIKE ?", ["%{$buscar}%"])
+                  ->orWhere('ci', 'LIKE', "%{$buscar}%");
+            })->orWhereHas('user', function($q) use ($buscar) {
+                $q->where('email', 'LIKE', "%{$buscar}%");
+            });
+        })
+        ->get();
+
+    return view('clientes.index', compact('clientes'));
+}
+
 
     // CREATE
     public function create()

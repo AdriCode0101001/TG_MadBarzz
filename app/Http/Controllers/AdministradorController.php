@@ -10,11 +10,25 @@ use Illuminate\Support\Facades\Hash;
 
 class AdministradorController extends Controller
 {
-    public function index()
-    {
-        $administradores = Administrador::with(['persona', 'user'])->get();
-        return view('administradores.index', compact('administradores'));
-    }
+public function index(Request $request)
+{
+    $buscar = $request->input('buscar');
+
+    $administradores = Administrador::with(['persona', 'user'])
+        ->when($buscar, function($query, $buscar) {
+            $query->whereHas('persona', function($q) use ($buscar) {
+                $q->whereRaw("CONCAT(nombre_completo, ' ', apellido_paterno, ' ', apellido_materno) LIKE ?", ["%{$buscar}%"])
+                  ->orWhere('ci', 'LIKE', "%{$buscar}%");
+            })
+            ->orWhereHas('user', function($q) use ($buscar) {
+                $q->where('email', 'LIKE', "%{$buscar}%");
+            });
+        })
+        ->get();
+
+    return view('administradores.index', compact('administradores'));
+}
+
 
     public function create()
     {

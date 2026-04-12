@@ -14,29 +14,38 @@
         </a>
 
         <!-- Formulario de filtro a la derecha -->
-        <form method="GET" action="{{ route('reportes.clientes.nuevos') }}" class="row g-2 align-items-center">
-            <div class="col-auto">
-                <select name="mes" class="">
-                    @foreach($meses as $num => $nombre)
-                        <option value="{{ $num }}" {{ (isset($mes) && $mes == $num) ? 'selected' : '' }}>
-                            {{ ucfirst($nombre) }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-auto">
-                <select name="anio" class="">
-                    @foreach($anios as $a)
-                        <option value="{{ $a }}" {{ (isset($anio) && $anio == $a) ? 'selected' : '' }}>
-                            {{ $a }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-primary">Filtrar</button>
-            </div>
-        </form>
+       <form method="GET" action="{{ route('reportes.clientes.nuevos') }}" class="row g-2 align-items-center">
+    <!-- Selección de Mes -->
+    <div class="col-auto">
+        <select name="mes" class="">
+            <option value="">Mes</option>
+            @foreach($meses as $num => $nombre)
+                <option value="{{ $num }}" {{ (isset($mes) && $mes == $num) ? 'selected' : '' }}>
+                    {{ ucfirst($nombre) }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+    <!-- Selección de Año -->
+<div class="col-auto">
+    <select name="anio" class="">
+        <option value="">Año</option>
+        @foreach($anios as $a)
+            <option value="{{ $a }}" {{ (isset($anio) && $anio == $a) ? 'selected' : '' }}>
+                {{ $a }}
+            </option>
+        @endforeach
+    </select>
+</div>
+
+
+    <!-- Botón Filtrar -->
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+    </div>
+</form>
+
     </div>
 <br>
     <!-- Tabla de clientes -->
