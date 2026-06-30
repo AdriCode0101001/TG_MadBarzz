@@ -67,5 +67,13 @@ public function membresiasClientes() {
     return $this->hasMany(MembresiaCliente::class, 'id_cliente', 'id_cliente');
 }
 
+public function huellas()
+{
+    return $this->hasMany(Huella::class, 'id_cliente', 'id_cliente');
+}
 
+public function sedes()
+{
+    return $this->belongsToMany(Sede::class, 'cliente_sede', 'id_cliente', 'id_sede');
+}
 }

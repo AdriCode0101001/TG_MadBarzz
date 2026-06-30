@@ -60,10 +60,7 @@
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white">Teléfono</label>
-                            <input type="text" name="telefono" class="form-control @error('telefono') is-invalid @enderror" value="{{ old('telefono') }}">
-                            @error('telefono')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <x-phone-input />
                             <small class="form-text text-muted">Opcional, pero debe ser único si lo registra.</small>
                         </div>
 

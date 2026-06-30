@@ -39,9 +39,8 @@
                             @error('ci')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Teléfono</label>
-                            <input type="text" name="telefono" class="form-control @error('telefono') is-invalid @enderror" value="{{ old('telefono') }}" required>
-                            @error('telefono')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            <label class="">Teléfono</label>
+                            <x-phone-input :required="true" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Género</label>

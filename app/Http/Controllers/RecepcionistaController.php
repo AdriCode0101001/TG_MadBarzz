@@ -42,7 +42,7 @@ public function index(Request $request)
             'apellido_paterno' => 'required|string|max:255',
             'apellido_materno' => 'required|string|max:255',
             'ci' => 'required|string|max:20|unique:personas,ci',
-            'telefono' => 'nullable|string|max:20|unique:personas,telefono',
+            'telefono' => 'nullable|regex:/^\+\d{7,15}$/|unique:personas,telefono',
             'genero' => 'required|in:masculino,femenino,otro',
             'fecha_nacimiento' => 'required|date',
 
@@ -56,6 +56,7 @@ public function index(Request $request)
         ], [
             'ci.unique' => 'La cédula ya está registrada.',
             'telefono.unique' => 'El teléfono ya está registrado.',
+            'telefono.regex'  => 'El teléfono debe estar en formato internacional (ej. +59171234567).',
             'name.unique' => 'El nombre de usuario ya está en uso.',
             'email.unique' => 'El correo electrónico ya está registrado.',
         ]);
@@ -99,7 +100,7 @@ public function index(Request $request)
             'apellido_paterno' => 'required|string|max:255',
             'apellido_materno' => 'required|string|max:255',
             'ci' => 'required|string|max:20|unique:personas,ci,' . $recepcionista->persona->id_persona . ',id_persona',
-            'telefono' => 'nullable|string|max:20|unique:personas,telefono,' . $recepcionista->persona->id_persona . ',id_persona',
+            'telefono' => 'nullable|regex:/^\+\d{7,15}$/|unique:personas,telefono,' . $recepcionista->persona->id_persona . ',id_persona',
             'genero' => 'required|in:masculino,femenino,otro',
             'fecha_nacimiento' => 'required|date',
 
@@ -112,6 +113,7 @@ public function index(Request $request)
         ], [
             'ci.unique' => 'La cédula ya está registrada.',
             'telefono.unique' => 'El teléfono ya está registrado.',
+            'telefono.regex'  => 'El teléfono debe estar en formato internacional (ej. +59171234567).',
             'name.unique' => 'El nombre de usuario ya está en uso.',
             'email.unique' => 'El correo electrónico ya está registrado.',
         ]);

@@ -48,7 +48,7 @@
 
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-dark dark-text-white">Teléfono</label>
-                                <input type="text" name="telefono" class="form-control" value="">
+                                <x-phone-input />
                             </div>
 
                             <div class="col-md-6">

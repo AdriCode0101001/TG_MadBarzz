@@ -206,6 +206,67 @@
     </div>
     @endif
 
+    {{-- ── VINCULACIÓN DE TELEGRAM ── --}}
+    @php $chatId = $cliente->persona->telegram_chat_id ?? null; @endphp
+    <div class="mb-cli-card mb-4">
+        <div class="mb-cli-card__head">
+            <i class="fa-brands fa-telegram me-2" style="color:#229ed9;"></i> Notificaciones por Telegram
+        </div>
+        <div class="mb-cli-card__body">
+            @if(session('success'))
+                <div class="alert alert-success border-0 rounded-3 mb-3">{{ session('success') }}</div>
+            @endif
+            @if($chatId)
+                <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+                    <span style="background:rgba(34,158,217,.15);color:#229ed9;font-size:.8rem;font-weight:600;padding:.4rem 1rem;border-radius:99px;display:inline-flex;align-items:center;gap:.4rem;">
+                        <i class="fa-solid fa-circle-check"></i> Conectado
+                    </span>
+                    <span style="font-size:.82rem;color:#94a3b8;">Chat ID: {{ $chatId }}</span>
+                </div>
+                <p style="font-size:.84rem;color:#94a3b8;margin-bottom:1rem;">
+                    Tu Telegram está vinculado. Recibirás un aviso cuando tu membresía esté por vencer.
+                </p>
+                <form method="POST" action="{{ route('portal.telegram.desvincular') }}">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                        <i class="fa-solid fa-unlink me-1"></i> Desvincular
+                    </button>
+                </form>
+            @else
+                <p style="font-size:.88rem;color:#94a3b8;margin-bottom:1rem;">
+                    Vincula tu Telegram para recibir recordatorios cuando tu membresía esté por vencer.
+                </p>
+                <ol style="font-size:.84rem;color:#94a3b8;padding-left:1.2rem;margin-bottom:1rem;">
+                    @if(config('services.telegram.bot_username'))
+                        <li>Abre Telegram y busca el bot <strong style="color:#e2e8f0;">{{ config('services.telegram.bot_username') }}</strong></li>
+                    @else
+                        <li>Abre Telegram y busca el bot de MadBarzz (pide el nombre en recepción)</li>
+                    @endif
+                    <li>Envíale el comando <code>/start</code></li>
+                    <li>Busca el bot <code>@userinfobot</code> en Telegram — te dirá tu Chat ID</li>
+                    <li>Escribe ese número aquí abajo y haz clic en <strong style="color:#e2e8f0;">Vincular</strong></li>
+                </ol>
+                <form method="POST" action="{{ route('portal.telegram.vincular') }}" class="d-flex gap-2 flex-wrap">
+                    @csrf
+                    <input
+                        type="text"
+                        name="telegram_chat_id"
+                        class="form-control form-control-sm"
+                        placeholder="Tu Chat ID (ej: 123456789)"
+                        style="max-width:240px;"
+                        required
+                        pattern="-?\d+"
+                        title="Solo números (puede empezar con -)"
+                    >
+                    <button type="submit" class="btn btn-sm" style="background:#229ed9;color:#fff;border:none;">
+                        <i class="fa-brands fa-telegram me-1"></i> Vincular
+                    </button>
+                </form>
+            @endif
+        </div>
+    </div>
+
 </div>
 
 <style>

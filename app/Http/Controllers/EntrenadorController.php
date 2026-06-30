@@ -43,7 +43,7 @@ public function index(Request $request)
             'apellido_paterno' => 'required|string|max:255',
             'apellido_materno' => 'required|string|max:255',
             'ci'               => 'required|unique:personas,ci',
-            'telefono'         => 'required|unique:personas,telefono',
+            'telefono'         => 'required|regex:/^\+\d{7,15}$/|unique:personas,telefono',
             'genero'           => 'required|in:masculino,femenino,otro',
             'fecha_nacimiento' => 'required|date',
 
@@ -112,7 +112,7 @@ public function index(Request $request)
             'apellido_paterno' => 'required|string|max:255',
             'apellido_materno' => 'required|string|max:255',
             'ci'               => 'required|unique:personas,ci,' . $persona->id_persona . ',id_persona',
-            'telefono'         => 'required|unique:personas,telefono,' . $persona->id_persona . ',id_persona',
+            'telefono'         => 'required|regex:/^\+\d{7,15}$/|unique:personas,telefono,' . $persona->id_persona . ',id_persona',
             'genero'           => 'required|in:masculino,femenino,otro',
             'fecha_nacimiento' => 'required|date',
 

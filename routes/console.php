@@ -31,3 +31,15 @@ Schedule::command('backup:clean')
 // 03:00 — Monitor de salud: alerta si el backup más reciente es viejo o pesa demasiado
 Schedule::command('backup:monitor')
     ->dailyAt('03:00');
+
+// ---------------------------------------------------------------------------
+// Notificaciones automáticas de vencimiento — Fase 5
+// ---------------------------------------------------------------------------
+
+// 08:00 — Avisa a los clientes cuya membresía vence en N días (NOTIF_DIAS_AVISO)
+Schedule::command('notificaciones:vencimientos')
+    ->dailyAt('08:00')
+    ->withoutOverlapping()
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('notificaciones:vencimientos falló en la ejecución programada.');
+    });

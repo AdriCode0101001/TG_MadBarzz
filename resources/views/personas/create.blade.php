@@ -61,11 +61,8 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label for="telefono" class="form-label fs-16 fw-bold text-dark dark-text-white">
-                                Teléfono
-                            </label>
-                            <input type="text" id="telefono" name="telefono" 
-                                   class="form-control">
+                            <label class="form-label fs-16 fw-bold text-dark dark-text-white">Teléfono</label>
+                            <x-phone-input />
                         </div>
 
                         <div class="col-md-6">

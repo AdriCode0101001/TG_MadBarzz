@@ -1,68 +1,76 @@
-// Nombre de la caché
-const CACHE_NAME = 'tg-madbarzz-cache-v1';
+const CACHE_NAME = 'madbarzz-cache-v2';
 
-// Archivos a cachear
 const urlsToCache = [
-  '/',
   '/manifest.json',
-  '/assets_private/images/favicon.png'
+  '/assets_private/images/favicon.png',
+  '/dashboard/cliente',
+  '/mis-asistencias',
+  '/mis-pagos',
 ];
 
-// Instalación del Service Worker
 self.addEventListener('install', (event) => {
-  console.log('[ServiceWorker] Instalando...');
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('[ServiceWorker] Archivos en caché');
-        return cache.addAll(urlsToCache);
-      })
-      .catch((err) => console.error('[ServiceWorker] Error al agregar a la caché:', err))
+      .then((cache) => cache.addAll(urlsToCache))
+      .catch((err) => console.error('[SW] Error en caché:', err))
   );
-  // Activación inmediata
   self.skipWaiting();
 });
 
-// Activación del Service Worker
 self.addEventListener('activate', (event) => {
-  console.log('[ServiceWorker] Activado');
-  event.waitUntil(clients.claim());
-});
-
-// Interceptar requests para usar caché primero
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => response || fetch(event.request))
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+    ).then(() => clients.claim())
   );
 });
 
-// Listener de push notifications
+// Network-first para rutas de portal; cache-first para assets estáticos
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+
+  const portalRoutes = ['/dashboard/cliente', '/mis-asistencias', '/mis-pagos'];
+  const isPortalRoute = portalRoutes.some((r) => url.pathname.startsWith(r));
+
+  if (isPortalRoute) {
+    // Network-first: intenta red y si falla usa caché
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+  } else {
+    // Cache-first para assets
+    event.respondWith(
+      caches.match(event.request).then((response) => response || fetch(event.request))
+    );
+  }
+});
+
 self.addEventListener('push', (event) => {
   let data = {
-    title: 'Notificación',
-    body: 'Tienes un nuevo mensaje',
-    icon: '/assets_private/images/favicon.png'
+    title: 'MadBarzz',
+    body: 'Tienes una notificación nueva.',
+    icon: '/assets_private/images/favicon.png',
   };
 
   if (event.data) {
-    try {
-      data = event.data.json();
-    } catch (err) {
-      console.error('[ServiceWorker] Error parseando datos push:', err);
-    }
+    try { data = event.data.json(); } catch (_) {}
   }
 
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: data.icon
+      icon: data.icon,
     })
   );
 });
 
-// Click en notificación
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  event.waitUntil(clients.openWindow('/'));
+  event.waitUntil(clients.openWindow('/dashboard/cliente'));
 });

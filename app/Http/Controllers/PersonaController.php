@@ -39,7 +39,7 @@ public function index(Request $request)
             'apellido_paterno' => 'required',
             'apellido_materno' => 'required',
             'ci' => 'required|unique:personas',
-            'telefono' => 'required|unique:personas',
+            'telefono' => 'required|regex:/^\+\d{7,15}$/|unique:personas',
             'genero' => 'required',
             'fecha_nacimiento' => 'required|date'
         ]);
@@ -60,7 +60,21 @@ public function index(Request $request)
     public function update(Request $request, $id)
     {
         $persona = Persona::findOrFail($id);
-        $persona->update($request->all());
+
+        $request->validate([
+            'nombre_completo'  => 'required',
+            'apellido_paterno' => 'required',
+            'apellido_materno' => 'required',
+            'ci'               => 'required|unique:personas,ci,' . $persona->id_persona . ',id_persona',
+            'telefono'         => 'nullable|regex:/^\+\d{7,15}$/|unique:personas,telefono,' . $persona->id_persona . ',id_persona',
+            'genero'           => 'required',
+            'fecha_nacimiento' => 'required|date',
+        ]);
+
+        $persona->update($request->only([
+            'nombre_completo', 'apellido_paterno', 'apellido_materno',
+            'ci', 'telefono', 'genero', 'fecha_nacimiento',
+        ]));
 
         return redirect()->route('personas.index')->with('success', 'Persona actualizada');
     }

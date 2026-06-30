@@ -26,7 +26,7 @@ class DashboardController extends Controller
     // Dashboard para cliente
     public function cliente()
     {
-        $cliente = Cliente::with(['membresias'])
+        $cliente = Cliente::with(['membresias', 'persona'])
             ->where('id_usuario', Auth::id())
             ->first();
 
@@ -50,7 +50,7 @@ class DashboardController extends Controller
 
         $rutinas = Rutina::with('entrenador.persona')->get();
 
-        return view('dashboard.cliente', compact('membresia', 'asistencias', 'pagos', 'rutinas'));
+        return view('dashboard.cliente', compact('cliente', 'membresia', 'asistencias', 'pagos', 'rutinas'));
     }
 
     // Dashboard para entrenador

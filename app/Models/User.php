@@ -9,12 +9,13 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Rol;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, SoftDeletes, LogsActivity;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
     public function getActivitylogOptions(): LogOptions
     {

@@ -69,12 +69,8 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label for="telefono" class="form-label fs-16 fw-bold text-dark dark-text-white">
-                                Teléfono
-                            </label>
-                            <input type="tel" id="telefono" name="telefono" 
-                                   class="form-control"
-                                   value="{{ old('telefono', $persona->telefono) }}">
+                            <label class="form-label fs-16 fw-bold text-dark dark-text-white">Teléfono</label>
+                            <x-phone-input :value="old('telefono', $persona->telefono)" />
                         </div>
 
                         <div class="col-md-6">

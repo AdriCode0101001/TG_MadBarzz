@@ -41,8 +41,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Teléfono</label>
-                            <input type="text" name="telefono" class="form-control @error('telefono') is-invalid @enderror" value="{{ old('telefono', $cliente->persona->telefono ?? '') }}" required>
-                            @error('telefono')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            <x-phone-input :value="old('telefono', $cliente->persona->telefono ?? '')" :required="true" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Género</label>

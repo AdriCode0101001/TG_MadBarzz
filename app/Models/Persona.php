@@ -22,6 +22,7 @@ class Persona extends Model
         'apellido_materno',
         'ci',
         'telefono',
+        'telegram_chat_id',
         'genero',
         'fecha_nacimiento',
     ];

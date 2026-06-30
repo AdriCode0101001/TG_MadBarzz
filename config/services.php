@@ -41,4 +41,19 @@ return [
         'whatsapp_from'  => env('TWILIO_WHATSAPP_FROM'),
     ],
 
+    // ── Telegram Bot API (gratuito) ──────────────────────────────────────────
+    // Crea un bot con @BotFather y copia el token aquí.
+    // El cliente debe enviar /start al bot para registrar su chat_id.
+    'telegram' => [
+        'bot_token'    => env('TELEGRAM_BOT_TOKEN'),
+        'bot_username' => env('TELEGRAM_BOT_USERNAME'),
+    ],
+
+    // ── WhatsApp Cloud API — Meta (capa gratuita) ────────────────────────────
+    // Panel: developers.facebook.com → WhatsApp → Configuración de la API
+    'whatsapp_cloud' => [
+        'phone_number_id' => env('WHATSAPP_CLOUD_PHONE_ID'),
+        'token'           => env('WHATSAPP_CLOUD_TOKEN'),
+    ],
+
 ];

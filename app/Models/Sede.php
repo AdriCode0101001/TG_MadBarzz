@@ -23,4 +23,14 @@ class Sede extends Model
     protected $casts = [
         'activo' => 'boolean',
     ];
+
+    public function agentTokens()
+    {
+        return $this->hasMany(AgentToken::class, 'id_sede', 'id_sede');
+    }
+
+    public function clientes()
+    {
+        return $this->belongsToMany(Cliente::class, 'cliente_sede', 'id_sede', 'id_cliente');
+    }
 }

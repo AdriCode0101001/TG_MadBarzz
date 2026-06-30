@@ -829,7 +829,9 @@
                                     <li><a href="{{ route('rutinas.show', Auth::user()->id) }}">Mi Rutina</a></li>
                                 @else
                                     <!--  <li><a href="{{ route('asistencias.index') }}">Asistencias</a></li> -->
-                                    <!-- <li><a href="{{ route('notificaciones.index') }}">Notificaciones</a></li> -->
+                                    @if (in_array($userRol, ['Administrador', 'Recepcionista']))
+                                        <li><a href="{{ route('notificaciones.index') }}"><i class="fa-solid fa-bell me-2"></i>Notificaciones</a></li>
+                                    @endif
                                     <li><a href="{{ route('pagos.index') }}">Pagos</a></li>
                                     <li><a href="{{ route('rutinas.index') }}">Rutinas</a></li>
                                 @endif

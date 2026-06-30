@@ -22,6 +22,7 @@ use App\Http\Controllers\PagoController;
 use App\Http\Controllers\RutinaController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\PromocionController;
+use App\Http\Controllers\ClientePortalController;
 
 // -----------------------------------------------------------------------
 // Página de inicio pública
@@ -107,11 +108,14 @@ Route::middleware(['auth', 'role:Administrador,Entrenador'])->group(function () 
 });
 
 // -----------------------------------------------------------------------
-// Rutas exclusivas del Cliente (su propio historial)
+// Rutas exclusivas del Cliente (su propio historial + Telegram)
 // -----------------------------------------------------------------------
 Route::middleware(['auth', 'role:Cliente'])->group(function () {
     Route::get('mis-asistencias', [AsistenciaController::class, 'misAsistencias'])->name('asistencias.mis');
     Route::get('mis-pagos',       [PagoController::class,       'misPagos'])      ->name('pagos.mis-pagos');
+
+    Route::post('/portal/telegram/vincular',      [ClientePortalController::class, 'vincularTelegram'])   ->name('portal.telegram.vincular');
+    Route::delete('/portal/telegram/desvincular', [ClientePortalController::class, 'desvincularTelegram'])->name('portal.telegram.desvincular');
 });
 
 // -----------------------------------------------------------------------

@@ -49,7 +49,7 @@
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white">Teléfono</label>
-                            <input type="text" name="telefono" class="form-control" value="{{ old('telefono', $recepcionista->persona->telefono) }}">
+                            <x-phone-input :value="old('telefono', $recepcionista->persona->telefono)" />
                         </div>
 
                         <div class="col-md-6">
