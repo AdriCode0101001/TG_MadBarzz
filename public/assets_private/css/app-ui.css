@@ -1,0 +1,645 @@
+/* ============================================================================
+   MadBarzz · Capa de mejora visual (app-ui.css)
+   ----------------------------------------------------------------------------
+   Hoja de estilos ADITIVA. No reemplaza la plantilla Gymove: la complementa.
+   Todo el color de marca se resuelve con variables y *fallbacks*, de modo que
+   funciona tanto en tema oscuro como claro sin romper nada existente.
+   No modifica lógica, rutas ni nombres de clases del backend.
+   ============================================================================ */
+
+:root {
+    --mb-brand: #ff6b1a;          /* Naranja MadBarzz (energía / calistenia) */
+    --mb-brand-600: #e85d10;
+    --mb-brand-100: rgba(255, 107, 26, .12);
+    --mb-success: #1ec98b;
+    --mb-warning: #f7b500;
+    --mb-danger: #f5365c;
+    --mb-info: #2f80ed;
+    --mb-radius: 14px;
+    --mb-radius-sm: 10px;
+    --mb-shadow: 0 4px 24px rgba(0, 0, 0, .08);
+    --mb-shadow-hover: 0 10px 34px rgba(0, 0, 0, .14);
+    --mb-transition: .18s cubic-bezier(.4, 0, .2, 1);
+}
+
+/* ------------------------------------------------------------------ Tipografía base */
+body {
+    font-family: 'Poppins', 'Roboto', system-ui, -apple-system, sans-serif;
+    letter-spacing: .1px;
+}
+
+/* ------------------------------------------------------------------ Encabezado de página */
+.mb-page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.mb-page-header .mb-page-title {
+    margin: 0;
+    font-weight: 700;
+    font-size: clamp(1.25rem, 1rem + 1vw, 1.6rem);
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    line-height: 1.2;
+}
+.mb-page-header .mb-page-title .mb-title-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--mb-brand-100);
+    color: var(--mb-brand);
+    font-size: 1.05rem;
+    flex: none;
+}
+.mb-page-header .mb-page-subtitle {
+    margin: .2rem 0 0;
+    opacity: .65;
+    font-size: .85rem;
+}
+.mb-breadcrumb {
+    font-size: .8rem;
+    opacity: .6;
+    margin-bottom: .35rem;
+}
+.mb-breadcrumb a { color: inherit; text-decoration: none; }
+.mb-breadcrumb a:hover { color: var(--mb-brand); }
+
+/* ------------------------------------------------------------------ Tarjetas */
+.card {
+    border: none !important;
+    border-radius: var(--mb-radius) !important;
+    box-shadow: var(--mb-shadow);
+    transition: box-shadow var(--mb-transition), transform var(--mb-transition);
+}
+.card .card-header {
+    border-bottom: 1px solid rgba(128, 128, 128, .14);
+    background: transparent;
+    padding: 1.1rem 1.4rem;
+}
+.card .card-header h4,
+.card .card-header h2,
+.card .card-header .card-title { margin-bottom: 0; }
+
+/* ------------------------------------------------------------------ Tarjetas de estadística */
+.mb-stat {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--mb-radius);
+    padding: 1.4rem 1.5rem;
+    height: 100%;
+    box-shadow: var(--mb-shadow);
+    transition: transform var(--mb-transition), box-shadow var(--mb-transition);
+}
+.mb-stat:hover { transform: translateY(-4px); box-shadow: var(--mb-shadow-hover); }
+.mb-stat .mb-stat-icon {
+    width: 54px; height: 54px;
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+}
+.mb-stat .mb-stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: .25rem;
+}
+.mb-stat .mb-stat-label { font-size: .82rem; opacity: .65; margin: 0; }
+.mb-stat .mb-stat-trend { font-size: .75rem; font-weight: 600; }
+
+.mb-stat--brand   { background: linear-gradient(135deg, var(--mb-brand), var(--mb-brand-600)); color:#fff; }
+.mb-stat--brand .mb-stat-label,
+.mb-stat--brand .mb-stat-value { color:#fff; }
+.mb-stat--brand .mb-stat-icon { background: rgba(255,255,255,.18); color:#fff; }
+
+.mb-stat-icon.bg-soft-success { background: rgba(30,201,139,.14); color: var(--mb-success); }
+.mb-stat-icon.bg-soft-warning { background: rgba(247,181,0,.14);  color: var(--mb-warning); }
+.mb-stat-icon.bg-soft-info    { background: rgba(47,128,237,.14); color: var(--mb-info); }
+.mb-stat-icon.bg-soft-brand   { background: var(--mb-brand-100);  color: var(--mb-brand); }
+.mb-stat-icon.bg-soft-danger  { background: rgba(245,54,92,.14);  color: var(--mb-danger); }
+
+/* ------------------------------------------------------------------ Tablas modernas */
+.table {
+    --bs-table-bg: transparent;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 0;
+}
+.table > thead > tr > th {
+    text-transform: uppercase;
+    font-size: .72rem;
+    letter-spacing: .06em;
+    font-weight: 600;
+    opacity: .7;
+    border-bottom: 2px solid rgba(128,128,128,.18) !important;
+    padding: .85rem 1rem;
+    white-space: nowrap;
+}
+.table > tbody > tr > td {
+    padding: .8rem 1rem;
+    vertical-align: middle;
+    border-color: rgba(128,128,128,.10) !important;
+}
+/* Encabezado sticky con fondo sólido — tema claro */
+.mb-sticky-head th {
+    background-color: #fff;
+    transition: box-shadow .2s ease;
+}
+/* Encabezado sticky — tema oscuro */
+[data-theme-version=dark] .mb-sticky-head th {
+    background-color: #111217;
+}
+/* Sombra al desplazar filas debajo del encabezado */
+.mb-sticky-head.mb-thead-elevated th {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .45);
+}
+
+.table.table-bordered { border: none; }
+.table.table-bordered > :not(caption) > * > * { border-width: 0 0 1px 0; }
+.table-hover > tbody > tr { transition: background var(--mb-transition); }
+.table-hover > tbody > tr:hover { background: var(--mb-brand-100) !important; }
+.mb-table-wrap { border-radius: var(--mb-radius); overflow: hidden; }
+
+/* Ocultar scrollbar inferior nativo del table-responsive (se usa el riel superior) */
+.table-responsive::-webkit-scrollbar { display: none; }
+.table-responsive { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ------------------------------------------------------------------ Scrollbar doble (arriba de tabla + flotante al bajar) */
+/* Estilos compartidos */
+.mb-top-scroll-static,
+.mb-top-scroll-fixed {
+    overflow-x: auto;
+    overflow-y: hidden;
+    background: transparent;
+}
+/* Riel estático — en flujo, siempre arriba de la tabla */
+.mb-top-scroll-static {
+    width: 100%;
+}
+/* Riel fijo — pegado al header, solo visible al bajar */
+.mb-top-scroll-fixed {
+    position: fixed;
+    z-index: 1050;
+    display: none;
+    /* left, top, width los asigna JS */
+}
+/* Div interior: solo necesitamos su ancho para generar overflow horizontal */
+.mb-top-scroll-inner {
+    height: 1px;
+    min-width: 100%;
+}
+/* Scrollbar naranja estilizado */
+.mb-top-scroll-static::-webkit-scrollbar,
+.mb-top-scroll-fixed::-webkit-scrollbar        { height: 6px; }
+.mb-top-scroll-static::-webkit-scrollbar-track,
+.mb-top-scroll-fixed::-webkit-scrollbar-track  { background: transparent; }
+.mb-top-scroll-static::-webkit-scrollbar-thumb,
+.mb-top-scroll-fixed::-webkit-scrollbar-thumb  {
+    background: rgba(255,107,26,.55);
+    border-radius: 999px;
+}
+.mb-top-scroll-static::-webkit-scrollbar-thumb:hover,
+.mb-top-scroll-fixed::-webkit-scrollbar-thumb:hover { background: var(--mb-brand); }
+
+/* Celda de acciones siempre alineada y compacta */
+.mb-actions { display: inline-flex; gap: .4rem; flex-wrap: nowrap; }
+
+/* ------------------------------------------------------------------ Badges */
+.badge {
+    font-weight: 600;
+    letter-spacing: .02em;
+    padding: .42em .7em;
+    border-radius: 999px;
+    font-size: .72rem;
+}
+.badge.bg-success { background: var(--mb-success) !important; }
+.badge.bg-danger  { background: var(--mb-danger)  !important; }
+.badge.bg-warning { background: var(--mb-warning) !important; color:#3a2c00 !important; }
+.badge.bg-secondary { background: rgba(128,128,128,.25) !important; }
+.mb-badge-dot::before {
+    content:""; display:inline-block; width:7px; height:7px;
+    border-radius:50%; background: currentColor; margin-right:.4em; vertical-align: middle;
+}
+
+/* ------------------------------------------------------------------ Botones */
+.btn {
+    border-radius: var(--mb-radius-sm);
+    font-weight: 600;
+    transition: transform var(--mb-transition), box-shadow var(--mb-transition), filter var(--mb-transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .45rem;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary {
+    background: var(--mb-brand) !important;
+    border-color: var(--mb-brand) !important;
+    box-shadow: 0 6px 18px rgba(255,107,26,.28);
+}
+.btn-primary:hover { background: var(--mb-brand-600) !important; border-color: var(--mb-brand-600) !important; }
+.btn-sm { padding: .35rem .6rem; }
+.btn .spinner-border-sm { width: 1rem; height: 1rem; }
+.btn[disabled] { opacity: .75; cursor: progress; }
+
+/* ------------------------------------------------------------------ Formularios */
+.form-label { font-weight: 600; font-size: .82rem; margin-bottom: .35rem; opacity: .9; }
+.form-control,
+.form-select,
+select.form-control,
+/* Selects que en las vistas venían SIN clase: los normalizamos visualmente */
+.card-body select:not([class]),
+form select:not([class]) {
+    border-radius: var(--mb-radius-sm);
+    border: 1px solid rgba(128,128,128,.28);
+    padding: .6rem .85rem;
+    width: 100%;
+    background-color: transparent;
+    color: inherit;
+    transition: border-color var(--mb-transition), box-shadow var(--mb-transition);
+    font-size: .92rem;
+    min-height: 44px;
+}
+.form-control:focus,
+.form-select:focus,
+.card-body select:not([class]):focus,
+form select:not([class]):focus {
+    border-color: var(--mb-brand);
+    box-shadow: 0 0 0 .2rem var(--mb-brand-100);
+    outline: none;
+}
+.form-control::placeholder { opacity: .5; }
+.mb-field-group {
+    border: 1px solid rgba(128,128,128,.16);
+    border-radius: var(--mb-radius);
+    padding: 1.2rem 1.3rem 1.4rem;
+    margin-bottom: 1.4rem;
+}
+.mb-field-group > .mb-field-legend {
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    font-weight: 700;
+    color: var(--mb-brand);
+    margin-bottom: 1rem;
+    display: flex; align-items: center; gap: .5rem;
+}
+.input-icon { position: relative; }
+.input-icon > .fa, .input-icon > i { position:absolute; top:50%; left:.95rem; transform:translateY(-50%); opacity:.45; }
+.input-icon > .form-control { padding-left: 2.5rem; }
+
+/* ------------------------------------------------------------------ Barra de búsqueda */
+.mb-searchbar { position: relative; min-width: 240px; }
+.mb-searchbar .form-control { padding-left: 2.5rem; }
+.mb-searchbar .mb-search-icon { position:absolute; top:50%; left:.95rem; transform:translateY(-50%); opacity:.5; }
+
+/* ------------------------------------------------------------------ Toolbar superior de listados */
+.mb-toolbar {
+    display:flex; flex-wrap:wrap; gap:.75rem;
+    align-items:center; justify-content:space-between;
+    margin-bottom: 1.25rem;
+}
+
+/* ------------------------------------------------------------------ Estado vacío */
+.mb-empty { text-align:center; padding: 3rem 1rem; opacity:.7; }
+.mb-empty .mb-empty-icon { font-size: 2.6rem; opacity:.35; margin-bottom: .8rem; }
+
+/* ------------------------------------------------------------------ Avatar / iniciales */
+.mb-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:.85rem; color:#fff;
+    background: linear-gradient(135deg, var(--mb-brand), var(--mb-brand-600));
+    flex:none;
+}
+.mb-user-cell { display:flex; align-items:center; gap:.65rem; }
+.mb-user-cell small { opacity:.55; }
+
+/* ------------------------------------------------------------------ Paginación */
+.pagination { gap: .25rem; }
+.pagination .page-link {
+    border: none;
+    border-radius: 10px !important;
+    color: inherit;
+    min-width: 38px;
+    text-align: center;
+    transition: background var(--mb-transition);
+}
+.pagination .page-item.active .page-link {
+    background: var(--mb-brand);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(255,107,26,.3);
+}
+.pagination .page-link:hover { background: var(--mb-brand-100); color: var(--mb-brand); }
+
+/* ------------------------------------------------------------------ Toastr (override de marca) */
+#toast-container > div { border-radius: var(--mb-radius-sm); box-shadow: var(--mb-shadow-hover); opacity: 1; }
+.toast-success { background-color: var(--mb-success) !important; }
+.toast-error   { background-color: var(--mb-danger)  !important; }
+.toast-warning { background-color: var(--mb-warning) !important; }
+.toast-info    { background-color: var(--mb-info)    !important; }
+
+/* ------------------------------------------------------------------ Skeleton loading */
+.mb-skeleton {
+    background: linear-gradient(90deg, rgba(128,128,128,.12) 25%, rgba(128,128,128,.22) 37%, rgba(128,128,128,.12) 63%);
+    background-size: 400% 100%;
+    animation: mb-shimmer 1.4s ease infinite;
+    border-radius: 8px;
+}
+@keyframes mb-shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+/* ------------------------------------------------------------------ Foto / dropzone preview */
+.mb-photo-drop {
+    border: 2px dashed rgba(128,128,128,.3);
+    border-radius: var(--mb-radius);
+    padding: 1.5rem;
+    text-align: center;
+    transition: border-color var(--mb-transition), background var(--mb-transition);
+    cursor: pointer;
+}
+.mb-photo-drop:hover { border-color: var(--mb-brand); background: var(--mb-brand-100); }
+.mb-photo-preview {
+    width: 96px; height: 96px; border-radius: 50%;
+    object-fit: cover; border: 3px solid var(--mb-brand-100);
+}
+
+/* ------------------------------------------------------------------ Dashboard: Banner bienvenida */
+.mb-welcome-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--mb-radius);
+    background: linear-gradient(135deg, var(--mb-brand) 0%, var(--mb-brand-600) 60%, #c04a00 100%);
+    padding: 2rem 2.2rem;
+    color: #fff;
+    box-shadow: 0 12px 40px rgba(255,107,26,.35);
+}
+.mb-welcome-deco {
+    position: absolute; top: -60px; right: -60px;
+    width: 240px; height: 240px; border-radius: 50%;
+    background: rgba(255,255,255,.08); pointer-events: none;
+}
+.mb-welcome-deco2 {
+    position: absolute; bottom: -80px; right: 140px;
+    width: 180px; height: 180px; border-radius: 50%;
+    background: rgba(255,255,255,.05); pointer-events: none;
+}
+.mb-welcome-eyebrow { font-size:.78rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; opacity:.85; margin:0 0 .4rem; }
+.mb-welcome-title   { font-size:clamp(1.3rem,2vw,1.8rem); font-weight:800; margin:0 0 .35rem; }
+.mb-welcome-sub     { font-size:.88rem; opacity:.8; margin:0; }
+.mb-welcome-stats   { display:flex; align-items:center; gap:1.4rem; background:rgba(0,0,0,.15); border-radius:14px; padding:.9rem 1.4rem; backdrop-filter:blur(6px); flex-wrap:wrap; }
+.mb-wstat           { display:flex; flex-direction:column; align-items:center; gap:.1rem; }
+.mb-wstat-num       { font-size:1.6rem; font-weight:800; line-height:1; }
+.mb-wstat-lbl       { font-size:.7rem; opacity:.8; text-transform:uppercase; letter-spacing:.08em; white-space:nowrap; }
+.mb-wstat-div       { width:1px; height:36px; background:rgba(255,255,255,.25); }
+
+/* ------------------------------------------------------------------ Dashboard: KPI Cards */
+.mb-kpi {
+    border-radius: var(--mb-radius);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    height: 100%;
+    box-shadow: var(--mb-shadow);
+    transition: transform var(--mb-transition), box-shadow var(--mb-transition);
+    position: relative;
+    overflow: hidden;
+}
+.mb-kpi:hover { transform: translateY(-4px); box-shadow: var(--mb-shadow-hover); }
+.mb-kpi::after {
+    content: '';
+    position: absolute; bottom: -20px; right: -20px;
+    width: 90px; height: 90px; border-radius: 50%;
+    background: rgba(255,255,255,.07);
+    pointer-events: none;
+}
+.mb-kpi-icon {
+    width: 56px; height: 56px; border-radius: 16px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; background: rgba(255,255,255,.18); color: #fff;
+}
+.mb-kpi-body { flex: 1; }
+.mb-kpi-num  { font-size: 2.2rem; font-weight: 800; line-height: 1; color: #fff; }
+.mb-kpi-lbl  { font-size: .78rem; opacity: .85; color: #fff; margin-top: .2rem; }
+
+.mb-kpi--brand   { background: linear-gradient(135deg, var(--mb-brand), var(--mb-brand-600)); }
+.mb-kpi--danger  { background: linear-gradient(135deg, #f5365c, #c9123a); }
+.mb-kpi--success { background: linear-gradient(135deg, #1ec98b, #0ea374); }
+.mb-kpi--warning { background: linear-gradient(135deg, #f7b500, #d99a00); }
+
+/* ------------------------------------------------------------------ Dashboard: Sección íconos */
+.mb-section-ico {
+    width: 36px; height: 36px; border-radius: 10px; flex: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: .95rem;
+}
+
+/* ------------------------------------------------------------------ Dashboard: Donut centro */
+.mb-donut-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    pointer-events: none;
+}
+.mb-donut-num { font-size: 1.7rem; font-weight: 800; line-height: 1; }
+.mb-donut-sub { font-size: .7rem; opacity: .55; text-transform: uppercase; letter-spacing: .06em; }
+
+/* ------------------------------------------------------------------ Dashboard: Leyenda */
+.mb-legend { display: flex; flex-direction: column; gap: .5rem; }
+.mb-legend-item { display: flex; align-items: center; gap: .6rem; font-size: .83rem; }
+.mb-legend-item span:nth-child(2) { flex: 1; opacity: .75; }
+.mb-legend-item strong { font-weight: 700; }
+.mb-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+
+/* ------------------------------------------------------------------ Dashboard: Progress bar */
+.mb-progress-bar {
+    height: 8px; border-radius: 999px;
+    background: rgba(128,128,128,.18); overflow: hidden;
+}
+.mb-progress-fill { height: 100%; border-radius: 999px; transition: width .6s cubic-bezier(.4,0,.2,1); }
+
+/* ------------------------------------------------------------------ Dashboard: Big metric */
+.mb-big-metric { text-align: center; padding: 1.2rem 0; }
+.mb-big-num    { font-size: 4rem; font-weight: 800; line-height: 1; }
+.mb-big-unit   { font-size: 2rem; font-weight: 700; }
+.mb-big-sub    { font-size: .82rem; opacity: .6; margin-top: .4rem; }
+.mb-mini-stats { display: flex; flex-wrap: wrap; gap: .6rem .9rem; font-size: .8rem; margin-top: .6rem; }
+.mb-mini-stat  { display: flex; align-items: center; gap: .35rem; opacity: .8; }
+
+
+/* ------------------------------------------------------------------ Sidebar: flecha de submenú */
+.deznav .metismenu .has-arrow:after { display: none !important; }
+
+.deznav .metismenu li.has-arrow > a {
+    display: flex !important;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+.mb-menu-arr {
+    margin-left: auto;
+    flex-shrink: 0;
+    font-size: 8px;
+    transform: scale(0.7);
+    transform-origin: center;
+    opacity: .45;
+    transition: transform .25s ease, opacity .2s, color .2s;
+    pointer-events: none;
+}
+li.has-arrow > a[aria-expanded="true"] .mb-menu-arr,
+li.mm-active > a .mb-menu-arr {
+    transform: scale(0.7) rotate(90deg);
+    opacity: 1;
+    color: var(--mb-brand);
+}
+
+/* ------------------------------------------------------------------ Header: dashboard_bar colapso */
+.dashboard_bar { display: flex; align-items: center; gap: .6rem; white-space: nowrap; overflow: hidden; }
+.dashboard_bar_icon { font-size: 1.2rem; flex: none; color: var(--mb-brand); }
+.dashboard_bar_text { overflow: hidden; text-overflow: ellipsis; transition: opacity .2s, max-width .3s; max-width: 300px; }
+
+#main-wrapper.menu-toggle .dashboard_bar_text { opacity: 0; max-width: 0; }
+#main-wrapper.menu-toggle .dashboard_bar_icon { font-size: 1.35rem; }
+
+/* ------------------------------------------------------------------ Responsive */
+@media (max-width: 767.98px) {
+    .mb-toolbar { flex-direction: column; align-items: stretch; }
+    .mb-searchbar, .mb-toolbar form { width: 100%; }
+    .mb-page-header { align-items: flex-start; }
+    .table > thead > tr > th,
+    .table > tbody > tr > td { padding: .6rem .55rem; }
+    .mb-stat .mb-stat-value { font-size: 1.6rem; }
+}
+
+/* ------------------------------------------------------------------ Accesibilidad / foco visible */
+a:focus-visible, .btn:focus-visible, .form-control:focus-visible, .page-link:focus-visible {
+    outline: 2px solid var(--mb-brand);
+    outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}
+
+/* ------------------------------------------------------------------ Evitar recarga por overscroll / pull-to-refresh */
+html, body { overscroll-behavior-y: contain; }
+
+/* ------------------------------------------------------------------ Dropdown perfil custom */
+#mbProfileMenu .dropdown-item {
+    color: #c0c0c8;
+    padding: .55rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    transition: background .15s;
+}
+#mbProfileMenu .dropdown-item:hover {
+    background: #2d2f36;
+    color: #fff;
+}
+
+/* ------------------------------------------------------------------ Dashboard admin: Hero */
+.mb-hero-admin {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--mb-radius);
+    background: linear-gradient(135deg, #0d0e1a 0%, #141626 40%, #1a1d35 100%);
+    border: 1px solid rgba(99,102,241,.2);
+    padding: 2.2rem 2.4rem;
+    box-shadow: 0 16px 48px rgba(0,0,0,.45);
+}
+.mb-hero-admin__bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 80% 50%, rgba(99,102,241,.12) 0%, transparent 70%);
+    pointer-events: none;
+}
+.mb-hero-admin__orb {
+    position: absolute; border-radius: 50%; pointer-events: none;
+    animation: mbOrbFloat 8s ease-in-out infinite;
+}
+.mb-hero-admin__orb--1 { width:220px; height:220px; top:-80px; right:10%; background:radial-gradient(circle, rgba(99,102,241,.18) 0%, transparent 70%); animation-delay:0s; }
+.mb-hero-admin__orb--2 { width:140px; height:140px; bottom:-40px; right:30%; background:radial-gradient(circle, rgba(30,201,139,.12) 0%, transparent 70%); animation-delay:-3s; }
+.mb-hero-admin__orb--3 { width:90px;  height:90px;  top:10%;  right:20%; background:radial-gradient(circle, rgba(139,92,246,.15) 0%, transparent 70%); animation-delay:-5s; }
+@keyframes mbOrbFloat {
+    0%,100% { transform: translateY(0) scale(1); }
+    50%      { transform: translateY(-14px) scale(1.06); }
+}
+.mb-hero-admin__content {
+    position: relative; z-index: 1;
+    display: flex; align-items: center; justify-content: space-between; gap: 2rem; flex-wrap: wrap;
+}
+.mb-hero-admin__left { flex: 1; min-width: 240px; }
+.mb-hero-admin__eyebrow {
+    font-size: .7rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--mb-brand); opacity: .85; margin-bottom: .4rem;
+}
+.mb-hero-admin__title {
+    font-size: clamp(1.4rem, 2.5vw, 2rem); font-weight: 800; color: #f1f5f9;
+    margin: 0 0 .4rem; line-height: 1.2;
+}
+.mb-hero-admin__sub { font-size: .83rem; color: #94a3b8; margin: 0 0 1.2rem; }
+.mb-hero-admin__actions { display: flex; gap: .75rem; flex-wrap: wrap; }
+.mb-hero-btn {
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .52rem 1.1rem; border-radius: 10px; font-size: .83rem; font-weight: 600;
+    background: linear-gradient(135deg, var(--mb-brand), #8b5cf6);
+    color: #fff; text-decoration: none;
+    box-shadow: 0 4px 16px rgba(99,102,241,.35);
+    transition: transform .2s, box-shadow .2s;
+}
+.mb-hero-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(99,102,241,.45); color: #fff; }
+.mb-hero-btn--ghost {
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.12);
+    box-shadow: none;
+}
+.mb-hero-btn--ghost:hover { background: rgba(255,255,255,.14); box-shadow: none; }
+.mb-hero-admin__stats {
+    display: flex; align-items: center; gap: 1.4rem;
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px; padding: 1rem 1.6rem; backdrop-filter: blur(8px); flex-wrap: wrap;
+}
+.mb-hero-stat { display: flex; flex-direction: column; align-items: center; gap: .15rem; }
+.mb-hero-stat__num { font-size: 1.8rem; font-weight: 800; color: #f1f5f9; line-height: 1; }
+.mb-hero-stat__lbl { font-size: .68rem; color: #94a3b8; text-transform: uppercase; letter-spacing: .08em; white-space: nowrap; }
+.mb-hero-stat__div  { width: 1px; height: 40px; background: rgba(255,255,255,.12); }
+
+/* ------------------------------------------------------------------ Dashboard admin: KPI v2 */
+.mb-kpi2 {
+    position: relative; overflow: hidden; border-radius: var(--mb-radius);
+    padding: 1.4rem 1.6rem 2rem;
+    background: linear-gradient(135deg, var(--kpi-from), var(--kpi-to));
+    box-shadow: 0 8px 32px rgba(0,0,0,.3);
+    display: flex; align-items: flex-start; gap: 1rem;
+    transition: transform .2s, box-shadow .2s;
+}
+.mb-kpi2:hover { transform: translateY(-4px); box-shadow: 0 14px 40px rgba(0,0,0,.4); }
+.mb-kpi2__icon {
+    width: 48px; height: 48px; border-radius: 14px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.2); color: #fff; font-size: 1.25rem;
+}
+.mb-kpi2__body { flex: 1; }
+.mb-kpi2__num  { font-size: 2.4rem; font-weight: 800; line-height: 1; color: #fff; }
+.mb-kpi2__lbl  { font-size: .78rem; color: rgba(255,255,255,.82); margin-top: .25rem; }
+.mb-kpi2__bar  {
+    position: absolute; bottom: 0; left: 0; height: 4px;
+    background: rgba(255,255,255,.45); border-radius: 0 4px 0 0;
+    transition: width .8s cubic-bezier(.4,0,.2,1);
+}
+
+/* ------------------------------------------------------------------ Dashboard: badge con indicador */
+.mb-badge-dot {
+    display: inline-flex; align-items: center; gap: .3rem; font-size: .73rem; padding: .28rem .65rem;
+}
+.mb-badge-dot::before {
+    content: ''; display: inline-block;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(255,255,255,.7);
+}
