@@ -11,6 +11,7 @@ Route::post('/logout', [AuthApiController::class, 'logout'])->middleware('auth:s
 
 // ── Agente biométrico (protegido con token de agente SHA-256) ─────────────
 Route::middleware('agent.token')->prefix('agente')->group(function () {
+    Route::get('/clientes',    [BiometriaController::class, 'listarClientes']);
     Route::post('/enrolar',    [BiometriaController::class, 'enrolar']);
     Route::get('/sincronizar', [BiometriaController::class, 'sincronizar']);
     Route::post('/asistencia', [BiometriaController::class, 'registrarAsistencia']);

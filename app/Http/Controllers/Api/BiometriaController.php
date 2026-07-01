@@ -13,6 +13,27 @@ use Illuminate\Support\Facades\DB;
 class BiometriaController extends Controller
 {
     /**
+     * GET /api/agente/clientes
+     * Lista clientes activos con id y nombre completo para el agente.
+     */
+    public function listarClientes(): JsonResponse
+    {
+        $clientes = Cliente::where('estado', 'activo')
+            ->with('persona:id_persona,nombre_completo,apellido_paterno,apellido_materno')
+            ->get(['id_cliente', 'id_persona'])
+            ->map(fn ($c) => [
+                'id_cliente'      => $c->id_cliente,
+                'nombre_completo' => trim(
+                    $c->persona->nombre_completo . ' ' .
+                    $c->persona->apellido_paterno . ' ' .
+                    $c->persona->apellido_materno
+                ),
+            ]);
+
+        return response()->json(['data' => $clientes]);
+    }
+
+    /**
      * POST /api/agente/enrolar
      * Guarda (o actualiza) la plantilla biométrica de un dedo.
      */
