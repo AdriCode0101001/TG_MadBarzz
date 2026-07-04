@@ -70,6 +70,29 @@ class BiometriaApiTest extends TestCase
         return ['Authorization' => "Bearer {$plain}"];
     }
 
+    /**
+     * Crea una membresía para el cliente con la fecha_fin indicada
+     * (por defecto vigente: termina en 20 días).
+     */
+    private function crearMembresia(Cliente $cliente, ?string $fechaFin = null): void
+    {
+        $idMembresia = DB::table('membresias')->insertGetId([
+            'tipo_membresia' => 'Mensual',
+            'precio'         => 100,
+            'created_at'     => now(),
+            'updated_at'     => now(),
+        ]);
+
+        DB::table('membresia_cliente')->insert([
+            'id_cliente'   => $cliente->id_cliente,
+            'id_membresia' => $idMembresia,
+            'fecha_inicio' => now()->subDays(10)->toDateString(),
+            'fecha_fin'    => $fechaFin ?? now()->addDays(20)->toDateString(),
+            'created_at'   => now(),
+            'updated_at'   => now(),
+        ]);
+    }
+
     // ── 1. Token inválido es rechazado ────────────────────────────────────────
 
     public function test_token_invalido_devuelve_401(): void
@@ -241,6 +264,7 @@ class BiometriaApiTest extends TestCase
         $sede    = $this->crearSede();
         $this->crearAgentToken($sede);
         $cliente = $this->crearCliente($sede);
+        $this->crearMembresia($cliente); // vigente
 
         $payload = [
             'id_cliente' => $cliente->id_cliente,
@@ -263,6 +287,7 @@ class BiometriaApiTest extends TestCase
         $sede    = $this->crearSede();
         $this->crearAgentToken($sede);
         $cliente = $this->crearCliente($sede);
+        $this->crearMembresia($cliente); // vigente
 
         $payload = [
             'id_cliente' => $cliente->id_cliente,
@@ -322,6 +347,93 @@ class BiometriaApiTest extends TestCase
 
         $this->postJson('/api/agente/asistencia', $payload, $this->headers())
              ->assertStatus(403);
+    }
+
+    // ── 5. Regla de negocio: membresía vigente obligatoria ────────────────────
+
+    public function test_registrar_asistencia_rechaza_cliente_sin_membresia(): void
+    {
+        $sede    = $this->crearSede();
+        $this->crearAgentToken($sede);
+        $cliente = $this->crearCliente($sede); // sin ninguna membresía
+
+        $payload = [
+            'id_cliente' => $cliente->id_cliente,
+            'id_sede'    => $sede->id_sede,
+            'fecha_hora' => now()->toDateTimeString(),
+        ];
+
+        $this->postJson('/api/agente/asistencia', $payload, $this->headers())
+             ->assertStatus(403)
+             ->assertJsonFragment([
+                 'permitido' => false,
+                 'motivo'    => 'sin_membresia',
+                 'mensaje'   => 'No tienes una membresía activa. Pasa por recepción para adquirir una.',
+             ]);
+
+        $this->assertDatabaseCount('asistencias', 0);
+    }
+
+    public function test_registrar_asistencia_rechaza_membresia_vencida(): void
+    {
+        $sede    = $this->crearSede();
+        $this->crearAgentToken($sede);
+        $cliente = $this->crearCliente($sede);
+        $this->crearMembresia($cliente, now()->subDays(3)->toDateString()); // venció hace 3 días
+
+        $payload = [
+            'id_cliente' => $cliente->id_cliente,
+            'id_sede'    => $sede->id_sede,
+            'fecha_hora' => now()->toDateTimeString(),
+        ];
+
+        $this->postJson('/api/agente/asistencia', $payload, $this->headers())
+             ->assertStatus(403)
+             ->assertJsonFragment([
+                 'permitido' => false,
+                 'motivo'    => 'membresia_vencida',
+                 'mensaje'   => 'Tu membresía está vencida. Pasa por recepción para renovarla.',
+             ]);
+
+        $this->assertDatabaseCount('asistencias', 0);
+    }
+
+    public function test_registrar_asistencia_acepta_membresia_que_vence_hoy(): void
+    {
+        $sede    = $this->crearSede();
+        $this->crearAgentToken($sede);
+        $cliente = $this->crearCliente($sede);
+        $this->crearMembresia($cliente, now()->toDateString()); // fecha_fin = hoy → vigente
+
+        $payload = [
+            'id_cliente' => $cliente->id_cliente,
+            'id_sede'    => $sede->id_sede,
+            'fecha_hora' => now()->toDateTimeString(),
+        ];
+
+        $this->postJson('/api/agente/asistencia', $payload, $this->headers())
+             ->assertStatus(201);
+
+        $this->assertDatabaseCount('asistencias', 1);
+    }
+
+    public function test_registrar_asistencia_usa_membresia_mas_reciente(): void
+    {
+        $sede    = $this->crearSede();
+        $this->crearAgentToken($sede);
+        $cliente = $this->crearCliente($sede);
+        // Tuvo una vencida, pero renovó: la más reciente está vigente
+        $this->crearMembresia($cliente, now()->subMonths(2)->toDateString());
+        $this->crearMembresia($cliente, now()->addDays(25)->toDateString());
+
+        $payload = [
+            'id_cliente' => $cliente->id_cliente,
+            'id_sede'    => $sede->id_sede,
+            'fecha_hora' => now()->toDateTimeString(),
+        ];
+
+        $this->postJson('/api/agente/asistencia', $payload, $this->headers())
+             ->assertStatus(201);
     }
 
     public function test_registrar_asistencia_rechaza_cliente_inactivo(): void

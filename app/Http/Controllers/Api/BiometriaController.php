@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Asistencia;
 use App\Models\Cliente;
 use App\Models\Huella;
+use App\Models\MembresiaCliente;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class BiometriaController extends Controller
@@ -170,6 +172,35 @@ class BiometriaController extends Controller
                     'message' => 'El cliente no tiene acceso a esta sede.',
                 ], 403);
             }
+        }
+
+        // Regla de negocio: solo se registra asistencia con membresía vigente.
+        // La vigente es la más reciente cuya fecha_fin es hoy o futura.
+        $ultimaMembresia = MembresiaCliente::where('id_cliente', $idCliente)
+            ->orderByDesc('fecha_fin')
+            ->first();
+
+        if (!$ultimaMembresia) {
+            $mensaje = 'No tienes una membresía activa. Pasa por recepción para adquirir una.';
+            return response()->json([
+                'permitido' => false,
+                'motivo'    => 'sin_membresia',
+                'mensaje'   => $mensaje,
+                'message'   => $mensaje,
+            ], 403);
+        }
+
+        $vencida = Carbon::parse($ultimaMembresia->fecha_fin)->toDateString()
+                   < now()->toDateString();
+
+        if ($vencida) {
+            $mensaje = 'Tu membresía está vencida. Pasa por recepción para renovarla.';
+            return response()->json([
+                'permitido' => false,
+                'motivo'    => 'membresia_vencida',
+                'mensaje'   => $mensaje,
+                'message'   => $mensaje,
+            ], 403);
         }
 
         // Anti-duplicado
