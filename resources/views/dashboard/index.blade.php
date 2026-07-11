@@ -1,5 +1,9 @@
 @extends('layouts.private')
 
+@php $__isAdminDash = Auth::user()->rol->nombre === 'Administrador'; @endphp
+{{-- Marca el dashboard del ADMIN para el realce visual del modo claro (mb-skin-filament.css) --}}
+@section('body-class', $__isAdminDash ? 'mb-dash' : '')
+
 @section('contenido')
 
 @php
@@ -20,7 +24,7 @@
     $pctActivos = $totalCli > 0 ? round($cliActivos / $totalCli * 100) : 0;
     $hora       = now()->hour;
     $saludo     = $hora < 12 ? 'Buenos días' : ($hora < 19 ? 'Buenas tardes' : 'Buenas noches');
-    $adminNombre = Auth::user()?->persona?->nombre_completo ?? Auth::user()?->name;
+    $adminNombre = Auth::user()?->nombreCompleto() ?? Auth::user()?->name;
     $isAdmin     = Auth::user()->rol->nombre === 'Administrador';
 @endphp
 
@@ -69,6 +73,27 @@
         </div>
     </div>
 </div>
+
+{{-- ══ AVISO: QR de pago por vencer o vencido (solo Administrador) ══ --}}
+@if($isAdmin && (!$qrPago || $qrPago->requiereAviso()))
+<div class="col-12 mb-4">
+    <div class="alert {{ (!$qrPago || $qrPago->estaVencido()) ? 'alert-danger' : 'alert-warning' }} border-0 rounded-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <span>
+            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+            @if(!$qrPago)
+                No has configurado ningún QR de pago. Los cobros por QR no podrán mostrarlo a los clientes.
+            @elseif($qrPago->estaVencido())
+                El QR de pago está <strong>VENCIDO</strong> desde el {{ $qrPago->fecha_vencimiento->format('d/m/Y') }}.
+            @else
+                El QR de pago vence en <strong>{{ $qrPago->diasParaVencer() }} día(s)</strong> ({{ $qrPago->fecha_vencimiento->format('d/m/Y') }}).
+            @endif
+        </span>
+        <a href="{{ route('qr_pago.edit') }}" class="btn btn-sm btn-primary">
+            <i class="fa-solid fa-qrcode me-1"></i> {{ $qrPago ? 'Actualizar QR' : 'Configurar QR' }}
+        </a>
+    </div>
+</div>
+@endif
 
 {{-- ══ KPIs ══ --}}
 @php $kpiCol = $isAdmin ? 'col-xl-3 col-sm-6' : 'col-xl-6 col-sm-6'; @endphp

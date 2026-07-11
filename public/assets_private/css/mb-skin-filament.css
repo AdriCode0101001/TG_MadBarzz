@@ -1,0 +1,211 @@
+/* ============================================================================
+   MadBarzz · Piel "Filament" (mb-skin-filament.css)
+   ----------------------------------------------------------------------------
+   Paleta unificada con el panel Filament (/estadisticas): acentos índigo/violeta
+   y superficies neutras (zinc), en modo claro y oscuro.
+
+   SOLO VISUAL y SOLO se activa en las páginas cuyo <body> lleva la clase
+   .mb-skin (la asigna cada vista con @section('body-class', 'mb-skin')).
+   Para revertir una pantalla: quitarle esa línea. Para ajustar la paleta:
+   cambiar los tokens --mbf-* de aquí abajo.
+
+   El truco central: dentro de la piel se REMAPEA la marca de app-ui.css
+   (--mb-brand naranja → índigo), así todos los componentes existentes
+   (botones, paginación, avatares, focos, hovers) adoptan el acento nuevo
+   sin duplicar reglas.
+   ============================================================================ */
+
+/* ------------------------------------------------------------------ Tokens */
+body.mb-skin .content-body {
+    /* Acento (Filament indigo/violet) */
+    --mbf-primary:      #6366f1;   /* indigo-500 */
+    --mbf-primary-600:  #4f46e5;   /* indigo-600 */
+    --mbf-accent:       #8b5cf6;   /* violet-500 */
+    --mbf-primary-soft: rgba(99, 102, 241, .12);
+
+    /* Superficies — MODO CLARO (Filament light) */
+    --mbf-bg:         #f4f4f5;     /* zinc-100 */
+    --mbf-surface:    #ffffff;
+    --mbf-border:     #e4e4e7;     /* zinc-200 */
+    --mbf-text:       #18181b;     /* zinc-900 */
+    --mbf-text-muted: #71717a;     /* zinc-500 */
+    --mbf-shadow:     0 1px 3px rgba(0, 0, 0, .07), 0 1px 2px rgba(0, 0, 0, .05);
+
+    /* Remapeo de la marca de app-ui.css dentro de esta piel */
+    --mb-brand:     var(--mbf-primary);
+    --mb-brand-600: var(--mbf-primary-600);
+    --mb-brand-100: var(--mbf-primary-soft);
+
+    background-color: var(--mbf-bg) !important;
+    color: var(--mbf-text);
+}
+
+/* Superficies — MODO OSCURO (Filament dark) */
+body.mb-skin[data-theme-version="dark"] .content-body {
+    --mbf-bg:         #0a0a0b;     /* casi zinc-950 */
+    --mbf-surface:    #18181b;     /* zinc-900 */
+    --mbf-border:     #27272a;     /* zinc-800 */
+    --mbf-text:       #e4e4e7;     /* zinc-200 */
+    --mbf-text-muted: #a1a1aa;     /* zinc-400 */
+    --mbf-shadow:     0 1px 3px rgba(0, 0, 0, .5);
+}
+
+/* ------------------------------------------------------------------ Tipografía y enlaces */
+body.mb-skin .content-body h1,
+body.mb-skin .content-body h2,
+body.mb-skin .content-body h3,
+body.mb-skin .content-body h4,
+body.mb-skin .content-body h5,
+body.mb-skin .content-body h6 { color: var(--mbf-text); }
+
+body.mb-skin .content-body .text-muted { color: var(--mbf-text-muted) !important; }
+
+body.mb-skin .content-body a:not(.btn):not(.badge):not(.page-link):not(.mb-hero-btn) {
+    color: var(--mbf-primary);
+}
+body.mb-skin .content-body a:not(.btn):not(.badge):not(.page-link):not(.mb-hero-btn):hover {
+    color: var(--mbf-primary-600);
+}
+
+/* ------------------------------------------------------------------ Tarjetas */
+body.mb-skin .content-body .card {
+    background-color: var(--mbf-surface);
+    border: 1px solid var(--mbf-border) !important;
+    box-shadow: var(--mbf-shadow);
+    color: var(--mbf-text);
+}
+body.mb-skin .content-body .card:hover { box-shadow: var(--mbf-shadow); }
+body.mb-skin .content-body .card .card-header {
+    border-bottom: 1px solid var(--mbf-border);
+    color: var(--mbf-text);
+}
+body.mb-skin .content-body .card .card-footer {
+    background: transparent;
+    border-top: 1px solid var(--mbf-border);
+}
+
+/* ------------------------------------------------------------------ Tablas */
+body.mb-skin .content-body .table > thead > tr > th {
+    color: var(--mbf-text-muted);
+    opacity: 1;
+    border-bottom-color: var(--mbf-border) !important;
+}
+body.mb-skin .content-body .table > tbody > tr > td {
+    color: var(--mbf-text);
+    border-color: var(--mbf-border) !important;
+}
+body.mb-skin .content-body .mb-sticky-head th {
+    background-color: var(--mbf-surface);
+}
+/* riel de scroll superior: naranja → índigo */
+body.mb-skin .content-body .mb-top-scroll-static::-webkit-scrollbar-thumb,
+body.mb-skin .content-body .mb-top-scroll-fixed::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, .55);
+}
+
+/* ------------------------------------------------------------------ Botones */
+body.mb-skin .content-body .btn-primary {
+    box-shadow: 0 4px 14px rgba(99, 102, 241, .30);
+}
+body.mb-skin .content-body .btn-outline-primary {
+    color: var(--mbf-primary);
+    border-color: var(--mbf-primary);
+    background: transparent;
+}
+body.mb-skin .content-body .btn-outline-primary:hover {
+    background: var(--mbf-primary);
+    border-color: var(--mbf-primary);
+    color: #fff;
+}
+body.mb-skin .content-body .btn-outline-secondary {
+    color: var(--mbf-text-muted);
+    border-color: var(--mbf-border);
+    background: transparent;
+}
+body.mb-skin .content-body .btn-outline-secondary:hover {
+    background: var(--mbf-primary-soft);
+    border-color: var(--mbf-primary);
+    color: var(--mbf-primary);
+}
+
+/* ------------------------------------------------------------------ Formularios */
+body.mb-skin .content-body .form-control,
+body.mb-skin .content-body .form-select {
+    background-color: var(--mbf-surface);
+    border-color: var(--mbf-border);
+    color: var(--mbf-text);
+}
+body.mb-skin .content-body .form-control::placeholder { color: var(--mbf-text-muted); opacity: .8; }
+
+/* ------------------------------------------------------------------ Paginación */
+body.mb-skin .content-body .pagination .page-link { color: var(--mbf-text); }
+body.mb-skin .content-body .pagination .page-item.active .page-link {
+    box-shadow: 0 4px 12px rgba(99, 102, 241, .30);
+}
+
+/* ------------------------------------------------------------------ Detalles varios */
+body.mb-skin .content-body .mb-empty { color: var(--mbf-text-muted); }
+body.mb-skin .content-body .mb-progress-bar { background: var(--mbf-primary-soft); }
+body.mb-skin .content-body .badge.bg-secondary {
+    background: var(--mbf-primary-soft) !important;
+    color: var(--mbf-primary) !important;
+}
+
+/* ============================================================================
+   Dashboard admin · HERO (banner de bienvenida)
+   ----------------------------------------------------------------------------
+   El banner tiene fondo OSCURO en AMBOS modos, así que su texto SIEMPRE debe
+   ser claro. La regla de tipografía de arriba (h1..h6 → --mbf-text) lo pintaba
+   oscuro en modo claro (bajo contraste). Aquí se reafirma el color claro con
+   mayor especificidad (3 clases > la regla del h2), sin tocar la lógica.
+   ============================================================================ */
+body.mb-skin .content-body .mb-hero-admin__title   { color: #f1f5f9; }
+body.mb-skin .content-body .mb-hero-admin__sub     { color: #94a3b8; }
+body.mb-skin .content-body .mb-hero-admin__eyebrow { color: var(--mbf-primary); opacity: .9; }
+body.mb-skin .content-body .mb-hero-stat__num      { color: #f1f5f9; }
+body.mb-skin .content-body .mb-hero-stat__lbl      { color: #94a3b8; }
+
+/* ============================================================================
+   Dashboard admin · realce del MODO CLARO  (solo body.mb-dash, solo claro)
+   ----------------------------------------------------------------------------
+   En claro el tablero se veía muy blanco y plano. Aquí se le da vida con
+   fondos sutiles de marca (índigo/violeta, los mismos acentos que ya se usan)
+   y algo de separación entre secciones, SIN tocar el modo oscuro
+   (:not([data-theme-version="dark"])) ni las tarjetas de color (KPIs, badges).
+   Todo derivado de la marca del sistema; sin colores sueltos nuevos.
+   ============================================================================ */
+body.mb-dash:not([data-theme-version="dark"]) .content-body {
+    /* Tintes claros derivados del acento de marca (índigo/violeta) */
+    --mbf-dash-header-tint: rgba(99, 102, 241, .05);
+    --mbf-dash-card-bot:    #fbfbfe;   /* blanco con un velo índigo casi imperceptible */
+    --mbf-dash-border:      #e9e8f6;   /* borde con tinte índigo, un paso sobre zinc-200 */
+
+    /* Lienzo con dos orbes de marca muy suaves, en la línea del hero */
+    background:
+        radial-gradient(1100px 420px at 100% -6%, rgba(99, 102, 241, .07), transparent 60%),
+        radial-gradient(880px 380px at -6% 6%,   rgba(139, 92, 246, .05), transparent 55%),
+        var(--mbf-bg) !important;
+}
+
+/* Tarjetas: degradado blanquísimo + sombra y borde con tinte de marca */
+body.mb-dash:not([data-theme-version="dark"]) .content-body .card {
+    background: linear-gradient(180deg, var(--mbf-surface) 0%, var(--mbf-dash-card-bot) 100%);
+    border-color: var(--mbf-dash-border) !important;
+    box-shadow: 0 2px 10px rgba(79, 70, 229, .06), 0 1px 2px rgba(0, 0, 0, .04);
+}
+
+/* Cabeceras de tarjeta: velo de color para separar de su cuerpo */
+body.mb-dash:not([data-theme-version="dark"]) .content-body .card .card-header {
+    background: linear-gradient(90deg, var(--mbf-dash-header-tint), transparent 75%);
+    border-bottom-color: var(--mbf-dash-border);
+}
+
+/* Encabezado fijo de tablas: leve tinte en vez de blanco puro */
+body.mb-dash:not([data-theme-version="dark"]) .content-body .mb-sticky-head th {
+    background: #f6f6fc;
+}
+
+/* Fila de tabla al pasar el cursor: realce índigo suave */
+body.mb-dash:not([data-theme-version="dark"]) .content-body .table-hover > tbody > tr:hover > td {
+    background: var(--mbf-primary-soft);
+}
