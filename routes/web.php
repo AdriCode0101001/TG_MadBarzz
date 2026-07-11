@@ -17,12 +17,15 @@ use App\Http\Controllers\EntrenadorController;
 use App\Http\Controllers\RecepcionistaController;
 use App\Http\Controllers\AdministradorController;
 use App\Http\Controllers\AsistenciaController;
+use App\Http\Controllers\AsistenciaQrController;
 use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\PagoController;
 use App\Http\Controllers\RutinaController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\PromocionController;
 use App\Http\Controllers\ClientePortalController;
+use App\Http\Controllers\DescuentoController;
+use App\Http\Controllers\QrPagoController;
 
 // -----------------------------------------------------------------------
 // Página de inicio pública
@@ -79,32 +82,74 @@ Route::middleware(['auth', 'role:Administrador'])->group(function () {
     Route::resource('personas',        PersonaController::class);
     Route::resource('administradores', AdministradorController::class);
     Route::resource('promociones',     PromocionController::class);
+
+    // GESTIÓN del catálogo (crear/editar/borrar tipos de membresía y
+    // descuentos): SOLO Admin. El listado (index) es de solo lectura
+    // para todo el personal (ver grupo de los tres roles más abajo).
+    Route::resource('membresias', MembresiaController::class)->except(['index']);
+    Route::resource('descuentos', DescuentoController::class)->except(['index', 'show']);
+
+    // Borrar personal: solo Admin (Recepcionista solo ve/crea/edita)
+    Route::delete('entrenadores/{id}',   [EntrenadorController::class,    'destroy'])->name('entrenadores.destroy');
+    Route::delete('recepcionistas/{id}', [RecepcionistaController::class, 'destroy'])->name('recepcionistas.destroy');
+
+    // QR de pago único del gimnasio: solo el Administrador lo configura/reemplaza
+    Route::get('configuracion/qr-pago',  [QrPagoController::class, 'edit'])  ->name('qr_pago.edit');
+    Route::post('configuracion/qr-pago', [QrPagoController::class, 'update'])->name('qr_pago.update');
 });
 
 // -----------------------------------------------------------------------
 // Administrador + Recepcionista
 // -----------------------------------------------------------------------
 Route::middleware(['auth', 'role:Administrador,Recepcionista'])->group(function () {
-    Route::resource('clientes',          ClienteController::class);
-    Route::resource('membresias',        MembresiaController::class);
-    Route::resource('membresia_cliente', MembresiaClienteController::class);
-    Route::resource('recepcionistas',    RecepcionistaController::class);
-    Route::resource('notificaciones',    NotificacionController::class);
+    // Gestión de personal (ver/crear/editar); el borrado es solo del Admin
+    Route::resource('entrenadores',   EntrenadorController::class)->except(['destroy']);
+    Route::resource('recepcionistas', RecepcionistaController::class)->except(['destroy']);
 
+    Route::resource('notificaciones', NotificacionController::class);
     Route::get('/notificaciones/enviar',  [NotificacionController::class, 'showForm'])    ->name('notificaciones.form');
     Route::post('/notificaciones/enviar', [NotificacionController::class, 'sendWhatsapp'])->name('notificaciones.sendWhatsapp');
 
-    Route::resource('asistencias', AsistenciaController::class);
-    Route::resource('pagos',       PagoController::class);
+    // El Entrenador no borra clientes ni edita/borra pagos (solo registra)
+    Route::delete('clientes/{cliente}', [ClienteController::class, 'destroy'])->name('clientes.destroy');
+    Route::resource('pagos', PagoController::class)->only(['edit', 'update', 'destroy']);
 });
 
 // -----------------------------------------------------------------------
-// Administrador + Entrenador
+// Administrador + Recepcionista + Entrenador
 // -----------------------------------------------------------------------
-Route::middleware(['auth', 'role:Administrador,Entrenador'])->group(function () {
-    Route::resource('entrenadores', EntrenadorController::class);
-    Route::resource('rutinas',      RutinaController::class);
+Route::middleware(['auth', 'role:Administrador,Recepcionista,Entrenador'])->group(function () {
+    Route::get('asistencias-qr',  [AsistenciaQrController::class, 'index'])    ->name('asistencias.qr');
+    Route::post('asistencias-qr', [AsistenciaQrController::class, 'registrar'])->name('asistencias.qr.registrar');
+
+    // Imagen del QR de pago (disco privado): la ven quienes cobran (Registrar Pago)
+    Route::get('qr-pago/imagen', [QrPagoController::class, 'imagen'])->name('qr_pago.imagen');
+
+    // Membresías de Clientes: SOLO listado/edición/eliminación. Asignar una
+    // membresía nueva ya no existe como flujo suelto — la ÚNICA forma de
+    // dársela a un cliente es "Registrar Pago" (crea la asignación y su pago
+    // vinculado en un solo paso, dejándola activa de inmediato).
+    // 'show' también se excluye: nunca tuvo vista propia (nada la enlaza) y,
+    // sin 'create' registrada como ruta estática, /membresia_cliente/create
+    // caería en el comodín {membresia_cliente} de 'show' y rompería.
+    Route::resource('membresia_cliente', MembresiaClienteController::class)->except(['create', 'store', 'show']);
+
+    // Clientes: los tres roles ven/crean/editan (borrar: Admin + Recepcionista)
+    Route::resource('clientes', ClienteController::class)->except(['destroy']);
+
+    Route::resource('asistencias', AsistenciaController::class);
+
+    // Pagos: los tres roles registran (editar/borrar: Admin + Recepcionista)
+    Route::resource('pagos', PagoController::class)->only(['index', 'create', 'store', 'show']);
+    // Comprobante de pago (imagen privada): solo personal, nunca URL pública
+    Route::get('pagos/{pago}/comprobante', [PagoController::class, 'comprobante'])->name('pagos.comprobante');
+
+    Route::resource('rutinas', RutinaController::class);
     Route::get('/rutinas/ver/{id}', [RutinaController::class, 'verRutina'])->name('rutinas.ver');
+
+    // Catálogo en SOLO LECTURA para todo el personal (gestión: solo Admin)
+    Route::get('membresias', [MembresiaController::class, 'index'])->name('membresias.index');
+    Route::get('descuentos', [DescuentoController::class, 'index'])->name('descuentos.index');
 });
 
 // -----------------------------------------------------------------------
@@ -113,6 +158,11 @@ Route::middleware(['auth', 'role:Administrador,Entrenador'])->group(function () 
 Route::middleware(['auth', 'role:Cliente'])->group(function () {
     Route::get('mis-asistencias', [AsistenciaController::class, 'misAsistencias'])->name('asistencias.mis');
     Route::get('mis-pagos',       [PagoController::class,       'misPagos'])      ->name('pagos.mis-pagos');
+    Route::get('mis-pagos/{pago}/comprobante', [PagoController::class, 'miComprobante'])->name('pagos.mis.comprobante');
+    Route::get('mi-membresia',    [ClientePortalController::class, 'miMembresia'])->name('portal.membresia');
+    Route::get('mis-rutinas',     [ClientePortalController::class, 'misRutinas']) ->name('portal.rutinas');
+
+    Route::get('/portal/carnet/descargar', [ClientePortalController::class, 'descargarCarnet'])->name('portal.carnet.descargar');
 
     Route::post('/portal/telegram/vincular',      [ClientePortalController::class, 'vincularTelegram'])   ->name('portal.telegram.vincular');
     Route::delete('/portal/telegram/desvincular', [ClientePortalController::class, 'desvincularTelegram'])->name('portal.telegram.desvincular');

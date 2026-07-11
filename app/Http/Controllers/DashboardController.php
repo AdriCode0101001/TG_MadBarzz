@@ -7,26 +7,32 @@ use App\Models\Cliente;
 use App\Models\Entrenador;
 use App\Models\Asistencia;
 use App\Models\Pago;
+use App\Models\QrPago;
 use App\Models\Rutina;
+use App\Services\CarnetService;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
-    // Dashboard general (administrador)
+    // Dashboard general (administrador, recepcionista, entrenador)
     public function index()
     {
         // Se cargan TODOS (activos e inactivos) para poder filtrarlos en la vista.
         $clientes = Cliente::with(['persona', 'user'])->get();
         $entrenadores = Entrenador::with('persona')->get();
 
-        return view('dashboard.index', compact('clientes', 'entrenadores'));
+        // Aviso de vencimiento del QR de pago: solo relevante para el Admin
+        // (único que puede configurarlo), se muestra en su dashboard.
+        $qrPago = QrPago::actual();
+
+        return view('dashboard.index', compact('clientes', 'entrenadores', 'qrPago'));
     }
 
     // Dashboard para cliente
-    public function cliente()
+    public function cliente(CarnetService $carnet)
     {
-        $cliente = Cliente::with(['membresias', 'persona'])
+        $cliente = Cliente::with(['membresias', 'persona', 'sede'])
             ->where('id_usuario', Auth::id())
             ->first();
 
@@ -34,9 +40,11 @@ class DashboardController extends Controller
             return redirect()->back()->with('error', 'No tienes un perfil de cliente asociado.');
         }
 
-        // Membresía activa más reciente
+        // Membresía activa más reciente: vigente por fecha Y con su pago
+        // registrado (estado = activa). Sin pago no cuenta como activa.
         $membresia = $cliente->membresias()
             ->wherePivot('fecha_fin', '>=', now())
+            ->wherePivot('estado', 'activa')
             ->orderByPivot('fecha_fin', 'desc')
             ->first();
 
@@ -48,9 +56,17 @@ class DashboardController extends Controller
             ->orderBy('fecha_pago', 'desc')
             ->get();
 
-        $rutinas = Rutina::with('entrenador.persona')->get();
+        // Las rutinas solo se muestran con membresía vigente (mismo criterio
+        // que el control de asistencia: Cliente::tieneMembresiaVigente()).
+        $tieneMembresiaVigente = $cliente->tieneMembresiaVigente();
 
-        return view('dashboard.cliente', compact('cliente', 'membresia', 'asistencias', 'pagos', 'rutinas'));
+        $rutinas = $tieneMembresiaVigente
+            ? Rutina::with('entrenador.persona')->get()
+            : collect();
+
+        $qrCarnet = $cliente->qr_token ? $carnet->qrDataUri($cliente, 300) : null;
+
+        return view('dashboard.cliente', compact('cliente', 'membresia', 'asistencias', 'pagos', 'rutinas', 'qrCarnet', 'tieneMembresiaVigente'));
     }
 
     // Dashboard para entrenador

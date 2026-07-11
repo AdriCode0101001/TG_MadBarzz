@@ -17,6 +17,9 @@
     --mb-info: #2f80ed;
     --mb-radius: 14px;
     --mb-radius-sm: 10px;
+    /* Tamaño de los iconos de los SUBELEMENTOS del sidebar (los hijos de un
+       grupo desplegable). El icono del grupo padre no se toca. Ajustar aquí. */
+    --mb-menu-subicon: .7rem;
     --mb-shadow: 0 4px 24px rgba(0, 0, 0, .08);
     --mb-shadow-hover: 0 10px 34px rgba(0, 0, 0, .14);
     --mb-transition: .18s cubic-bezier(.4, 0, .2, 1);
@@ -473,6 +476,18 @@ form select:not([class]):focus {
 .mb-mini-stats { display: flex; flex-wrap: wrap; gap: .6rem .9rem; font-size: .8rem; margin-top: .6rem; }
 .mb-mini-stat  { display: flex; align-items: center; gap: .35rem; opacity: .8; }
 
+
+/* ------------------------------------------------------------------ Sidebar: jerarquía de iconos */
+/* Los iconos de los subelementos (dentro de la <ul> desplegable de un grupo)
+   se ven más pequeños que el icono del grupo padre. El ancho fijo mantiene
+   el texto alineado aunque el icono sea más chico. */
+.deznav .metismenu li ul a i {
+    font-size: var(--mb-menu-subicon);
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    vertical-align: middle;
+}
 
 /* ------------------------------------------------------------------ Sidebar: flecha de submenú */
 .deznav .metismenu .has-arrow:after { display: none !important; }

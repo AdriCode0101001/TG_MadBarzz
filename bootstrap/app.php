@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AgentTokenMiddleware;
 use App\Http\Middleware\EnsureRole;
+use App\Http\Middleware\NormalizarTelefono;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -21,6 +22,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role'        => EnsureRole::class,
             'agent.token' => AgentTokenMiddleware::class,
+        ]);
+
+        // Arma `telefono` desde los campos del selector de país en el servidor
+        // (los formularios de personas/clientes/personal ya no dependen de JS)
+        $middleware->web(append: [
+            NormalizarTelefono::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

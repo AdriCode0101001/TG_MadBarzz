@@ -60,13 +60,16 @@
     <link href="{{ asset('assets_private/vendor/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet">
     {{-- Hoja de estilo propia que moderniza tarjetas, tablas, formularios, etc. --}}
     <link href="{{ asset('assets_private/css/app-ui.css') }}" rel="stylesheet">
+    {{-- Piel "Filament" (paleta índigo/zinc): solo actúa en vistas con @section('body-class', 'mb-skin') --}}
+    <link href="{{ asset('assets_private/css/mb-skin-filament.css') }}" rel="stylesheet">
     @stack('styles')
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&family=Roboto:wght@100;300;400;500;700;900&display=swap"
         rel="stylesheet">
 </head>
 
-<body>
+{{-- La piel "Filament" (mb-skin) aplica a todo el sistema privado; ver mb-skin-filament.css --}}
+<body class="mb-skin @yield('body-class')">
     <script>
         // Aplica el tema guardado inmediatamente (evita parpadeo y conserva la elección entre páginas)
         (function () {
@@ -642,10 +645,15 @@
                                 request()->routeIs('administradores.*')              => ['fa-solid fa-user-shield',       'Administradores'],
                                 request()->routeIs('pagos.*')                        => ['fa-solid fa-money-bill-wave',   'Pagos'],
                                 request()->routeIs('rutinas.*')                      => ['fa-solid fa-list-check',        'Rutinas'],
+                                request()->routeIs('asistencias.qr')                 => ['fa-solid fa-qrcode',            'Registrar Asistencia por QR'],
                                 request()->routeIs('asistencias.*')                  => ['fa-solid fa-calendar-check',   'Asistencias'],
                                 request()->routeIs('reportes.*')                     => ['fa-solid fa-chart-bar',         'Reportes'],
                                 request()->routeIs('notificaciones.*')               => ['fa-solid fa-bell',              'Notificaciones'],
                                 request()->routeIs('promociones.*')                  => ['fa-solid fa-tags',              'Promociones'],
+                                request()->routeIs('descuentos.*')                   => ['fa-solid fa-tags',              'Descuentos'],
+                                request()->routeIs('qr_pago.edit')                   => ['fa-solid fa-qrcode',            'QR de Pago'],
+                                request()->routeIs('portal.membresia')               => ['fa-solid fa-id-badge',          'Mi Membresía'],
+                                request()->routeIs('portal.rutinas')                 => ['fa-solid fa-dumbbell',          'Mis Rutinas'],
                                 request()->routeIs('profile.*')                      => ['fa-solid fa-circle-user',       'Mi Perfil'],
                                 default                                              => ['fa-solid fa-gauge-high',        'Panel de Control'],
                             };
@@ -680,7 +688,8 @@
                                     <img src="{{ asset('assets_private/images/profile/17.jpg') }}" width="20" alt="">
                                     <div class="header-info">
                                         <span class="text-black">
-                                            <strong>{{ Auth::user()?->persona?->nombre_completo ?? Auth::user()?->name }}</strong>
+                                            {{-- Aquí se muestra el NOMBRE DE USUARIO (users.name), para todos los roles --}}
+                                            <strong>{{ Auth::user()->name }}</strong>
                                         </span>
                                         <p class="fs-12 mb-0">{{ Auth::user()->rol->nombre ?? 'Usuario' }}</p>
                                     </div>
@@ -688,7 +697,8 @@
                                 <div id="mbProfileMenu" style="display:none;position:fixed;right:0;top:90px;z-index:99999;min-width:200px;background:#222327;border:1px solid #333a54;border-radius:.5rem;box-shadow:0 4px 24px rgba(0,0,0,.4);padding:.5rem 0;">
 
                                     @auth
-                                        <a href="{{ route('users.edit', Auth::user()?->id) }}" class="dropdown-item ai-icon">
+                                        {{-- El Admin edita desde el módulo de usuarios; los demás roles editan su propio perfil (incluido su username) --}}
+                                        <a href="{{ Auth::user()->hasRole('Administrador') ? route('users.edit', Auth::user()->id) : route('profile.edit') }}" class="dropdown-item ai-icon">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="text-primary" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                                                 <circle cx="12" cy="7" r="4"></circle>
@@ -756,9 +766,9 @@
                                 <i class="fa-solid fa-chevron-right mb-menu-arr"></i>
                             </a>
                             <ul aria-expanded="false">
-                                <li><a href="{{ route('roles.index') }}">Roles</a></li>
-                                <li><a href="{{ route('users.index') }}">Usuarios del Sistema</a></li>
-                                <li><a href="{{ route('personas.index') }}">Personas</a></li>
+                                <li><a href="{{ route('roles.index') }}"><i class="fa-solid fa-shield-alt me-2"></i>Roles</a></li>
+                                <li><a href="{{ route('users.index') }}"><i class="fa-solid fa-users-gear me-2"></i>Usuarios del Sistema</a></li>
+                                <li><a href="{{ route('personas.index') }}"><i class="fa-solid fa-address-card me-2"></i>Personas</a></li>
                             </ul>
                         </li>
                     @endif
@@ -773,19 +783,24 @@
                             </a>
                             <ul aria-expanded="false">
                                 @if ($userRol === 'Cliente')
-                                    <li><a href="{{ route('clientes.show', Auth::user()->id) }}">Mi Membresía</a></li>
+                                    <li><a href="{{ route('portal.membresia') }}"><i class="fa-solid fa-id-badge me-2"></i>Mi Membresía</a></li>
                                 @else
-                                    <li><a href="{{ route('clientes.index') }}">Clientes</a></li>
-                                    <li><a href="{{ route('membresias.index') }}">Membresías</a></li>
-                                    <li><a href="{{ route('membresia_cliente.index') }}">Membresías de Clientes</a>
+                                    <li><a href="{{ route('clientes.index') }}"><i class="fa-solid fa-id-card me-2"></i>Clientes</a></li>
+                                    <li><a href="{{ route('membresias.index') }}"><i class="fa-solid fa-medal me-2"></i>Membresías</a></li>
+                                    <li><a href="{{ route('membresia_cliente.index') }}"><i class="fa-solid fa-id-badge me-2"></i>Membresías de Clientes</a>
                                     </li>
+                                    {{-- Catálogo visible para todo el personal (gestión solo Admin) --}}
+                                    <li><a href="{{ route('descuentos.index') }}"><i class="fa-solid fa-tags me-2"></i>Descuentos</a></li>
+                                    @if ($userRol === 'Administrador')
+                                        <li><a href="{{ route('qr_pago.edit') }}"><i class="fa-solid fa-qrcode me-2"></i>QR de Pago</a></li>
+                                    @endif
                                 @endif
                             </ul>
                         </li>
                     @endif
 
-                    @if (in_array($userRol, ['Administrador', 'Entrenador', 'Recepcionista']))
-                        <!-- Personal - Solo para Administrador, Entrenador y Recepcionista -->
+                    @if (in_array($userRol, ['Administrador', 'Recepcionista']))
+                        <!-- Personal - Solo Administrador y Recepcionista (el Entrenador no gestiona personal) -->
                         <li class="has-arrow">
                             <a href="javascript:void()">
                                 <i class="fas fa-users"></i>
@@ -824,23 +839,24 @@
                             </a>
                             <ul aria-expanded="false">
                                 @if ($userRol === 'Cliente')
-                                    <li><a href="{{ route('asistencias.mis') }}">Mis Asistencias</a></li>
-                                    <li><a href="{{ route('pagos.mis-pagos') }}">Mis Pagos</a></li>
-                                    <li><a href="{{ route('rutinas.show', Auth::user()->id) }}">Mi Rutina</a></li>
+                                    <li><a href="{{ route('asistencias.mis') }}"><i class="fa-solid fa-calendar-check me-2"></i>Mis Asistencias</a></li>
+                                    <li><a href="{{ route('pagos.mis-pagos') }}"><i class="fa-solid fa-money-bill-wave me-2"></i>Mis Pagos</a></li>
+                                    <li><a href="{{ route('portal.rutinas') }}"><i class="fa-solid fa-dumbbell me-2"></i>Mis Rutinas</a></li>
                                 @else
+                                    <li><a href="{{ route('asistencias.qr') }}"><i class="fa-solid fa-qrcode me-2"></i>Registrar Asistencia (QR)</a></li>
                                     <!--  <li><a href="{{ route('asistencias.index') }}">Asistencias</a></li> -->
                                     @if (in_array($userRol, ['Administrador', 'Recepcionista']))
                                         <li><a href="{{ route('notificaciones.index') }}"><i class="fa-solid fa-bell me-2"></i>Notificaciones</a></li>
                                     @endif
-                                    <li><a href="{{ route('pagos.index') }}">Pagos</a></li>
-                                    <li><a href="{{ route('rutinas.index') }}">Rutinas</a></li>
+                                    <li><a href="{{ route('pagos.index') }}"><i class="fa-solid fa-money-bill-wave me-2"></i>Pagos</a></li>
+                                    <li><a href="{{ route('rutinas.index') }}"><i class="fa-solid fa-list-check me-2"></i>Rutinas</a></li>
                                 @endif
                             </ul>
                         </li>
                     @endif
 
-                    @if (in_array($userRol, ['Administrador', 'Entrenador', 'Recepcionista']))
-                        <!-- Reportes - Solo para Administrador, Entrenador y Recepcionista -->
+                    @if ($userRol === 'Administrador')
+                        <!-- Reportes - Solo Administrador (las rutas de reportes son solo de Admin) -->
                         <li class="has-arrow">
                             <a href="javascript:void()">
                                 <i class="fas fa-chart-bar"></i>
@@ -848,12 +864,15 @@
                                 <i class="fa-solid fa-chevron-right mb-menu-arr"></i>
                             </a>
                             <ul aria-expanded="false">
-                                <li><a href="{{ route('reportes.clientes.estado') }}">Clientes Activos/Inactivos</a>
+                                @if ($userRol === 'Administrador')
+                                    <li><a href="{{ url('/estadisticas') }}"><i class="fa-solid fa-chart-pie me-2"></i>Panel de Estadísticas</a></li>
+                                @endif
+                                <li><a href="{{ route('reportes.clientes.estado') }}"><i class="fa-solid fa-user-check me-2"></i>Clientes Activos/Inactivos</a>
                                 </li>
-                                <li><a href="{{ route('reportes.clientes.nuevos') }}">Clientes Nuevos del Mes</a></li>
-                                <li><a href="{{ route('reportes.clientes.membresia_vencida') }}">Clientes Membresía
+                                <li><a href="{{ route('reportes.clientes.nuevos') }}"><i class="fa-solid fa-user-plus me-2"></i>Clientes Nuevos del Mes</a></li>
+                                <li><a href="{{ route('reportes.clientes.membresia_vencida') }}"><i class="fa-solid fa-user-clock me-2"></i>Clientes Membresía
                                         Vencida</a></li>
-                                <li><a href="{{ route('reportes.pagos.mes') }}">Pagos por Mes</a></li>
+                                <li><a href="{{ route('reportes.pagos.mes') }}"><i class="fa-solid fa-file-invoice-dollar me-2"></i>Pagos por Mes</a></li>
                             </ul>
                         </li>
                     @endif
@@ -1071,7 +1090,14 @@
             error:   @json(session('error')),
             warning: @json(session('warning')),
             info:    @json(session('info')),
-            status:  @json(session('status')),
+            @php
+                $mbStatusTexto = match (session('status')) {
+                    'profile-updated'  => 'Perfil actualizado correctamente.',
+                    'password-updated' => 'Contraseña actualizada correctamente.',
+                    default            => session('status'),
+                };
+            @endphp
+            status:  @json($mbStatusTexto),
             errors:  @json($errors->all())
         };
     </script>
