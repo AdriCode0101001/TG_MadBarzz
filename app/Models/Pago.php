@@ -26,6 +26,7 @@ class Pago extends Model
     protected $fillable = [
         'id_cliente',
         'id_membresia',
+        'id_membresia_cliente',
         'monto',
         'fecha_pago',
         'metodo_pago',
@@ -45,5 +46,14 @@ protected $casts = [
     public function membresia()
     {
         return $this->belongsTo(Membresia::class, 'id_membresia');
+    }
+
+    /**
+     * La asignación (membresia_cliente) concreta que este pago activó.
+     * Si se elimina el pago, esa asignación vuelve a pendiente_pago.
+     */
+    public function membresiaCliente()
+    {
+        return $this->belongsTo(MembresiaCliente::class, 'id_membresia_cliente');
     }
 }

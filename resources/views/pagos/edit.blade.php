@@ -35,9 +35,9 @@
                                 <select name="id_cliente" id="id_cliente" class="form-control" required>
                                     <option value="">Seleccione un cliente</option>
                                     @foreach($clientes as $cliente)
-                                        <option value="{{ $cliente->id_cliente }}" 
+                                        <option value="{{ $cliente->id_cliente }}"
                                             {{ $pago->id_cliente == $cliente->id_cliente ? 'selected' : '' }}>
-                                            {{ $cliente->persona->nombre_completo }}
+                                            {{ trim(($cliente->persona->nombre_completo ?? '') . ' ' . ($cliente->persona->apellido_paterno ?? '') . ' ' . ($cliente->persona->apellido_materno ?? '')) }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -63,18 +63,22 @@
                                 <input type="number" step="0.01" name="monto" id="monto" class="form-control" value="{{ $pago->monto }}" required>
                             </div>
 
+                            {{-- La fecha del pago no se edita: se conserva la del registro --}}
                             <div class="col-md-6">
-                                <label for="fecha_pago" class="form-label fw-bold text-dark dark-text-white">Fecha de pago</label>
-                                <input type="date" name="fecha_pago" id="fecha_pago" class="form-control" value="{{ $pago->fecha_pago }}" required>
+                                <label class="form-label fw-bold text-dark dark-text-white">Fecha de pago (del registro)</label>
+                                <input type="text" class="form-control" value="{{ \Carbon\Carbon::parse($pago->fecha_pago)->format('d/m/Y') }}" readonly disabled>
                             </div>
 
+                            {{-- Método de pago: solo Efectivo y QR --}}
                             <div class="col-md-6">
                                 <label for="metodo_pago" class="form-label fw-bold text-dark dark-text-white">Método de pago</label>
                                 <select name="metodo_pago" id="metodo_pago" class="form-control" required>
                                     <option value="efectivo" {{ $pago->metodo_pago == 'efectivo' ? 'selected' : '' }}>Efectivo</option>
-                                    <option value="transferencia" {{ $pago->metodo_pago == 'transferencia' ? 'selected' : '' }}>Transferencia</option>
                                     <option value="QR" {{ $pago->metodo_pago == 'QR' ? 'selected' : '' }}>QR</option>
                                 </select>
+                                @if($pago->metodo_pago == 'transferencia')
+                                    <small class="text-muted">Este pago histórico fue por transferencia; al guardar deberás elegir Efectivo o QR.</small>
+                                @endif
                             </div>
 
                             <div class="col-md-6">
@@ -82,7 +86,7 @@
                                 <textarea name="observaciones" id="observaciones" class="form-control">{{ $pago->observaciones }}</textarea>
                             </div>
 
-                            <div id="qrSection" style="{{ ($pago->metodo_pago == 'QR' || $pago->metodo_pago == 'transferencia') ? '' : 'display:none;' }}">
+                            <div id="qrSection" style="{{ ($pago->metodo_pago == 'QR' || $pago->metodo_pago == 'transferencia' || $pago->imagen_qr) ? '' : 'display:none;' }}">
                                 <div class="col-md-12 text-center">
                                     <label class="form-label fw-bold text-dark dark-text-white">QR de pago (referencia)</label><br>
                                     <img src="{{ asset('assets/images/QR0994.jpg') }}" alt="QR de pago" style="max-width: 300px; margin-bottom: 20px;">
@@ -94,8 +98,11 @@
                                     
                                     @if($pago->imagen_qr)
                                         <div class="mt-3">
-                                            <p class="fw-bold">Imagen actual:</p>
-                                            <img src="{{ asset('storage/' . $pago->imagen_qr) }}" alt="Imagen QR actual" style="max-width: 300px; border: 1px solid #ccc; padding: 5px;">
+                                            <p class="fw-bold">Comprobante actual:</p>
+                                            {{-- Servido por ruta protegida por rol (almacenamiento privado) --}}
+                                            <a href="{{ route('pagos.comprobante', $pago->id_pago) }}" target="_blank">
+                                                <img src="{{ route('pagos.comprobante', $pago->id_pago) }}" alt="Comprobante del pago" style="max-width: 300px; border: 1px solid #ccc; padding: 5px;">
+                                            </a>
                                         </div>
                                     @endif
 
@@ -131,7 +138,7 @@ document.getElementById('id_membresia').addEventListener('change', function() {
 
 document.getElementById('metodo_pago').addEventListener('change', function() {
     const qrSection = document.getElementById('qrSection');
-    if (this.value === 'QR' || this.value === 'transferencia') {
+    if (this.value === 'QR') {
         qrSection.style.display = 'block';
     } else {
         qrSection.style.display = 'none';

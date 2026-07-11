@@ -49,8 +49,9 @@
                                 <td class="text-truncate" style="max-width:160px">{{ $pago->observaciones }}</td>
                                 <td class="text-center">
                                     @if($pago->imagen_qr)
-                                        <a href="{{ asset('storage/'.$pago->imagen_qr) }}" target="_blank" title="Ver comprobante">
-                                            <img src="{{ asset('storage/'.$pago->imagen_qr) }}" alt="QR" width="48" height="48" style="object-fit:cover;border-radius:8px">
+                                        {{-- Comprobante servido por ruta protegida (almacenamiento privado) --}}
+                                        <a href="{{ route('pagos.comprobante', $pago->id_pago) }}" target="_blank" title="Ver comprobante">
+                                            <img src="{{ route('pagos.comprobante', $pago->id_pago) }}" alt="QR" width="48" height="48" style="object-fit:cover;border-radius:8px">
                                         </a>
                                     @else
                                         <span class="text-muted small">Sin QR</span>
@@ -58,17 +59,22 @@
                                 </td>
                                 <td class="text-end">
                                     <div class="mb-actions justify-content-end">
-                                        <a href="{{ route('pagos.edit', $pago) }}" class="btn btn-sm btn-warning" title="Editar">
-                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        <a href="{{ route('pagos.show', $pago) }}" class="btn btn-sm btn-info text-white" title="Ver detalle y comprobante">
+                                            <i class="fa-solid fa-eye"></i>
                                         </a>
-                                        <form action="{{ route('pagos.destroy', $pago) }}" method="POST"
-                                              data-confirm="¿Eliminar este pago de {{ $nombre ?: 'cliente' }}?">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="btn btn-sm btn-danger" title="Eliminar">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
-                                        </form>
+                                        @unless (Auth::user()->hasRole('Entrenador'))
+                                            <a href="{{ route('pagos.edit', $pago) }}" class="btn btn-sm btn-warning" title="Editar">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </a>
+                                            <form action="{{ route('pagos.destroy', $pago) }}" method="POST"
+                                                  data-confirm="¿Eliminar este pago de {{ $nombre ?: 'cliente' }}?">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="btn btn-sm btn-danger" title="Eliminar">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        @endunless
                                     </div>
                                 </td>
                             </tr>

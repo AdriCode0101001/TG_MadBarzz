@@ -282,16 +282,23 @@
         form.submit();
     });
 
-    metodoPago.addEventListener('change', function() {
+    function aplicarMetodo(valor) {
         var qrSection = document.getElementById('qrSection');
-        if (this.value === 'QR') {
+        var imagenInp = document.getElementById('imagen_qr');
+        if (valor === 'QR') {
             qrSection.style.display = 'block';
+            // El comprobante es obligatorio para QR (también validado en el servidor)
+            imagenInp.setAttribute('required', 'required');
         } else {
             qrSection.style.display = 'none';
-            document.getElementById('imagen_qr').value = '';
+            imagenInp.removeAttribute('required');
+            imagenInp.value = '';
             document.getElementById('preview').style.display = 'none';
         }
-    });
+    }
+
+    metodoPago.addEventListener('change', function() { aplicarMetodo(this.value); });
+    aplicarMetodo(metodoPago.value); // estado inicial coherente
 })();
 
 function previewImage(event) {

@@ -155,7 +155,11 @@ public function index(Request $request)
             // Solo Efectivo y QR (transferencia se retiró de las opciones nuevas)
             'metodo_pago'   => 'required|in:efectivo,QR',
             'observaciones' => 'nullable|string',
-            'imagen_qr'     => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            // Un pago por QR EXIGE su comprobante; en efectivo es opcional. Se
+            // valida en el servidor (fuente de verdad), no solo en el frontend.
+            'imagen_qr'     => 'nullable|required_if:metodo_pago,QR|image|mimes:jpeg,png,jpg,webp|max:2048',
+        ], [
+            'imagen_qr.required_if' => 'Debes subir el comprobante para un pago por QR.',
         ]);
 
         $membresia = Membresia::findOrFail($request->id_membresia);

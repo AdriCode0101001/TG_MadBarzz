@@ -52,8 +52,8 @@
                                     @foreach($pagos as $i => $pago)
                                         <tr>
                                             <td>{{ $i + 1 }}</td>
-                                            <td>{{ $pago->membresia->nombre }}</td>
-                                            <td>S/ {{ number_format($pago->monto, 2) }}</td>
+                                            <td>{{ $pago->membresia->tipo_membresia ?? '—' }}</td>
+                                            <td>Bs {{ number_format($pago->monto, 2) }}</td>
                                             <td>{{ \Carbon\Carbon::parse($pago->fecha_pago)->format('d/m/Y') }}</td>
                                             <td>
                                                 @switch($pago->metodo_pago)
@@ -71,8 +71,9 @@
                                             <td>{{ $pago->observaciones ?? 'Sin observaciones' }}</td>
                                             <td>
                                                 @if($pago->imagen_qr)
-                                                    <a href="{{ asset('storage/' . $pago->imagen_qr) }}" target="_blank">
-                                                        <img src="{{ asset('storage/' . $pago->imagen_qr) }}" alt="QR" width="50" height="50">
+                                                    {{-- Comprobante propio, servido por ruta protegida con verificación de dueño --}}
+                                                    <a href="{{ route('pagos.mis.comprobante', $pago->id_pago) }}" target="_blank">
+                                                        <img src="{{ route('pagos.mis.comprobante', $pago->id_pago) }}" alt="QR" width="50" height="50">
                                                     </a>
                                                 @else
                                                     <span class="text-muted">No aplica</span>
@@ -91,7 +92,7 @@
                                     <div class="card bg-primary text-white">
                                         <div class="card-body">
                                             <h6 class="card-title">Total Pagado</h6>
-                                            <h4>S/ {{ number_format($pagos->sum('monto'), 2) }}</h4>
+                                            <h4>Bs {{ number_format($pagos->sum('monto'), 2) }}</h4>
                                         </div>
                                     </div>
                                 </div>
@@ -107,7 +108,7 @@
                                     <div class="card bg-success text-white">
                                         <div class="card-body">
                                             <h6 class="card-title">Promedio por Pago</h6>
-                                            <h4>S/ {{ number_format($pagos->avg('monto'), 2) }}</h4>
+                                            <h4>Bs {{ number_format($pagos->avg('monto'), 2) }}</h4>
                                         </div>
                                     </div>
                                 </div>

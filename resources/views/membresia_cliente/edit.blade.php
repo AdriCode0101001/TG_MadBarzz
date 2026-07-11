@@ -10,7 +10,6 @@
                 <div class="card-title fs-24 fw-bold text-dark dark-text-white">
                     <h2 class="fw-bold mb-4">Editar Membresía Cliente</h2>
                 </div>
-
             </div>
 
             <div class="card-body">
@@ -47,41 +46,49 @@
                             <select name="id_membresia" id="id_membresia" class="form-control" required>
                                 <option value="">Seleccione una membresía</option>
                                 @foreach($membresias as $membresia)
-                                    <option value="{{ $membresia->id_membresia }}" {{ $membresiaCliente->id_membresia == $membresia->id_membresia ? 'selected' : '' }}>
+                                    <option value="{{ $membresia->id_membresia }}"
+                                            data-precio="{{ $membresia->precio }}"
+                                            data-fecha-fin="{{ \Carbon\Carbon::parse($membresia->fecha_fin_prevista)->format('d/m/Y') }}"
+                                            {{ $membresiaCliente->id_membresia == $membresia->id_membresia ? 'selected' : '' }}>
                                         {{ $membresia->tipo_membresia }} - Bs {{ number_format($membresia->precio, 2) }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
 
+                        {{-- Fechas SOLO informativas: las calcula y guarda el servidor --}}
                         <div class="col-md-6">
-                            <label for="fecha_inicio" class="form-label fw-bold text-dark dark-text-white">Fecha Inicio</label>
-                            <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control" value="{{ $membresiaCliente->fecha_inicio }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white">Fecha Inicio (automática)</label>
+                            <input type="text" id="fecha_inicio_info" class="form-control"
+                                   value="{{ \Carbon\Carbon::parse($membresiaCliente->fecha_inicio)->format('d/m/Y') }}" readonly disabled>
+                            <small class="text-muted">Se conserva la fecha original del registro.</small>
                         </div>
 
                         <div class="col-md-6">
-                            <label for="fecha_fin" class="form-label fw-bold text-dark dark-text-white">Fecha Fin</label>
-                            <input type="date" name="fecha_fin" id="fecha_fin" class="form-control" value="{{ $membresiaCliente->fecha_fin }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white">Fecha Fin (automática)</label>
+                            <input type="text" id="fecha_fin_info" class="form-control" value="Elija una membresía" readonly disabled>
+                            <small class="text-muted">Duración de la membresía + 1 día de regalo, desde la fecha de inicio.</small>
                         </div>
 
                         <div class="col-md-6">
-                            <label for="nombre_descuento" class="form-label fw-bold text-dark dark-text-white">Nombre Descuento</label>
-                            <select name="nombre_descuento" id="nombre_descuento" class="form-control" required>
-                                <option value="">Seleccione un descuento</option>
-                                <option value="UAGRM" {{ $membresiaCliente->nombre_descuento == 'UAGRM' ? 'selected' : '' }}>UAGRM</option>
-                                <option value="UNIFRANZ" {{ $membresiaCliente->nombre_descuento == 'UNIFRANZ' ? 'selected' : '' }}>UNIFRANZ</option>
-                                <option value="Colegio de Auditores" {{ $membresiaCliente->nombre_descuento == 'Colegio de Auditores' ? 'selected' : '' }}>Colegio de Auditores</option>
+                            <label for="id_descuento" class="form-label fw-bold text-dark dark-text-white">Descuento</label>
+                            <select name="id_descuento" id="id_descuento" class="form-control" required>
+                                @foreach($descuentos as $descuento)
+                                    <option value="{{ $descuento->id }}"
+                                            data-porcentaje="{{ $descuento->porcentaje }}"
+                                            @selected($membresiaCliente->id_descuento
+                                                ? $membresiaCliente->id_descuento == $descuento->id
+                                                : ($descuento->porcentaje == 0 && $descuento->nombre === 'Sin descuento'))>
+                                        {{ $descuento->nombre }} ({{ rtrim(rtrim(number_format($descuento->porcentaje, 2), '0'), '.') }}%)
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
 
                         <div class="col-md-6">
-                            <label for="descuento" class="form-label fw-bold text-dark dark-text-white">Descuento (%)</label>
-                            <input type="number" name="descuento" id="descuento" min="0" max="100" step="0.01" class="form-control" value="{{ $membresiaCliente->descuento }}" required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="precio_final" class="form-label fw-bold text-dark dark-text-white">Precio Final (Bs)</label>
-                            <input type="number" name="precio_final" id="precio_final" step="0.01" class="form-control" value="{{ $membresiaCliente->precio_final }}" readonly required>
+                            <label class="form-label fw-bold text-dark dark-text-white">Precio Final (Bs)</label>
+                            <input type="text" id="precio_final_info" class="form-control" value="—" readonly disabled>
+                            <small class="text-muted">Precio de la membresía menos el descuento. Lo calcula el sistema.</small>
                         </div>
                     </div>
 
@@ -93,7 +100,6 @@
                             Cancelar
                         </a>
                     </div>
-
                 </form>
             </div>
 
@@ -102,27 +108,34 @@
 </div>
 
 <script>
-    const membresiaSelect = document.getElementById('id_membresia');
-    const descuentoInput = document.getElementById('descuento');
-    const precioFinalInput = document.getElementById('precio_final');
+    // Solo VISTA PREVIA: el servidor recalcula fechas y precio al guardar.
+    (function () {
+        var membresiaSel = document.getElementById('id_membresia');
+        var descuentoSel = document.getElementById('id_descuento');
+        var fechaFinInfo = document.getElementById('fecha_fin_info');
+        var precioInfo   = document.getElementById('precio_final_info');
 
-    function calcularPrecioFinal() {
-        let precio = 0;
-        if(membresiaSelect.value){
-            const selectedOption = membresiaSelect.options[membresiaSelect.selectedIndex];
-            let regex = /Bs\s?([\d,.]+)/;
-            let match = selectedOption.text.match(regex);
-            if(match) precio = parseFloat(match[1].replace(',', ''));
+        function actualizar() {
+            var op = membresiaSel.options[membresiaSel.selectedIndex];
+
+            if (!op || !op.value) {
+                fechaFinInfo.value = 'Elija una membresía';
+                precioInfo.value = '—';
+                return;
+            }
+
+            fechaFinInfo.value = op.dataset.fechaFin;
+
+            var precio = parseFloat(op.dataset.precio) || 0;
+            var od = descuentoSel.options[descuentoSel.selectedIndex];
+            var pct = od ? (parseFloat(od.dataset.porcentaje) || 0) : 0;
+            precioInfo.value = (precio * (1 - pct / 100)).toFixed(2);
         }
-        let descuento = parseFloat(descuentoInput.value) || 0;
-        let precioFinal = precio - (precio * (descuento / 100));
-        precioFinalInput.value = precioFinal.toFixed(2);
-    }
 
-    membresiaSelect.addEventListener('change', calcularPrecioFinal);
-    descuentoInput.addEventListener('input', calcularPrecioFinal);
-
-    calcularPrecioFinal();
+        membresiaSel.addEventListener('change', actualizar);
+        descuentoSel.addEventListener('change', actualizar);
+        actualizar();
+    })();
 </script>
 
 @endsection

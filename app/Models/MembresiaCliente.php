@@ -29,9 +29,20 @@ class MembresiaCliente extends Model
         'fecha_fin',
         'nombre_descuento',
         'descuento',
+        'id_descuento',
         'precio_final',
         'id_sede',
+        'estado',
     ];
+
+    /**
+     * Sin su pago vinculado, NO da acceso (asistencia/rutinas). Las nuevas
+     * asignaciones nacen así; el pago registrado en el mismo paso la activa.
+     */
+    public const ESTADO_PENDIENTE = 'pendiente_pago';
+
+    /** Ya tiene su pago: da acceso normal (asistencia, rutinas, portal). */
+    public const ESTADO_ACTIVA = 'activa';
 
     // Relaciones
 
@@ -43,5 +54,15 @@ class MembresiaCliente extends Model
     public function membresia()
     {
         return $this->belongsTo(Membresia::class, 'id_membresia', 'id_membresia');
+    }
+
+    public function descuentoAplicado()
+    {
+        return $this->belongsTo(Descuento::class, 'id_descuento');
+    }
+
+    public function pagos()
+    {
+        return $this->hasMany(Pago::class, 'id_membresia_cliente');
     }
 }

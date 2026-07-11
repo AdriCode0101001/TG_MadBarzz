@@ -1,13 +1,15 @@
 @extends('layouts.private')
 @section('contenido')
 
-<x-page-header title="Membresías de Clientes" subtitle="Asignación de planes a los miembros" icon="fa-solid fa-id-badge">
+<x-page-header title="Membresías de Clientes" subtitle="Estado de los planes asignados a los miembros" icon="fa-solid fa-id-badge">
     <form method="GET" action="{{ route('membresia_cliente.index') }}" class="mb-searchbar" style="max-width:320px">
         <i class="fa-solid fa-magnifying-glass mb-search-icon"></i>
         <input type="text" name="buscar" class="form-control" placeholder="Buscar cliente, CI o plan…" value="{{ request('buscar') }}">
     </form>
-    <a href="{{ route('membresia_cliente.create') }}" class="btn btn-primary">
-        <i class="fa-solid fa-circle-plus me-1"></i> Asignar membresía
+    {{-- Para darle una membresía a un cliente, la única vía es Registrar Pago
+         (crea la asignación y su pago vinculado en un solo paso, activa de inmediato) --}}
+    <a href="{{ route('pagos.create') }}" class="btn btn-primary">
+        <i class="fa-solid fa-money-bill-wave me-1"></i> Registrar pago (nueva membresía)
     </a>
 </x-page-header>
 
@@ -37,9 +39,10 @@
                 <tbody>
                     @forelse($membresiasClientes as $mc)
                         @php
-                            $vencida  = \Carbon\Carbon::parse($mc->fecha_fin)->isPast();
-                            $nombre   = trim(($mc->cliente->persona->nombre_completo ?? '') . ' ' . ($mc->cliente->persona->apellido_paterno ?? '') . ' ' . ($mc->cliente->persona->apellido_materno ?? ''));
-                            $inicial  = strtoupper(mb_substr($nombre ?: 'C', 0, 1));
+                            $pendiente = $mc->estado !== 'activa';
+                            $vencida   = !$pendiente && \Carbon\Carbon::parse($mc->fecha_fin)->isPast();
+                            $nombre    = trim(($mc->cliente->persona->nombre_completo ?? '') . ' ' . ($mc->cliente->persona->apellido_paterno ?? '') . ' ' . ($mc->cliente->persona->apellido_materno ?? ''));
+                            $inicial   = strtoupper(mb_substr($nombre ?: 'C', 0, 1));
                         @endphp
                         <tr>
                             <td>
@@ -69,8 +72,8 @@
                             </td>
                             <td class="fw-bold" style="white-space:nowrap;">Bs. {{ number_format($mc->precio_final ?? 0, 2) }}</td>
                             <td class="text-center">
-                                <span class="badge {{ $vencida ? 'bg-danger' : 'bg-success' }} mb-badge-dot">
-                                    {{ $vencida ? 'Vencida' : 'Activa' }}
+                                <span class="badge {{ $pendiente ? 'bg-warning text-dark' : ($vencida ? 'bg-danger' : 'bg-success') }} mb-badge-dot">
+                                    {{ $pendiente ? 'Pendiente de pago' : ($vencida ? 'Vencida' : 'Activa') }}
                                 </span>
                             </td>
                             <td class="text-end">
@@ -94,8 +97,8 @@
                                 <div class="mb-empty">
                                     <div class="mb-empty-icon"><i class="fa-solid fa-id-badge"></i></div>
                                     <p class="mb-2">No hay membresías asignadas.</p>
-                                    <a href="{{ route('membresia_cliente.create') }}" class="btn btn-primary btn-sm">
-                                        <i class="fa-solid fa-circle-plus me-1"></i> Asignar la primera
+                                    <a href="{{ route('pagos.create') }}" class="btn btn-primary btn-sm">
+                                        <i class="fa-solid fa-money-bill-wave me-1"></i> Registrar el primer pago
                                     </a>
                                 </div>
                             </td>
