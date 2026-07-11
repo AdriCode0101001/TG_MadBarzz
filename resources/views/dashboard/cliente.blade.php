@@ -7,7 +7,12 @@
     $diasTotal    = $mc ? \Carbon\Carbon::parse($mc->fecha_inicio)->diffInDays(\Carbon\Carbon::parse($mc->fecha_fin)) : 0;
     $diasRestantes = $mc ? max(0, (int) now()->diffInDays(\Carbon\Carbon::parse($mc->fecha_fin), false)) : 0;
     $progreso     = ($diasTotal > 0) ? min(100, round((($diasTotal - $diasRestantes) / $diasTotal) * 100)) : 0;
-    $nombre       = Auth::user()?->persona?->nombre_completo ?? Auth::user()?->name;
+    $nombreCarnet = trim(
+        ($cliente->persona->nombre_completo ?? '') . ' ' .
+        ($cliente->persona->apellido_paterno ?? '') . ' ' .
+        ($cliente->persona->apellido_materno ?? '')
+    ) ?: Auth::user()?->name;
+    $nombre       = $nombreCarnet;
     $hora         = now()->hour;
     $saludo       = $hora < 12 ? 'Buenos días' : ($hora < 19 ? 'Buenas tardes' : 'Buenas noches');
 @endphp
@@ -42,7 +47,7 @@
                     <i class="fa-solid fa-id-card"></i>
                 </div>
                 <div class="mb-cli-kpi__val">{{ $membresia ? $membresia->tipo_membresia : '—' }}</div>
-                <div class="mb-cli-kpi__label">Plan activo</div>
+                <div class="mb-cli-kpi__label">{{ $membresia ? 'Plan activo' : 'Plan no activo' }}</div>
             </div>
         </div>
         <div class="col-6 col-md-3">
@@ -172,6 +177,58 @@
 
     </div>
 
+    {{-- ── MI CARNET ── --}}
+    <div class="mb-cli-card mb-4">
+        <div class="mb-cli-card__head">
+            <i class="fa-solid fa-address-card me-2"></i> Mi carnet
+        </div>
+        <div class="mb-cli-card__body">
+            @if($qrCarnet)
+                <div class="row g-4 align-items-center">
+                    <div class="col-md-5 d-flex justify-content-center">
+                        {{-- Vista previa del carnet --}}
+                        <div class="mb-cli-carnet">
+                            <div class="mb-cli-carnet__stripe"></div>
+                            <div class="mb-cli-carnet__header">
+                                <img src="{{ asset('assets_private/images/logo_mad.png') }}" alt="MadBarzz">
+                                <div class="mb-cli-carnet__brand">MAD<span>BARZZ</span></div>
+                                <div class="mb-cli-carnet__sub">Carnet de Socio</div>
+                            </div>
+                            <div class="mb-cli-carnet__qr">
+                                <img src="{{ $qrCarnet }}" alt="Código QR">
+                            </div>
+                            <div class="mb-cli-carnet__nombre @if(mb_strlen($nombreCarnet) > 26) mb-cli-carnet__nombre--largo @endif">{{ $nombreCarnet }}</div>
+                            <div class="mb-cli-carnet__nro">Cliente N° {{ str_pad($cliente->id_cliente, 5, '0', STR_PAD_LEFT) }}</div>
+                            <div class="mb-cli-carnet__detalle">
+                                <span>{{ $membresia->tipo_membresia ?? 'Sin membresía activa' }}</span>
+                                @if($cliente->sede)
+                                    <span>· {{ $cliente->sede->nombre }}</span>
+                                @endif
+                            </div>
+                            <div class="mb-cli-carnet__stripe mb-cli-carnet__stripe--bottom"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <h5 style="color:#e2e8f0;font-weight:700;margin-bottom:.6rem;">Tu identificación digital</h5>
+                        <p style="font-size:.88rem;color:#94a3b8;">
+                            Este carnet con código QR es tu identificación como socio de MadBarzz.
+                            Descárgalo y guárdalo en tu teléfono o imprímelo: pronto podrás usarlo
+                            para registrar tu asistencia escaneándolo al ingresar.
+                        </p>
+                        <a href="{{ route('portal.carnet.descargar') }}" class="btn" style="background:#6366f1;color:#fff;border:none;font-weight:600;">
+                            <i class="fa-solid fa-download me-2"></i> Descargar carnet
+                        </a>
+                    </div>
+                </div>
+            @else
+                <div class="mb-cli-empty">
+                    <i class="fa-solid fa-address-card fa-2x mb-2 opacity-25"></i>
+                    <p>Tu carnet aún no está disponible.<br><small>Acércate a recepción para activarlo.</small></p>
+                </div>
+            @endif
+        </div>
+    </div>
+
     {{-- ── RUTINAS ── --}}
     @if($rutinas->count())
     <div class="mb-cli-card mb-4">
@@ -202,6 +259,21 @@
                 </div>
                 @endforeach
             </div>
+        </div>
+    </div>
+    @else
+    <div class="mb-cli-card mb-4">
+        <div class="mb-cli-card__head">
+            <i class="fa-solid fa-dumbbell me-2"></i> Rutinas disponibles
+        </div>
+        <div class="mb-cli-card__body text-center py-4" style="color:#94a3b8;">
+            <i class="fa-solid fa-dumbbell d-block mb-2" style="font-size:2rem;opacity:.35;"></i>
+            @if(!$tieneMembresiaVigente)
+                <p class="mb-0">Las rutinas están disponibles para socios con membresía activa.</p>
+                <small>Renueva tu membresía para acceder.</small>
+            @else
+                <p class="mb-0">No hay rutinas publicadas todavía.</p>
+            @endif
         </div>
     </div>
     @endif
@@ -388,6 +460,36 @@
 .mb-cli-rutina__title  { font-weight: 700; color: #e2e8f0; margin-bottom: .3rem; }
 .mb-cli-rutina__trainer { font-size: .78rem; color: #6366f1; margin-bottom: .5rem; }
 .mb-cli-rutina__desc   { font-size: .8rem; color: #94a3b8; margin: 0; }
+
+/* ── carnet ── */
+.mb-cli-carnet {
+    width: 250px;
+    background: linear-gradient(160deg, #16213e 0%, #1a1a2e 100%);
+    border: 1px solid rgba(99,102,241,.35);
+    border-radius: 1rem;
+    overflow: hidden;
+    text-align: center;
+    box-shadow: 0 12px 40px rgba(0,0,0,.45);
+}
+.mb-cli-carnet__stripe { height: 6px; background: linear-gradient(90deg,#6366f1,#8b5cf6); }
+.mb-cli-carnet__stripe--bottom { margin-top: 1rem; }
+.mb-cli-carnet__header { padding: 1rem 1rem .4rem; }
+.mb-cli-carnet__header img { width: 46px; }
+.mb-cli-carnet__brand { font-size: 1.15rem; font-weight: 800; color: #fff; letter-spacing: 3px; margin-top: .3rem; }
+.mb-cli-carnet__brand span { color: #6366f1; }
+.mb-cli-carnet__sub { font-size: .62rem; color: #94a3b8; letter-spacing: 2.5px; text-transform: uppercase; margin-top: .1rem; }
+.mb-cli-carnet__qr {
+    width: 150px;
+    margin: .7rem auto 0;
+    background: #fff;
+    border-radius: .7rem;
+    padding: .5rem;
+}
+.mb-cli-carnet__qr img { width: 100%; display: block; }
+.mb-cli-carnet__nombre { color: #fff; font-weight: 700; font-size: .95rem; line-height: 1.25; margin-top: .8rem; padding: 0 .8rem; overflow-wrap: break-word; }
+.mb-cli-carnet__nombre--largo { font-size: .8rem; }
+.mb-cli-carnet__nro { color: #6366f1; font-size: .68rem; letter-spacing: 1.5px; text-transform: uppercase; margin-top: .15rem; }
+.mb-cli-carnet__detalle { color: #94a3b8; font-size: .74rem; margin-top: .45rem; padding: 0 .8rem; }
 
 /* ── empty state ── */
 .mb-cli-empty { text-align: center; color: #64748b; padding: 2.5rem 1rem; }
