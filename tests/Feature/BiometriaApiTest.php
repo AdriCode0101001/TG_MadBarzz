@@ -88,6 +88,7 @@ class BiometriaApiTest extends TestCase
             'id_membresia' => $idMembresia,
             'fecha_inicio' => now()->subDays(10)->toDateString(),
             'fecha_fin'    => $fechaFin ?? now()->addDays(20)->toDateString(),
+            'estado'       => 'activa', // pagada: da acceso
             'created_at'   => now(),
             'updated_at'   => now(),
         ]);
@@ -165,6 +166,76 @@ class BiometriaApiTest extends TestCase
 
         $this->assertDatabaseCount('huellas', 1);
         $this->assertDatabaseHas('huellas', ['template' => base64_encode('v2')]);
+    }
+
+    // ── 2b. Anti-duplicado: una huella no puede pertenecer a dos clientes ─────
+
+    public function test_enrolar_rechaza_misma_plantilla_en_otro_cliente(): void
+    {
+        $sede     = $this->crearSede();
+        $this->crearAgentToken($sede);
+        $clienteA = $this->crearCliente($sede);
+        $clienteB = $this->crearCliente($sede);
+
+        $template = base64_encode('huella-fisica-unica');
+
+        // A enrola su huella
+        $this->postJson('/api/agente/enrolar', [
+            'id_cliente' => $clienteA->id_cliente,
+            'dedo'       => 'indice_derecho',
+            'template'   => $template,
+        ], $this->headers())->assertStatus(201);
+
+        // B intenta enrolar exactamente la misma plantilla → rechazado
+        $this->postJson('/api/agente/enrolar', [
+            'id_cliente' => $clienteB->id_cliente,
+            'dedo'       => 'indice_derecho',
+            'template'   => $template,
+        ], $this->headers())
+             ->assertStatus(409)
+             ->assertJsonFragment(['message' => 'Esta huella ya está registrada para otro cliente.']);
+
+        // B no debe tener ninguna huella guardada
+        $this->assertDatabaseMissing('huellas', ['id_cliente' => $clienteB->id_cliente]);
+        $this->assertDatabaseCount('huellas', 1);
+    }
+
+    public function test_enrolar_permite_reenrolar_misma_plantilla_mismo_cliente(): void
+    {
+        $sede    = $this->crearSede();
+        $this->crearAgentToken($sede);
+        $cliente = $this->crearCliente($sede);
+
+        $template = base64_encode('huella-fisica-unica');
+        $base     = ['id_cliente' => $cliente->id_cliente, 'dedo' => 'indice_derecho', 'template' => $template];
+
+        // Re-enrolar el MISMO dedo del MISMO cliente con la misma plantilla: actualiza, no rechaza
+        $this->postJson('/api/agente/enrolar', $base, $this->headers())->assertStatus(201);
+        $this->postJson('/api/agente/enrolar', $base, $this->headers())->assertStatus(201);
+
+        $this->assertDatabaseCount('huellas', 1);
+    }
+
+    public function test_enrolar_permite_dos_dedos_distintos_del_mismo_cliente(): void
+    {
+        $sede    = $this->crearSede();
+        $this->crearAgentToken($sede);
+        $cliente = $this->crearCliente($sede);
+
+        // Dos dedos distintos (plantillas distintas) del mismo cliente: ambos válidos
+        $this->postJson('/api/agente/enrolar', [
+            'id_cliente' => $cliente->id_cliente,
+            'dedo'       => 'indice_derecho',
+            'template'   => base64_encode('dedo-1'),
+        ], $this->headers())->assertStatus(201);
+
+        $this->postJson('/api/agente/enrolar', [
+            'id_cliente' => $cliente->id_cliente,
+            'dedo'       => 'pulgar_derecho',
+            'template'   => base64_encode('dedo-2'),
+        ], $this->headers())->assertStatus(201);
+
+        $this->assertDatabaseCount('huellas', 2);
     }
 
     // ── 3. Sincronizar respeta la política de acceso ──────────────────────────
@@ -255,6 +326,76 @@ class BiometriaApiTest extends TestCase
                          ->assertStatus(200);
 
         $this->assertEmpty($response->json('data'));
+    }
+
+    // ── 3b. Listar clientes: estado de membresía y dedos enrolados ────────────
+
+    public function test_listar_clientes_marca_membresia_activa_true_si_vigente(): void
+    {
+        $sede    = $this->crearSede();
+        $this->crearAgentToken($sede);
+        $cliente = $this->crearCliente($sede);
+        $this->crearMembresia($cliente); // vigente: termina en 20 días
+
+        $data = $this->getJson('/api/agente/clientes', $this->headers())
+                     ->assertStatus(200)
+                     ->json('data');
+
+        $fila = collect($data)->firstWhere('id_cliente', $cliente->id_cliente);
+        $this->assertNotNull($fila);
+        $this->assertTrue($fila['membresia_activa']);
+    }
+
+    public function test_listar_clientes_marca_membresia_activa_false_si_vencida(): void
+    {
+        $sede    = $this->crearSede();
+        $this->crearAgentToken($sede);
+        $cliente = $this->crearCliente($sede);
+        $this->crearMembresia($cliente, now()->subDays(3)->toDateString()); // venció hace 3 días
+
+        $data = $this->getJson('/api/agente/clientes', $this->headers())
+                     ->assertStatus(200)
+                     ->json('data');
+
+        $fila = collect($data)->firstWhere('id_cliente', $cliente->id_cliente);
+        $this->assertNotNull($fila);
+        $this->assertFalse($fila['membresia_activa']);
+    }
+
+    public function test_listar_clientes_marca_membresia_activa_false_sin_membresia(): void
+    {
+        $sede    = $this->crearSede();
+        $this->crearAgentToken($sede);
+        $cliente = $this->crearCliente($sede); // sin ninguna membresía
+
+        $data = $this->getJson('/api/agente/clientes', $this->headers())
+                     ->assertStatus(200)
+                     ->json('data');
+
+        $fila = collect($data)->firstWhere('id_cliente', $cliente->id_cliente);
+        $this->assertNotNull($fila);
+        $this->assertFalse($fila['membresia_activa']);
+    }
+
+    public function test_listar_clientes_incluye_dedos_enrolados(): void
+    {
+        $sede    = $this->crearSede();
+        $this->crearAgentToken($sede);
+        $cliente = $this->crearCliente($sede);
+
+        Huella::create([
+            'id_cliente' => $cliente->id_cliente,
+            'dedo'       => 'indice_derecho',
+            'template'   => base64_encode('plantilla'),
+        ]);
+
+        $data = $this->getJson('/api/agente/clientes', $this->headers())
+                     ->assertStatus(200)
+                     ->json('data');
+
+        $fila = collect($data)->firstWhere('id_cliente', $cliente->id_cliente);
+        $this->assertNotNull($fila);
+        $this->assertEquals(['indice_derecho'], $fila['dedos_enrolados']);
     }
 
     // ── 4. Registrar asistencia valida acceso y evita duplicados ──────────────

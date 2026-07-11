@@ -142,6 +142,7 @@ class ClienteApiTest extends TestCase
             'precio_final' => 90,
             'descuento'    => 10,
             'id_sede'      => $user->id_sede,
+            'estado'       => 'activa', // pagada: da acceso
         ]);
 
         $response = $this->withToken($token)->getJson('/api/cliente/membresia');

@@ -58,6 +58,7 @@ class ClienteApiController extends Controller
         $mc = MembresiaCliente::with('membresia')
             ->where('id_cliente', $result->id_cliente)
             ->where('fecha_fin', '>=', now())
+            ->where('estado', 'activa')
             ->orderBy('fecha_fin', 'desc')
             ->first();
 

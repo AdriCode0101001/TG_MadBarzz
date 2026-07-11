@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Asistencia;
 use App\Models\Cliente;
 use App\Models\Huella;
-use App\Models\MembresiaCliente;
+use App\Services\AsistenciaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -21,7 +20,10 @@ class BiometriaController extends Controller
     public function listarClientes(): JsonResponse
     {
         $clientes = Cliente::where('estado', 'activo')
-            ->with('persona:id_persona,nombre_completo,apellido_paterno,apellido_materno')
+            ->with([
+                'persona:id_persona,nombre_completo,apellido_paterno,apellido_materno',
+                'huellas:id,id_cliente,dedo',
+            ])
             ->get(['id_cliente', 'id_persona'])
             ->map(fn ($c) => [
                 'id_cliente'      => $c->id_cliente,
@@ -30,6 +32,13 @@ class BiometriaController extends Controller
                     $c->persona->apellido_paterno . ' ' .
                     $c->persona->apellido_materno
                 ),
+                // Dedos ya enrolados (códigos). El agente lo usa para separar
+                // clientes PENDIENTES vs YA ENROLADOS y saber qué dedos faltan.
+                'dedos_enrolados'  => $c->huellas->pluck('dedo')->values(),
+                // Membresía vigente según el criterio central (vence hoy = vigente).
+                // NO filtra aquí: el agente decide las secciones. Los clientes sin
+                // membresía activa igual deben poder aparecer en "Ya enrolados".
+                'membresia_activa' => $c->tieneMembresiaVigente(),
             ]);
 
         return response()->json(['data' => $clientes]);
@@ -47,6 +56,24 @@ class BiometriaController extends Controller
             'template'        => ['required', 'string'],   // base64
             'version_formato' => ['nullable', 'string', 'max:50'],
         ]);
+
+        // ── Anti-duplicado (defensa en profundidad) ───────────────────────────
+        // El matching biométrico difuso (dos capturas del mismo dedo NUNCA son
+        // idénticas byte a byte) solo puede hacerlo el agente con el SDK ZKFinger,
+        // que ejecuta una identificación 1:N ANTES de enviar. Aquí, en el servidor
+        // (sin SDK), aplicamos una comprobación exacta: si ESTA MISMA plantilla ya
+        // pertenece a OTRO cliente, se rechaza. Esto cubre peticiones manipuladas o
+        // reenviadas que copian el template de un tercero. NO detecta dos escaneos
+        // distintos del mismo dedo (para eso está el chequeo biométrico del agente).
+        $perteneceAOtro = Huella::where('template', $data['template'])
+            ->where('id_cliente', '!=', $data['id_cliente'])
+            ->exists();
+
+        if ($perteneceAOtro) {
+            return response()->json([
+                'message' => 'Esta huella ya está registrada para otro cliente.',
+            ], 409);
+        }
 
         $huella = Huella::updateOrCreate(
             ['id_cliente' => $data['id_cliente'], 'dedo' => $data['dedo']],
@@ -125,8 +152,9 @@ class BiometriaController extends Controller
     /**
      * POST /api/agente/asistencia
      * Registra la entrada de un cliente, con validación de acceso y anti-duplicado.
+     * Las reglas de negocio viven en AsistenciaService (compartidas con el registro por QR).
      */
-    public function registrarAsistencia(Request $request): JsonResponse
+    public function registrarAsistencia(Request $request, AsistenciaService $servicio): JsonResponse
     {
         /** @var \App\Models\AgentToken $agentToken */
         $agentToken = $request->attributes->get('agentToken');
@@ -144,11 +172,8 @@ class BiometriaController extends Controller
             ], 403);
         }
 
-        $idCliente = $data['id_cliente'];
-        $idSede    = $agentToken->id_sede;
-
         // Validar que el cliente exista y esté activo
-        $cliente = Cliente::where('id_cliente', $idCliente)
+        $cliente = Cliente::where('id_cliente', $data['id_cliente'])
                           ->where('estado', 'activo')
                           ->first();
 
@@ -156,78 +181,40 @@ class BiometriaController extends Controller
             return response()->json(['message' => 'Cliente no encontrado o inactivo.'], 404);
         }
 
-        // Validar política de acceso por sede
-        $tieneRestricciones = DB::table('cliente_sede')
-            ->where('id_cliente', $idCliente)
-            ->exists();
+        $resultado = $servicio->registrarEntrada(
+            $cliente,
+            (int) $agentToken->id_sede,
+            Carbon::parse($data['fecha_hora'])
+        );
 
-        if ($tieneRestricciones) {
-            $tieneAcceso = DB::table('cliente_sede')
-                ->where('id_cliente', $idCliente)
-                ->where('id_sede', $idSede)
-                ->exists();
+        return match ($resultado['motivo']) {
+            AsistenciaService::OK => response()->json([
+                'message'       => $resultado['mensaje'],
+                'id_asistencia' => $resultado['asistencia']->id_asistencia,
+            ], 201),
 
-            if (!$tieneAcceso) {
-                return response()->json([
-                    'message' => 'El cliente no tiene acceso a esta sede.',
-                ], 403);
-            }
-        }
+            AsistenciaService::SEDE_NO_AUTORIZADA => response()->json([
+                'message' => $resultado['mensaje'],
+            ], 403),
 
-        // Regla de negocio: solo se registra asistencia con membresía vigente.
-        // La vigente es la más reciente cuya fecha_fin es hoy o futura.
-        $ultimaMembresia = MembresiaCliente::where('id_cliente', $idCliente)
-            ->orderByDesc('fecha_fin')
-            ->first();
-
-        if (!$ultimaMembresia) {
-            $mensaje = 'No tienes una membresía activa. Pasa por recepción para adquirir una.';
-            return response()->json([
-                'permitido' => false,
-                'motivo'    => 'sin_membresia',
-                'mensaje'   => $mensaje,
-                'message'   => $mensaje,
-            ], 403);
-        }
-
-        $vencida = Carbon::parse($ultimaMembresia->fecha_fin)->toDateString()
-                   < now()->toDateString();
-
-        if ($vencida) {
-            $mensaje = 'Tu membresía está vencida. Pasa por recepción para renovarla.';
-            return response()->json([
-                'permitido' => false,
-                'motivo'    => 'membresia_vencida',
-                'mensaje'   => $mensaje,
-                'message'   => $mensaje,
-            ], 403);
-        }
-
-        // Anti-duplicado
-        $ventana = config('biometria.ventana_duplicado_minutos', 5);
-        $desde   = now()->subMinutes($ventana);
-
-        $yaExiste = Asistencia::where('id_cliente', $idCliente)
-            ->where('id_sede', $idSede)
-            ->where('fecha_hora_entrada', '>=', $desde)
-            ->exists();
-
-        if ($yaExiste) {
-            return response()->json([
-                'message' => "El cliente ya registró asistencia en los últimos {$ventana} minutos.",
+            AsistenciaService::DUPLICADO => response()->json([
+                'message'   => $resultado['mensaje'],
                 'duplicado' => true,
-            ], 409);
-        }
+            ], 409),
 
-        $asistencia = Asistencia::create([
-            'id_cliente'         => $idCliente,
-            'id_sede'            => $idSede,
-            'fecha_hora_entrada' => $data['fecha_hora'],
-        ]);
+            AsistenciaService::YA_MARCO_HOY => response()->json([
+                'message'   => $resultado['mensaje'],
+                'motivo'    => AsistenciaService::YA_MARCO_HOY,
+                'duplicado' => true,
+            ], 409),
 
-        return response()->json([
-            'message'       => 'Asistencia registrada.',
-            'id_asistencia' => $asistencia->id_asistencia,
-        ], 201);
+            // sin_membresia / membresia_vencida
+            default => response()->json([
+                'permitido' => false,
+                'motivo'    => $resultado['motivo'],
+                'mensaje'   => $resultado['mensaje'],
+                'message'   => $resultado['mensaje'],
+            ], 403),
+        };
     }
 }
