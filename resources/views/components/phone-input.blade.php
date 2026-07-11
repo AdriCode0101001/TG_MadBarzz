@@ -59,6 +59,11 @@
         }
     }
 
+    // Si el formulario se re-renderiza por un error de validación, los campos
+    // con name propio conservan lo que el operador escribió.
+    $selectedCode   = old('telefono_codigo', $selectedCode);
+    $selectedNumber = old('telefono_numero', $selectedNumber);
+
     $uid = uniqid('ph');
 @endphp
 
@@ -75,7 +80,14 @@
                                     cortado por overflow:hidden de la tarjeta.
         data-live-search="true"   → cuadro de búsqueda dentro del dropdown.
     --}}
+    {{--
+        Los DOS campos viajan al servidor con name propio: el middleware
+        NormalizarTelefono los combina en `telefono` (codigo + numero).
+        Ya NO hay campo oculto dependiente de JavaScript: aunque el JS de la
+        página falle por completo, el teléfono llega bien al servidor.
+    --}}
     <select id="{{ $uid }}_code"
+            name="telefono_codigo"
             data-container="body"
             data-live-search="true"
             data-live-search-placeholder="Buscar país..."
@@ -88,6 +100,7 @@
     </select>
 
     <input  type="tel"
+            name="telefono_numero"
             id="{{ $uid }}_number"
             class="form-control{{ $hasError ? ' is-invalid' : '' }}"
             style="flex:1 1 0%;min-width:0;"
@@ -96,36 +109,8 @@
             {{ $required ? 'required' : '' }}
             autocomplete="tel-local">
 
-    <input  type="hidden"
-            name="telefono"
-            id="{{ $uid }}_full"
-            value="{{ $selectedNumber ? $selectedCode . $selectedNumber : '' }}">
-
 </div>
 
 @error('telefono')
     <div class="invalid-feedback d-block">{{ $message }}</div>
 @enderror
-
-<script>
-(function(){
-    var sel = document.getElementById({{ json_encode($uid.'_code') }});
-    var num = document.getElementById({{ json_encode($uid.'_number') }});
-    var hid = document.getElementById({{ json_encode($uid.'_full') }});
-
-    function sync(){
-        var n = num.value.replace(/[\s\-]/g, '');
-        hid.value = n ? sel.value + n : '';
-    }
-
-    num.addEventListener('input', sync);
-    sel.addEventListener('change', sync);
-
-    /* bootstrap-select dispara su propio evento al cambiar la opción */
-    window.addEventListener('load', function(){
-        if(typeof jQuery !== 'undefined' && jQuery.fn.selectpicker){
-            jQuery(sel).on('changed.bs.select', sync);
-        }
-    });
-})();
-</script>

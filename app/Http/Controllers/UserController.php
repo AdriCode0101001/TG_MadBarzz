@@ -90,7 +90,7 @@ public function index(Request $request)
         $usuario = User::findOrFail($id);
 
         $request->validate([
-            'name'   => 'required|string|max:100',
+            'name'   => 'required|string|max:100|unique:users,name,' . $usuario->id,
             'email'  => 'required|email|unique:users,email,' . $usuario->id,
             'rol_id' => 'required|exists:roles,id',
             'foto'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',

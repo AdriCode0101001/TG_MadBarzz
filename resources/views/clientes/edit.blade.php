@@ -45,7 +45,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Género</label>
-                            <select name="genero" class="form-select @error('genero') is-invalid @enderror" required>
+                            <select name="genero" class=" @error('genero') is-invalid @enderror" required>
                                 <option value="">Seleccione…</option>
                                 <option value="masculino" @selected(old('genero', $cliente->persona->genero ?? '')=='masculino')>Masculino</option>
                                 <option value="femenino"  @selected(old('genero', $cliente->persona->genero ?? '')=='femenino')>Femenino</option>
@@ -90,13 +90,10 @@
                             <label class="form-label">Días asistidos</label>
                             <input type="number" name="dias_asistidos" class="form-control" value="{{ old('dias_asistidos', $cliente->dias_asistidos ?? 0) }}" min="0" required>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Huella digital <span class="text-muted">(opcional)</span></label>
-                            <input type="text" name="huella_digital" class="form-control" value="{{ old('huella_digital', $cliente->huella_digital ?? '') }}" placeholder="Hash o identificador">
-                        </div>
+                        {{-- La huella se registra desde el agente biométrico con el lector, no desde la web --}}
                         <div class="col-md-4">
                             <label class="form-label">Estado</label>
-                            <select name="estado" class="form-select" required>
+                            <select name="estado" class="" required>
                                 <option value="activo"   @selected(old('estado', $cliente->estado ?? '')=='activo')>Activo</option>
                                 <option value="inactivo" @selected(old('estado', $cliente->estado ?? '')=='inactivo')>Inactivo</option>
                             </select>
@@ -114,4 +111,27 @@
         </div>
     </div>
 </div>
+
+<script>
+// Mayúscula automática en la primera letra de cada palabra de nombre y
+// apellidos mientras se escribe (misma regla que en el alta de cliente).
+(function () {
+    ['nombre_completo', 'apellido_paterno', 'apellido_materno'].forEach(function (nombre) {
+        var campo = document.querySelector('input[name="' + nombre + '"]');
+        if (!campo) return;
+
+        campo.addEventListener('input', function () {
+            var pos   = campo.selectionStart;
+            var nuevo = campo.value.replace(/(^|[\s])([a-záéíóúñü])/g, function (m, antes, letra) {
+                return antes + letra.toUpperCase();
+            });
+
+            if (nuevo !== campo.value) {
+                campo.value = nuevo;
+                campo.setSelectionRange(pos, pos);
+            }
+        });
+    });
+})();
+</script>
 @endsection

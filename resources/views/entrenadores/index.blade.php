@@ -89,13 +89,15 @@
                         <a href="{{ route('entrenadores.edit', $e->id_entrenador) }}" class="btn btn-sm btn-warning flex-grow-1" title="Editar">
                             <i class="fa-solid fa-pen-to-square me-1"></i> Editar
                         </a>
-                        <form action="{{ route('entrenadores.destroy', $e->id_entrenador) }}" method="POST"
-                              data-confirm="¿Eliminar al entrenador {{ $nombre }}?">
-                            @csrf @method('DELETE')
-                            <button class="btn btn-sm btn-danger" title="Eliminar">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </form>
+                        @if (Auth::user()->hasRole('Administrador'))
+                            <form action="{{ route('entrenadores.destroy', $e->id_entrenador) }}" method="POST"
+                                  data-confirm="¿Eliminar al entrenador {{ $nombre }}?">
+                                @csrf @method('DELETE')
+                                <button class="btn btn-sm btn-danger" title="Eliminar">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
+                        @endif
                     </div>
 
                 </div>

@@ -65,9 +65,10 @@
                     <legend class="mb-field-legend"><i class="fa-solid fa-circle-user"></i> Datos de acceso (usuario)</legend>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Nombre de usuario</label>
-                            <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" required>
-                            @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            <label class="form-label">Nombre de usuario (automático)</label>
+                            <input type="text" id="mbUsernamePreview" class="form-control"
+                                   value="Se genera solo: nombre.apellido.inicial" readonly disabled>
+                            <small class="text-muted">Vista previa — si ya existe, el sistema le agrega un número. Podrá cambiarse después desde la edición.</small>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Correo electrónico</label>
@@ -90,15 +91,8 @@
                 <fieldset class="mb-field-group">
                     <legend class="mb-field-legend"><i class="fa-solid fa-dumbbell"></i> Datos del cliente</legend>
                     <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">Días asistidos</label>
-                            <input type="number" name="dias_asistidos" class="form-control @error('dias_asistidos') is-invalid @enderror" value="{{ old('dias_asistidos', 0) }}" min="0" required>
-                            @error('dias_asistidos')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Huella digital <span class="text-muted">(opcional)</span></label>
-                            <input type="text" name="huella_digital" class="form-control" value="{{ old('huella_digital') }}" placeholder="Hash o identificador">
-                        </div>
+                        {{-- Los días asistidos siempre inician en 0 (lo fija el servidor) y la
+                             huella se registra después desde el agente biométrico, no aquí. --}}
                         <div class="col-md-4">
                             <label class="form-label">Estado</label>
                             <select name="estado" class="" required>
@@ -119,4 +113,63 @@
         </div>
     </div>
 </div>
+
+<script>
+// Vista previa EN VIVO del nombre de usuario. Usa la misma regla que el
+// servidor (UsernameService): primer nombre + "." + apellido paterno + "."
+// + inicial del materno, en minúsculas y sin tildes/espacios. Es solo
+// informativa: el username definitivo lo genera el servidor (con el número
+// incremental si ya existe).
+(function () {
+    var inNombre  = document.querySelector('input[name="nombre_completo"]');
+    var inPaterno = document.querySelector('input[name="apellido_paterno"]');
+    var inMaterno = document.querySelector('input[name="apellido_materno"]');
+    var out       = document.getElementById('mbUsernamePreview');
+
+    if (!inNombre || !inPaterno || !inMaterno || !out) return;
+
+    var TEXTO_VACIO = 'Se genera solo: nombre.apellido.inicial';
+
+    // minúsculas, sin tildes (ñ → n) y solo letras/números
+    function limpiar(texto) {
+        return texto.normalize('NFD')
+            .replace(/[̀-ͯ]/g, '')
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, '');
+    }
+
+    function actualizar() {
+        var primerNombre = limpiar((inNombre.value.trim().split(/\s+/)[0] || ''));
+        var paterno      = limpiar(inPaterno.value);
+        var inicialMat   = limpiar(inMaterno.value).charAt(0);
+
+        var partes = [primerNombre, paterno, inicialMat].filter(Boolean);
+
+        out.value = partes.length ? partes.join('.') : TEXTO_VACIO;
+    }
+
+    // Mayúscula automática en la primera letra de cada palabra mientras se
+    // escribe (juan carlos → Juan Carlos). Conserva la posición del cursor.
+    function capitalizarEnVivo(campo) {
+        campo.addEventListener('input', function () {
+            var pos   = campo.selectionStart;
+            var nuevo = campo.value.replace(/(^|[\s])([a-záéíóúñü])/g, function (m, antes, letra) {
+                return antes + letra.toUpperCase();
+            });
+
+            if (nuevo !== campo.value) {
+                campo.value = nuevo;
+                campo.setSelectionRange(pos, pos);
+            }
+        });
+    }
+
+    [inNombre, inPaterno, inMaterno].forEach(function (campo) {
+        capitalizarEnVivo(campo);          // primero capitaliza…
+        campo.addEventListener('input', actualizar); // …y luego refresca la vista previa
+    });
+
+    actualizar();
+})();
+</script>
 @endsection

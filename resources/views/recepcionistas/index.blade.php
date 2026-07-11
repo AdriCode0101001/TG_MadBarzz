@@ -75,13 +75,15 @@
                         <a href="{{ route('recepcionistas.edit', $r->id_recepcionista) }}" class="btn btn-sm btn-warning flex-grow-1">
                             <i class="fa-solid fa-pen-to-square me-1"></i> Editar
                         </a>
-                        <form action="{{ route('recepcionistas.destroy', $r->id_recepcionista) }}" method="POST"
-                              data-confirm="¿Eliminar a {{ $nombre }}?">
-                            @csrf @method('DELETE')
-                            <button class="btn btn-sm btn-danger" title="Eliminar">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </form>
+                        @if (Auth::user()->hasRole('Administrador'))
+                            <form action="{{ route('recepcionistas.destroy', $r->id_recepcionista) }}" method="POST"
+                                  data-confirm="¿Eliminar a {{ $nombre }}?">
+                                @csrf @method('DELETE')
+                                <button class="btn btn-sm btn-danger" title="Eliminar">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
+                        @endif
                     </div>
 
                 </div>

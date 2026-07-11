@@ -78,15 +78,17 @@
                                            class="btn btn-sm btn-warning" title="Editar">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </a>
-                                        <form action="{{ route('clientes.destroy', $cliente->id_cliente) }}"
-                                              method="POST"
-                                              data-confirm="¿Eliminar al cliente «{{ $nombre }}»? Esta acción no se puede deshacer.">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="btn btn-sm btn-danger" title="Eliminar">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
-                                        </form>
+                                        @unless (Auth::user()->hasRole('Entrenador'))
+                                            <form action="{{ route('clientes.destroy', $cliente->id_cliente) }}"
+                                                  method="POST"
+                                                  data-confirm="¿Eliminar al cliente «{{ $nombre }}»? Esta acción no se puede deshacer.">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="btn btn-sm btn-danger" title="Eliminar">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        @endunless
                                     </div>
                                 </td>
                             </tr>
