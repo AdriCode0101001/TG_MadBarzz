@@ -11,7 +11,11 @@
     $esActivo = fn($e) => strtolower((string)$e) === 'activo';
     $nombre   = fn($p) => trim(($p->nombre_completo ?? '') . ' ' . ($p->apellido_paterno ?? '') . ' ' . ($p->apellido_materno ?? '')) ?: '—';
 
-    $cliActivos   = $clientes->filter(fn($c) => $esActivo($c->estado))->count();
+    // "Clientes activos" = con membresía VIGENTE (pagaron y están al día),
+    // no por el campo estado del cliente. Mismo criterio central que usan
+    // asistencia, rutinas y biometría: Cliente::tieneMembresiaVigente().
+    // "Inactivos" = el complemento (sin membresía vigente).
+    $cliActivos   = $clientes->filter(fn($c) => $c->tieneMembresiaVigente())->count();
     $cliInactivos = $clientes->count() - $cliActivos;
     $entActivos   = $entrenadores->filter(fn($e) => $esActivo($e->estado))->count();
     $entInactivos = $entrenadores->count() - $entActivos;

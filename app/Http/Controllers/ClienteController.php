@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Models\MembresiaCliente;
 use App\Models\Asistencia;
 use App\Models\Pago;
-use App\Models\Rutina;
 use App\Services\UsernameService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -212,10 +211,7 @@ public function index(Request $request)
         // Pagos
         $pagos = Pago::where('id_cliente', $cliente->id)->get();
 
-        // Rutinas (todas creadas por entrenadores)
-        $rutinas = Rutina::with('entrenador.persona')->get();
-
-        return view('clientes.show', compact('cliente', 'membresia', 'asistencias', 'pagos', 'rutinas'));
+        return view('clientes.show', compact('cliente', 'membresia', 'asistencias', 'pagos'));
     }
 
 }

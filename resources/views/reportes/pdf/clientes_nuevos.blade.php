@@ -4,11 +4,17 @@
     <meta charset="utf-8">
     <title>Reporte - Clientes Nuevos del Mes</title>
     <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; }
+        body { font-family: DejaVu Sans, sans-serif; font-size: 11px; }
         h2, h4 { text-align: center; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #000; padding: 6px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; }
+        th, td { border: 1px solid #000; padding: 5px; text-align: center; word-wrap: break-word; }
         th { background-color: #f2f2f2; }
+        /* Anchos fijos para que la columna nueva (Celular) no desborde el A4 vertical */
+        .col-num    { width: 5%; }
+        .col-nombre { width: 33%; }
+        .col-ci     { width: 15%; }
+        .col-cel    { width: 22%; }
+        .col-fecha  { width: 25%; }
     </style>
 </head>
 <body>
@@ -21,10 +27,11 @@
     <table>
         <thead>
             <tr>
-                <th>#</th>
-                <th>Nombre Completo</th>
-                <th>CI</th>
-                <th>Fecha Registro</th>
+                <th class="col-num">#</th>
+                <th class="col-nombre">Nombre Completo</th>
+                <th class="col-ci">CI</th>
+                <th class="col-cel">Celular</th>
+                <th class="col-fecha">Fecha Registro</th>
             </tr>
         </thead>
         <tbody>
@@ -37,11 +44,12 @@
                     {{ $cliente->persona->apellido_materno ?? '' }}
                 </td>
                 <td>{{ $cliente->persona->ci ?? 'N/A' }}</td>
+                <td>{{ $cliente->persona?->telefonoLegible() ?? 'N/A' }}</td>
                 <td>{{ \Carbon\Carbon::parse($cliente->created_at)->format('d/m/Y') }}</td>
             </tr>
             @empty
             <tr>
-                <td colspan="4" class="text-center">No hay clientes nuevos en este mes.</td>
+                <td colspan="5" class="text-center">No hay clientes nuevos en este mes.</td>
             </tr>
             @endforelse
         </tbody>

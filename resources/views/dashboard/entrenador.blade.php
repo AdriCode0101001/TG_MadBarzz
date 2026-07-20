@@ -41,7 +41,7 @@
                     <i class="fa-solid fa-dumbbell"></i>
                 </div>
                 <div class="mb-cli-kpi__val">{{ $rutinas->count() }}</div>
-                <div class="mb-cli-kpi__label">Rutinas subidas</div>
+                <div class="mb-cli-kpi__label">Rutinas armadas</div>
             </div>
         </div>
         <div class="col-6 col-md-3">
@@ -80,8 +80,8 @@
             <div class="mb-cli-card h-100">
                 <div class="mb-cli-card__head d-flex justify-content-between align-items-center">
                     <span><i class="fa-solid fa-dumbbell me-2"></i> Mis Rutinas</span>
-                    <a href="{{ route('rutinas.create') }}" class="btn btn-primary btn-sm">
-                        <i class="fa-solid fa-circle-plus me-1"></i> Subir rutina
+                    <a href="{{ route('rutinas.index') }}" class="btn btn-primary btn-sm">
+                        <i class="fa-solid fa-calendar-days me-1"></i> Armar rutina
                     </a>
                 </div>
                 <div class="mb-cli-card__body p-0">
@@ -90,20 +90,16 @@
                             @foreach($rutinas->take(6) as $rutina)
                                 <li class="mb-cli-pay-list__item">
                                     <div style="width:44px;height:44px;border-radius:.5rem;overflow:hidden;flex-shrink:0;background:rgba(99,102,241,.1);display:flex;align-items:center;justify-content:center;">
-                                        @if($rutina->archivo)
-                                            <img src="{{ asset('storage/'.$rutina->archivo) }}" style="width:100%;height:100%;object-fit:cover;">
-                                        @else
-                                            <i class="fa-solid fa-dumbbell" style="color:#6366f1;font-size:.9rem;"></i>
-                                        @endif
+                                        <i class="fa-solid fa-dumbbell" style="color:#6366f1;font-size:.9rem;"></i>
                                     </div>
                                     <div class="mb-cli-pay-list__info flex-grow-1">
-                                        <div style="font-weight:600;color:#e2e8f0;font-size:.9rem;">{{ $rutina->titulo }}</div>
+                                        <div style="font-weight:600;color:#e2e8f0;font-size:.9rem;">{{ $rutina->fecha->translatedFormat('d \d\e F') }}</div>
                                         <div style="font-size:.75rem;color:#94a3b8;">
-                                            {{ \Illuminate\Support\Str::limit($rutina->descripcion, 60) }}
+                                            {{ $rutina->grupoMuscular->nombre ?? '—' }} · {{ $rutina->ejercicios_count }} ejercicio(s)
                                         </div>
                                     </div>
                                     <div class="d-flex gap-1">
-                                        <a href="{{ route('rutinas.edit', $rutina->id_rutina) }}" class="btn btn-sm btn-warning">
+                                        <a href="{{ route('rutinas.edit', $rutina->fecha->format('Y-m-d')) }}" class="btn btn-sm btn-warning">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </a>
                                     </div>
@@ -120,9 +116,9 @@
                     @else
                         <div class="mb-cli-empty" style="padding:2.5rem;">
                             <i class="fa-solid fa-dumbbell fa-2x mb-2 opacity-25"></i>
-                            <p>Aún no has subido rutinas.</p>
-                            <a href="{{ route('rutinas.create') }}" class="btn btn-primary btn-sm mt-1">
-                                <i class="fa-solid fa-circle-plus me-1"></i> Subir primera rutina
+                            <p>Aún no has armado rutinas.</p>
+                            <a href="{{ route('rutinas.index') }}" class="btn btn-primary btn-sm mt-1">
+                                <i class="fa-solid fa-calendar-days me-1"></i> Armar mi primera rutina
                             </a>
                         </div>
                     @endif

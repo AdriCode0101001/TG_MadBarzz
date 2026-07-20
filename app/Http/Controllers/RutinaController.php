@@ -2,131 +2,293 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CalendarioMusculo;
+use App\Models\Ejercicio;
+use App\Models\GrupoMuscular;
 use App\Models\Rutina;
-use App\Models\Entrenador;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use App\Models\Cliente;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
+/**
+ * Rutina estructurada (Etapa 3 del módulo de rutinas): el Entrenador (o
+ * Administrador) elige un día del calendario, ve qué grupo muscular toca,
+ * y arma su rutina eligiendo SOLO ejercicios de ese grupo, con series y
+ * repeticiones. Una rutina por persona por día (ver migración).
+ */
 class RutinaController extends Controller
 {
-    # =================== INDEX (ADMIN) ===================
-public function index(Request $request)
-{
-    $buscar = $request->get('buscar');
-
-    $rutinas = Rutina::with('entrenador.persona')
-        ->when($buscar, function($query, $buscar) {
-
-            // Buscar por título o entrenador
-            $query->where('titulo', 'like', "%{$buscar}%")
-                  ->orWhereHas('entrenador.persona', function($q) use ($buscar) {
-                      $q->where('nombre_completo', 'like', "%{$buscar}%")
-                        ->orWhere('apellido_paterno', 'like', "%{$buscar}%")
-                        ->orWhere('apellido_materno', 'like', "%{$buscar}%");
-                  });
-
-            // Buscar por fechas flexibles
-            if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $buscar, $matches)) {
-                // Formato dd/mm/yyyy
-                $fecha = "{$matches[3]}-{$matches[2]}-{$matches[1]}";
-                $query->orWhereDate('fecha_subida', $fecha);
-            } elseif (preg_match('/^(\d{2})\/(\d{2})$/', $buscar, $matches)) {
-                // Formato dd/mm (ignora año)
-                $dia = $matches[1];
-                $mes = $matches[2];
-                $query->orWhereRaw('DAY(fecha_subida) = ? AND MONTH(fecha_subida) = ?', [$dia, $mes]);
-            } elseif (preg_match('/^(\d{2})\/(\d{4})$/', $buscar, $matches)) {
-                // Formato mm/yyyy
-                $mes = $matches[1];
-                $anio = $matches[2];
-                $query->orWhereRaw('MONTH(fecha_subida) = ? AND YEAR(fecha_subida) = ?', [$mes, $anio]);
-            } elseif (preg_match('/^\d{4}$/', $buscar, $matches)) {
-                // Solo año
-                $anio = $buscar;
-                $query->orWhereYear('fecha_subida', $anio);
-            }
-        })
-        ->latest()
-        ->get();
-
-    return view('rutinas.index', compact('rutinas', 'buscar'));
-}
-
-
-
-    # =================== CREATE ===================
-    public function create()
+    private function sedeActual(): int
     {
-        $entrenadores = Entrenador::with('persona')->get();
-        return view('rutinas.create', compact('entrenadores'));
+        return Auth::user()->id_sede ?? 1;
     }
 
-    # =================== STORE ===================
-    public function store(Request $request)
+    /**
+     * Regla de validación: el ejercicio debe existir. En un día normal,
+     * además debe ser del grupo muscular del día. En un día "Full body" el
+     * catálogo no tiene ejercicios propios de esa categoría (el dataset no
+     * la trae), así que se permite cualquier grupo (o sin grupo).
+     */
+    private function reglaEjercicioDelGrupo(?int $idGrupo, bool $esFullBody): array
     {
-        $request->validate([
-            'id_entrenador' => 'required|exists:entrenadores,id_entrenador',
-            'titulo'        => 'required|string|max:255',
-            'descripcion'   => 'nullable|string',
-            'archivo'       => 'nullable|file|mimes:pdf,jpeg,png,jpg|max:10240',
-        ]);
+        return [
+            'required',
+            Rule::exists('ejercicios', 'id')->where(function ($q) use ($idGrupo, $esFullBody) {
+                $q->whereNull('deleted_at');
+                if (!$esFullBody) {
+                    $q->where('id_grupo_muscular', $idGrupo);
+                }
+            }),
+        ];
+    }
 
-        $data = $request->only(['id_entrenador', 'titulo', 'descripcion']);
-        $data['fecha_subida'] = now();
-
-        if ($request->hasFile('archivo')) {
-            $filename = time() . '_' . $request->file('archivo')->getClientOriginalName();
-            $request->file('archivo')->storeAs('rutinas', $filename, 'public');
-            $data['archivo'] = 'rutinas/' . $filename;
+    public function index(Request $request)
+    {
+        $hoy  = Carbon::now('America/La_Paz');
+        $anio = (int) $request->query('anio', $hoy->year);
+        $mes  = (int) $request->query('mes', $hoy->month);
+        if ($mes < 1 || $mes > 12) {
+            $mes = $hoy->month;
         }
 
-        Rutina::create($data);
+        $inicioMes = Carbon::createFromDate($anio, $mes, 1)->startOfMonth();
+        $finMes    = $inicioMes->copy()->endOfMonth();
+        $inicioGrilla = $inicioMes->copy()->startOfWeek(Carbon::MONDAY);
+        $finGrilla    = $finMes->copy()->endOfWeek(Carbon::SUNDAY);
 
-        return redirect()->route('rutinas.index')->with('success', 'Rutina subida correctamente.');
-    }
+        $sedeId = $this->sedeActual();
 
-    # =================== EDIT ===================
-    public function edit(Rutina $rutina)
-    {
-        $entrenadores = Entrenador::with('persona')->get();
-        return view('rutinas.edit', compact('rutina', 'entrenadores'));
-    }
+        $calendario = CalendarioMusculo::with('grupoMuscular')
+            ->where('id_sede', $sedeId)
+            ->whereBetween('fecha', [$inicioGrilla->toDateString(), $finGrilla->toDateString()])
+            ->get()
+            ->keyBy(fn ($c) => $c->fecha->toDateString());
 
-    # =================== UPDATE ===================
-    public function update(Request $request, Rutina $rutina)
-    {
-        $request->validate([
-            'id_entrenador' => 'required|exists:entrenadores,id_entrenador',
-            'titulo'        => 'required|string|max:255',
-            'descripcion'   => 'nullable|string',
-            'archivo'       => 'nullable|file|mimes:pdf,jpeg,png,jpg|max:10240',
-        ]);
+        $misRutinas = Rutina::where('id_usuario', Auth::id())
+            ->whereBetween('fecha', [$inicioGrilla->toDateString(), $finGrilla->toDateString()])
+            ->withCount('ejercicios')
+            ->get()
+            ->keyBy(fn ($r) => $r->fecha->toDateString());
 
-        $data = $request->only(['id_entrenador', 'titulo', 'descripcion']);
-
-        if ($request->hasFile('archivo')) {
-            if ($rutina->archivo && Storage::disk('public')->exists($rutina->archivo)) {
-                Storage::disk('public')->delete($rutina->archivo);
+        $semanas = [];
+        $semana  = [];
+        for ($f = $inicioGrilla->copy(); $f->lte($finGrilla); $f->addDay()) {
+            $fStr = $f->toDateString();
+            $semana[] = [
+                'fecha'      => $f->copy(),
+                'enElMes'    => $f->month === $mes,
+                'esDomingo'  => $f->dayOfWeekIso === 7,
+                'calendario' => $calendario->get($fStr),
+                'miRutina'   => $misRutinas->get($fStr),
+            ];
+            if ($f->dayOfWeekIso === 7) {
+                $semanas[] = $semana;
+                $semana = [];
             }
-
-            $filename = time() . '_' . $request->file('archivo')->getClientOriginalName();
-            $request->file('archivo')->storeAs('rutinas', $filename, 'public');
-            $data['archivo'] = 'rutinas/' . $filename;
-            $data['fecha_subida'] = now();
         }
 
-        $rutina->update($data);
+        $mesAnterior = $mes === 1 ? 12 : $mes - 1;
+        $anioMesAnterior = $mes === 1 ? $anio - 1 : $anio;
+        $mesSiguiente = $mes === 12 ? 1 : $mes + 1;
+        $anioMesSiguiente = $mes === 12 ? $anio + 1 : $anio;
 
-        return redirect()->route('rutinas.index')->with('success', 'Rutina actualizada correctamente.');
+        // El Administrador además ve (y puede borrar) las rutinas de TODO el personal.
+        $todasLasRutinas = null;
+        if (Auth::user()->hasRole('Administrador')) {
+            $todasLasRutinas = Rutina::with(['grupoMuscular', 'usuario'])
+                ->withCount('ejercicios')
+                ->orderByDesc('fecha')
+                ->get();
+        }
+
+        return view('rutinas.index', [
+            'anio' => $anio, 'mes' => $mes,
+            'mesAnterior' => $mesAnterior, 'anioMesAnterior' => $anioMesAnterior,
+            'mesSiguiente' => $mesSiguiente, 'anioMesSiguiente' => $anioMesSiguiente,
+            'semanas' => $semanas,
+            'todasLasRutinas' => $todasLasRutinas,
+        ]);
     }
 
-    # =================== DESTROY ===================
+    /** Pantalla para armar/editar MI rutina de un día (crea si no existe todavía). */
+    public function edit(string $fecha)
+    {
+        $fechaCarbon = Carbon::createFromFormat('Y-m-d', $fecha)->startOfDay();
+
+        if ($fechaCarbon->dayOfWeekIso === 7) {
+            return redirect()->route('rutinas.index')
+                ->with('error', 'El gimnasio cierra los domingos: no se puede armar rutina.');
+        }
+
+        $sedeId = $this->sedeActual();
+        $calendario = CalendarioMusculo::with('grupoMuscular')
+            ->where('id_sede', $sedeId)
+            ->where('fecha', $fechaCarbon->toDateString())
+            ->first();
+
+        if (!$calendario) {
+            return redirect()->route('rutinas.index')
+                ->with('error', 'Este día todavía no tiene un grupo muscular asignado en el calendario.');
+        }
+
+        $rutina = Rutina::with('ejercicios.ejercicio')
+            ->where('id_usuario', Auth::id())
+            ->where('fecha', $fechaCarbon->toDateString())
+            ->first();
+
+        $esFullBody = (bool) ($calendario->grupoMuscular->es_full_body ?? false);
+
+        // Día normal: solo el grupo del día (como siempre). Día "Full body":
+        // el dataset no clasificó nada como "Full body", así que se ofrece
+        // el catálogo completo (con su grupo, para las pestañas) y el
+        // entrenador elige libremente de cualquier grupo.
+        $ejerciciosDelGrupo = $esFullBody
+            ? Ejercicio::orderBy('nombre')->get(['id', 'nombre', 'imagen', 'category', 'target', 'equipment', 'id_grupo_muscular'])
+            : Ejercicio::where('id_grupo_muscular', $calendario->id_grupo_muscular)
+                ->orderBy('nombre')
+                ->get(['id', 'nombre', 'imagen', 'category', 'target', 'equipment', 'id_grupo_muscular']);
+
+        $gruposParaTabs = $esFullBody
+            ? GrupoMuscular::activos()->where('es_full_body', false)->orderBy('nombre')->get(['id', 'nombre'])
+            : collect();
+
+        $seleccionados = $rutina
+            ? $rutina->ejercicios->map(fn ($re) => [
+                'id_ejercicio' => $re->id_ejercicio,
+                'nombre'       => $re->ejercicio->nombre ?? '(ejercicio eliminado)',
+                'imagen'       => $re->ejercicio->imagen ?? null,
+                'series'       => $re->series,
+                'repeticiones' => $re->repeticiones,
+                'nota'         => $re->nota,
+                'media_propio' => $re->media_propio,
+                'quitar_media' => false,
+            ])->values()
+            : collect();
+
+        return view('rutinas.edit', [
+            'fechaCarbon'        => $fechaCarbon,
+            'calendario'         => $calendario,
+            'rutina'             => $rutina,
+            'ejerciciosDelGrupo' => $ejerciciosDelGrupo,
+            'seleccionados'      => $seleccionados,
+            'esFullBody'         => $esFullBody,
+            'gruposParaTabs'     => $gruposParaTabs,
+        ]);
+    }
+
+    /** Guarda (crea o actualiza) MI rutina del día: reemplaza todos sus ejercicios. */
+    public function update(Request $request, string $fecha)
+    {
+        $fechaCarbon = Carbon::createFromFormat('Y-m-d', $fecha)->startOfDay();
+
+        if ($fechaCarbon->dayOfWeekIso === 7) {
+            return back()->withErrors(['fecha' => 'El gimnasio cierra los domingos: no se puede armar rutina.']);
+        }
+
+        $sedeId = $this->sedeActual();
+        $calendario = CalendarioMusculo::where('id_sede', $sedeId)
+            ->where('fecha', $fechaCarbon->toDateString())
+            ->first();
+
+        if (!$calendario) {
+            return back()->withErrors(['fecha' => 'Este día todavía no tiene un grupo muscular asignado en el calendario.']);
+        }
+
+        $idGrupo = $calendario->id_grupo_muscular;
+        $esFullBody = (bool) (GrupoMuscular::find($idGrupo)?->es_full_body ?? false);
+
+        $data = $request->validate([
+            'ejercicios'                 => 'array',
+            'ejercicios.*.id_ejercicio'  => $this->reglaEjercicioDelGrupo($idGrupo, $esFullBody),
+            'ejercicios.*.series'        => 'required|integer|min:1|max:50',
+            'ejercicios.*.repeticiones'  => 'required|string|max:20',
+            'ejercicios.*.nota'          => 'nullable|string|max:255',
+            'ejercicios.*.media'         => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4,webm|max:20480',
+            'ejercicios.*.quitar_media'  => 'nullable|boolean',
+        ]);
+
+        DB::transaction(function () use ($fechaCarbon, $idGrupo, $sedeId, $data, $request) {
+            $rutina = Rutina::withTrashed()->firstOrNew([
+                'id_usuario' => Auth::id(),
+                'fecha'      => $fechaCarbon->toDateString(),
+            ]);
+            $rutina->id_grupo_muscular = $idGrupo;
+            $rutina->id_sede = $sedeId;
+            $rutina->trashed() ? $rutina->restore() : $rutina->save();
+
+            // Media propio (por rutina-ejercicio) de ANTES de reemplazar la
+            // lista, para poder conservarlo si el entrenador no lo tocó, y
+            // para saber qué archivos físicos quedan huérfanos y borrar.
+            $mediaAnteriorPorEjercicio = $rutina->ejercicios()->pluck('media_propio', 'id_ejercicio')->filter()->all();
+            $mediaEnUso = [];
+
+            // Reemplaza la lista completa: más simple y robusto que diffear
+            // altas/bajas/reordenamientos fila por fila.
+            $rutina->ejercicios()->delete();
+            foreach (($data['ejercicios'] ?? []) as $i => $item) {
+                $mediaPropio = $mediaAnteriorPorEjercicio[$item['id_ejercicio']] ?? null;
+                $archivo = $request->file("ejercicios.{$i}.media");
+
+                if ($archivo instanceof UploadedFile) {
+                    $mediaPropio = $this->guardarMediaPropio($archivo, $rutina->id);
+                } elseif (!empty($item['quitar_media'])) {
+                    $mediaPropio = null;
+                }
+
+                if ($mediaPropio) {
+                    $mediaEnUso[] = $mediaPropio;
+                }
+
+                $rutina->ejercicios()->create([
+                    'id_ejercicio' => $item['id_ejercicio'],
+                    'series'       => $item['series'],
+                    'repeticiones' => $item['repeticiones'],
+                    'nota'         => $item['nota'] ?? null,
+                    'orden'        => $i,
+                    'media_propio' => $mediaPropio,
+                ]);
+            }
+
+            // Ejercicios reemplazados/quitados/con "quitar media": su archivo
+            // anterior ya no está en uso en ninguna fila nueva, se borra.
+            foreach ($mediaAnteriorPorEjercicio as $pathAnterior) {
+                if (!in_array($pathAnterior, $mediaEnUso, true)) {
+                    Storage::disk('public')->delete($pathAnterior);
+                }
+            }
+        });
+
+        return redirect()->route('rutinas.edit', $fechaCarbon->toDateString())
+            ->with('success', 'Rutina guardada correctamente.');
+    }
+
+    /** Guarda el media propio del entrenador para un ejercicio de SU rutina. */
+    private function guardarMediaPropio(UploadedFile $archivo, int $idRutina): string
+    {
+        return $archivo->store("rutinas/{$idRutina}", 'public');
+    }
+
+    /** Detalle de solo lectura: el dueño o el Administrador. */
+    public function show(Rutina $rutina)
+    {
+        $this->autorizarDueñoOAdmin($rutina);
+
+        $rutina->load(['grupoMuscular', 'usuario', 'ejercicios.ejercicio']);
+
+        return view('rutinas.show', compact('rutina'));
+    }
+
+    /** Borrar: el dueño, o el Administrador (de cualquier entrenador). */
     public function destroy(Rutina $rutina)
     {
-        if ($rutina->archivo && Storage::disk('public')->exists($rutina->archivo)) {
-            Storage::disk('public')->delete($rutina->archivo);
+        $this->autorizarDueñoOAdmin($rutina);
+
+        foreach ($rutina->ejercicios()->pluck('media_propio')->filter() as $path) {
+            Storage::disk('public')->delete($path);
         }
 
         $rutina->delete();
@@ -134,20 +296,11 @@ public function index(Request $request)
         return redirect()->route('rutinas.index')->with('success', 'Rutina eliminada correctamente.');
     }
 
-    # =================== SHOW (GENERAL) ===================
-    public function show()
+    private function autorizarDueñoOAdmin(Rutina $rutina): void
     {
-        // 🔹 Ahora muestra TODAS las rutinas a los clientes, sin importar asignación
-        $rutinas = Rutina::with('entrenador.persona')->latest()->get();
+        $esDueño = $rutina->id_usuario === Auth::id();
+        $esAdmin = Auth::user()->hasRole('Administrador');
 
-        return view('rutinas.show', compact('rutinas'));
-    }
-
-
-    # =================== VER RUTINA DETALLE ===================
-    public function verRutina($id)
-    {
-        $rutina = Rutina::with('entrenador.persona')->findOrFail($id);
-        return view('rutinas.verrutina', compact('rutina'));
+        abort_unless($esDueño || $esAdmin, 403, 'No tienes permiso para acceder a la rutina de otro entrenador.');
     }
 }

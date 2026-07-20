@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             RolesSeeder::class,
             UsersSeeder::class,
             MembresiasSeeder::class,
+            GruposMuscularesSeeder::class,
             ClienteSeeder::class,
             EntrenadorSeeder::class,
             RecepcionistaSeeder::class,

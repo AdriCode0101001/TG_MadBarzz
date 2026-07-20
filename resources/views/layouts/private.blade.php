@@ -645,6 +645,9 @@
                                 request()->routeIs('administradores.*')              => ['fa-solid fa-user-shield',       'Administradores'],
                                 request()->routeIs('pagos.*')                        => ['fa-solid fa-money-bill-wave',   'Pagos'],
                                 request()->routeIs('rutinas.*')                      => ['fa-solid fa-list-check',        'Rutinas'],
+                                request()->routeIs('grupos_musculares.*')            => ['fa-solid fa-dumbbell',          'Grupos Musculares'],
+                                request()->routeIs('calendario_musculos.*')          => ['fa-solid fa-calendar-days',     'Calendario de Músculos'],
+                                request()->routeIs('ejercicios.*')                   => ['fa-solid fa-book-open',         'Ejercicios'],
                                 request()->routeIs('asistencias.qr')                 => ['fa-solid fa-qrcode',            'Registrar Asistencia por QR'],
                                 request()->routeIs('asistencias.*')                  => ['fa-solid fa-calendar-check',   'Asistencias'],
                                 request()->routeIs('reportes.*')                     => ['fa-solid fa-chart-bar',         'Reportes'],
@@ -653,7 +656,7 @@
                                 request()->routeIs('descuentos.*')                   => ['fa-solid fa-tags',              'Descuentos'],
                                 request()->routeIs('qr_pago.edit')                   => ['fa-solid fa-qrcode',            'QR de Pago'],
                                 request()->routeIs('portal.membresia')               => ['fa-solid fa-id-badge',          'Mi Membresía'],
-                                request()->routeIs('portal.rutinas')                 => ['fa-solid fa-dumbbell',          'Mis Rutinas'],
+                                request()->routeIs('portal.rutina')                  => ['fa-solid fa-dumbbell',          'Mi Rutina'],
                                 request()->routeIs('profile.*')                      => ['fa-solid fa-circle-user',       'Mi Perfil'],
                                 default                                              => ['fa-solid fa-gauge-high',        'Panel de Control'],
                             };
@@ -841,7 +844,7 @@
                                 @if ($userRol === 'Cliente')
                                     <li><a href="{{ route('asistencias.mis') }}"><i class="fa-solid fa-calendar-check me-2"></i>Mis Asistencias</a></li>
                                     <li><a href="{{ route('pagos.mis-pagos') }}"><i class="fa-solid fa-money-bill-wave me-2"></i>Mis Pagos</a></li>
-                                    <li><a href="{{ route('portal.rutinas') }}"><i class="fa-solid fa-dumbbell me-2"></i>Mis Rutinas</a></li>
+                                    <li><a href="{{ route('portal.rutina') }}"><i class="fa-solid fa-dumbbell me-2"></i>Mi Rutina</a></li>
                                 @else
                                     <li><a href="{{ route('asistencias.qr') }}"><i class="fa-solid fa-qrcode me-2"></i>Registrar Asistencia (QR)</a></li>
                                     <!--  <li><a href="{{ route('asistencias.index') }}">Asistencias</a></li> -->
@@ -849,7 +852,14 @@
                                         <li><a href="{{ route('notificaciones.index') }}"><i class="fa-solid fa-bell me-2"></i>Notificaciones</a></li>
                                     @endif
                                     <li><a href="{{ route('pagos.index') }}"><i class="fa-solid fa-money-bill-wave me-2"></i>Pagos</a></li>
-                                    <li><a href="{{ route('rutinas.index') }}"><i class="fa-solid fa-list-check me-2"></i>Rutinas</a></li>
+                                    @if (in_array($userRol, ['Administrador', 'Entrenador']))
+                                        <li><a href="{{ route('rutinas.index') }}"><i class="fa-solid fa-list-check me-2"></i>Rutinas</a></li>
+                                    @endif
+                                    <li><a href="{{ route('grupos_musculares.index') }}"><i class="fa-solid fa-dumbbell me-2"></i>Grupos Musculares</a></li>
+                                    @if ($userRol === 'Administrador')
+                                        <li><a href="{{ route('calendario_musculos.index') }}"><i class="fa-solid fa-calendar-days me-2"></i>Calendario de Músculos</a></li>
+                                        <li><a href="{{ route('ejercicios.index') }}"><i class="fa-solid fa-book-open me-2"></i>Ejercicios</a></li>
+                                    @endif
                                 @endif
                             </ul>
                         </li>
@@ -1071,7 +1081,18 @@
         document.addEventListener('DOMContentLoaded', function () {
             mbApplyTheme(mbSavedTheme());
             var btn = document.getElementById('theme-toggle');
-            if (btn) btn.addEventListener('click', function (e) { e.preventDefault(); toggleTheme(); });
+            if (btn) btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                // El botón también lleva la clase "dz-theme-mode" de la plantilla,
+                // que registra SU PROPIO click handler (custom.js, handleThemeMode) con
+                // una lógica de tema paralela basada en cookies en vez de localStorage.
+                // Sin esto, cada clic dispara ambos handlers y se pisan entre sí,
+                // dejando localStorage y el tema visible desincronizados desde el
+                // primer clic (y no solo al hacer zoom). Frenamos el evento aquí para
+                // que el handler de la plantilla ni siquiera llegue a ejecutarse.
+                e.stopImmediatePropagation();
+                toggleTheme();
+            });
         });
 
         jQuery(document).ready(function () {
@@ -1080,6 +1101,22 @@
             window.dezSettingsOptions.version = saved;
             try { new dezSettings(window.dezSettingsOptions); } catch (e) {}
             mbApplyTheme(saved); // reasegurar después de dezSettings
+
+            // La plantilla (custom.js, handleThemeMode) registra su PROPIO
+            // listener de "resize" que reimpone el tema guardado en una
+            // cookie ("version") — un sistema paralelo al nuestro, que solo
+            // usa localStorage. El zoom del navegador (Ctrl + scroll/rueda)
+            // dispara "resize", así que si esa cookie no existe o quedó
+            // desactualizada (expira a los 30 min), la plantilla pisaba
+            // nuestro tema y la pantalla volvía a claro. Como no tocamos el
+            // JS de la plantilla, registramos nuestro propio listener DESPUÉS
+            // (los handlers de un mismo evento corren en el orden en que se
+            // registraron, y el de la plantilla ya se registró más arriba en
+            // este mismo ready()), así el nuestro corre siempre al final y
+            // reafirma el valor real de localStorage.
+            jQuery(window).on('resize', function () {
+                mbApplyTheme(mbSavedTheme());
+            });
         });
     </script>
     {{-- ============ Capa de experiencia MadBarzz ============ --}}
@@ -1105,6 +1142,10 @@
     <script src="{{ asset('assets_private/vendor/sweetalert2/sweetalert2.min.js') }}"></script>
     <script src="{{ asset('assets_private/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('assets_private/js/app-ui.js') }}"></script>
+    {{-- Alpine.js (self-hosted, sin CDN, mismo patrón que el resto de vendor/):
+         usado por la pantalla de armar rutinas para el buscador/lista de
+         ejercicios dinámica. "defer" lo inicializa solo tras parsear el DOM. --}}
+    <script src="{{ asset('assets_private/vendor/alpinejs/alpine.min.js') }}" defer></script>
     @stack('scripts')
     @yield('page_scripts')
 <script>

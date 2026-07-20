@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Filament\Concerns\FiltraPorSede;
+use App\Models\Cliente;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\DB;
@@ -20,15 +21,14 @@ class EstadisticasGenerales extends StatsOverviewWidget
 
     protected function getStats(): array
     {
-        // ── Clientes activos vs inactivos ──
-        $clientes = $this->filtrarPorSede(
-                DB::table('clientes')->whereNull('deleted_at')
-            )
-            ->selectRaw("SUM(CASE WHEN estado = 'activo' THEN 1 ELSE 0 END) as activos, COUNT(*) as total")
-            ->first();
-
-        $activos   = (int) ($clientes->activos ?? 0);
-        $total     = (int) ($clientes->total ?? 0);
+        // ── Clientes con membresía vigente (activos) vs sin ella (inactivos) ──
+        // Mismo criterio central que asistencia/rutinas/biometría:
+        // Cliente::tieneMembresiaVigente(), no el campo estado. Eloquent
+        // (no DB::table) para reutilizar exactamente ese método, y porque
+        // así también excluye clientes con soft-delete automáticamente.
+        $clientes  = $this->filtrarPorSede(Cliente::query(), 'id_sede')->get();
+        $total     = $clientes->count();
+        $activos   = $clientes->filter(fn (Cliente $c) => $c->tieneMembresiaVigente())->count();
         $inactivos = $total - $activos;
         $pct       = $total > 0 ? round($activos * 100 / $total) : 0;
 

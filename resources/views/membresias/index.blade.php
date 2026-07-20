@@ -71,7 +71,8 @@
             </div>
         </div>
         @if (method_exists($membresias, 'links'))
-            <div class="card-footer d-flex justify-content-end">{{ $membresias->withQueryString()->links() }}</div>
+            {{-- pagination::bootstrap-5: ver fix/motivo en ejercicios/index.blade.php --}}
+            <div class="card-footer d-flex justify-content-end">{{ $membresias->withQueryString()->links('pagination::bootstrap-5') }}</div>
         @endif
     </div>
 </div>

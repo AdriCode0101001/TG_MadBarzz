@@ -147,7 +147,7 @@ class PagoMembresiaActivacionTest extends TestCase
         $this->assertDatabaseCount('asistencias', 0);
     }
 
-    public function test_membresia_pendiente_de_pago_no_muestra_rutinas_ni_en_portal_ni_en_dashboard(): void
+    public function test_membresia_pendiente_de_pago_no_cuenta_como_activa_en_mi_membresia(): void
     {
         $cliente = $this->crearCliente();
 
@@ -161,11 +161,6 @@ class PagoMembresiaActivacionTest extends TestCase
             'descuento'    => 0,
             'estado'       => MembresiaCliente::ESTADO_PENDIENTE,
         ]);
-
-        $this->actingAs($cliente->user)
-             ->get('/mis-rutinas')
-             ->assertStatus(200)
-             ->assertSee('Las rutinas están disponibles para socios con membresía activa');
 
         $this->actingAs($cliente->user)
              ->get('/mi-membresia')
@@ -273,11 +268,6 @@ class PagoMembresiaActivacionTest extends TestCase
         $resultado = $servicio->registrarEntrada($cliente, $sede->id_sede);
         $this->assertTrue($resultado['permitido']);
         $this->assertDatabaseCount('asistencias', 1);
-
-        $this->actingAs($cliente->user)
-             ->get('/mis-rutinas')
-             ->assertStatus(200)
-             ->assertDontSee('Las rutinas están disponibles para socios con membresía activa');
     }
 
     public function test_migracion_deja_activas_las_membresias_que_ya_existian_antes_del_cambio(): void

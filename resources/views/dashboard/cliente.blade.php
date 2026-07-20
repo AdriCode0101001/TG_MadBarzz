@@ -71,10 +71,10 @@
         <div class="col-6 col-md-3">
             <div class="mb-cli-kpi">
                 <div class="mb-cli-kpi__icon" style="background:rgba(59,130,246,.15);color:#3b82f6;">
-                    <i class="fa-solid fa-dumbbell"></i>
+                    <i class="fa-solid fa-calendar-check"></i>
                 </div>
-                <div class="mb-cli-kpi__val">{{ $rutinas->count() }}</div>
-                <div class="mb-cli-kpi__label">Rutinas disponibles</div>
+                <div class="mb-cli-kpi__val">{{ $asistencias->count() }}</div>
+                <div class="mb-cli-kpi__label">Asistencias totales</div>
             </div>
         </div>
     </div>
@@ -228,55 +228,6 @@
             @endif
         </div>
     </div>
-
-    {{-- ── RUTINAS ── --}}
-    @if($rutinas->count())
-    <div class="mb-cli-card mb-4">
-        <div class="mb-cli-card__head">
-            <i class="fa-solid fa-dumbbell me-2"></i> Rutinas disponibles
-        </div>
-        <div class="mb-cli-card__body">
-            <div class="row g-3">
-                @foreach($rutinas as $rutina)
-                <div class="col-md-4 col-sm-6">
-                    <div class="mb-cli-rutina">
-                        @if($rutina->archivo)
-                            <img src="{{ asset('storage/'.$rutina->archivo) }}" class="mb-cli-rutina__img" alt="">
-                        @else
-                            <div class="mb-cli-rutina__placeholder">
-                                <i class="fa-solid fa-dumbbell"></i>
-                            </div>
-                        @endif
-                        <div class="mb-cli-rutina__body">
-                            <div class="mb-cli-rutina__title">{{ $rutina->titulo }}</div>
-                            <div class="mb-cli-rutina__trainer">
-                                <i class="fa-solid fa-user-tie me-1"></i>
-                                {{ $rutina->entrenador->persona->nombre_completo ?? 'Sin asignar' }}
-                            </div>
-                            <p class="mb-cli-rutina__desc">{{ \Illuminate\Support\Str::limit($rutina->descripcion, 90) }}</p>
-                        </div>
-                    </div>
-                </div>
-                @endforeach
-            </div>
-        </div>
-    </div>
-    @else
-    <div class="mb-cli-card mb-4">
-        <div class="mb-cli-card__head">
-            <i class="fa-solid fa-dumbbell me-2"></i> Rutinas disponibles
-        </div>
-        <div class="mb-cli-card__body text-center py-4" style="color:#94a3b8;">
-            <i class="fa-solid fa-dumbbell d-block mb-2" style="font-size:2rem;opacity:.35;"></i>
-            @if(!$tieneMembresiaVigente)
-                <p class="mb-0">Las rutinas están disponibles para socios con membresía activa.</p>
-                <small>Renueva tu membresía para acceder.</small>
-            @else
-                <p class="mb-0">No hay rutinas publicadas todavía.</p>
-            @endif
-        </div>
-    </div>
-    @endif
 
     {{-- ── VINCULACIÓN DE TELEGRAM ── --}}
     @php $chatId = $cliente->persona->telegram_chat_id ?? null; @endphp
@@ -450,16 +401,6 @@
 .mb-cli-pay-list__info { flex: 1; }
 .mb-cli-pay-list__date { font-size: .85rem; color: #94a3b8; }
 .mb-cli-pay-list__amount { font-weight: 700; color: #e2e8f0; font-size: .9rem; }
-
-/* ── rutinas ── */
-.mb-cli-rutina { background: rgba(255,255,255,.03); border-radius: 1rem; overflow: hidden; border: 1px solid rgba(255,255,255,.06); transition: transform .2s, box-shadow .2s; height: 100%; }
-.mb-cli-rutina:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,.3); }
-.mb-cli-rutina__img { width: 100%; height: 140px; object-fit: cover; }
-.mb-cli-rutina__placeholder { width: 100%; height: 140px; background: rgba(99,102,241,.12); display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #6366f1; opacity: .5; }
-.mb-cli-rutina__body   { padding: 1rem; }
-.mb-cli-rutina__title  { font-weight: 700; color: #e2e8f0; margin-bottom: .3rem; }
-.mb-cli-rutina__trainer { font-size: .78rem; color: #6366f1; margin-bottom: .5rem; }
-.mb-cli-rutina__desc   { font-size: .8rem; color: #94a3b8; margin: 0; }
 
 /* ── carnet ── */
 .mb-cli-carnet {

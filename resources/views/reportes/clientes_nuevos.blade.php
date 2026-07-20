@@ -55,6 +55,7 @@
                 <th>#</th>
                 <th>Nombre Completo</th>
                 <th>CI</th>
+                <th>Celular</th>
                 <th>Fecha Registro</th>
             </tr>
         </thead>
@@ -68,11 +69,12 @@
                     {{ $cliente->persona->apellido_materno ?? '' }}
                 </td>
                 <td>{{ $cliente->persona->ci ?? 'N/A' }}</td>
+                <td>{{ $cliente->persona?->telefonoLegible() ?? 'N/A' }}</td>
                 <td>{{ $cliente->created_at ? \Carbon\Carbon::parse($cliente->created_at)->format('d/m/Y') : 'No registrada' }}</td>
             </tr>
             @empty
             <tr>
-                <td colspan="4" class="text-center">No hay clientes nuevos para este mes y año.</td>
+                <td colspan="5" class="text-center">No hay clientes nuevos para este mes y año.</td>
             </tr>
             @endforelse
         </tbody>

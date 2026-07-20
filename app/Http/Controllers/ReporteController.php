@@ -80,10 +80,14 @@ public function exportClientesEstadoPDF(Request $request)
             return [$m => Carbon::create()->month($m)->locale('es')->monthName];
         });
 
-        $anios = Cliente::selectRaw('YEAR(created_at) as anio')
-                        ->distinct()
-                        ->orderBy('anio','desc')
-                        ->pluck('anio');
+        // Años distintos con clientes registrados, para el <select> del filtro.
+        // Se calcula en PHP (no con YEAR() de SQL) para no depender del motor
+        // de base de datos.
+        $anios = Cliente::pluck('created_at')
+            ->map(fn ($fecha) => Carbon::parse($fecha)->year)
+            ->unique()
+            ->sortDesc()
+            ->values();
 
         return view('reportes.clientes_nuevos', compact('clientes', 'meses', 'anios', 'mes', 'anio'));
     }
@@ -111,8 +115,10 @@ public function exportClientesEstadoPDF(Request $request)
 // =============================
 public function clientesMembresiaVencida(Request $request)
 {
-    $mes = $request->mes;
-    $anio = $request->anio;
+    // Mes/año actuales por defecto: el filtro llega precargado con el
+    // período en curso, sin que el usuario tenga que elegirlo a mano.
+    $mes = $request->input('mes', Carbon::now()->month);
+    $anio = $request->input('anio', Carbon::now()->year);
 
     // Traer solo clientes que tienen al menos una membresía
     $clientes = Cliente::whereHas('membresias')
@@ -134,13 +140,14 @@ public function clientesMembresiaVencida(Request $request)
             return $venceProximo && $mesValido && $anioValido;
         });
 
-    return view('reportes.clientes_membresia_vencida', compact('clientes'));
+    return view('reportes.clientes_membresia_vencida', compact('clientes', 'mes', 'anio'));
 }
 
 public function exportClientesMembresiaVencidaPDF(Request $request)
 {
-    $mes = $request->mes;
-    $anio = $request->anio;
+    // Mismo default que la pantalla: mes/año actuales si no se especifican.
+    $mes = $request->input('mes', Carbon::now()->month);
+    $anio = $request->input('anio', Carbon::now()->year);
 
     $clientes = Cliente::whereHas('membresias')
         ->with(['persona', 'membresias'])
@@ -186,7 +193,9 @@ public function pagosPorMes()
         ->orderBy('fecha_pago', 'desc')
         ->get();
 
-    return view('reportes.pagos_por_mes', compact('pagos'));
+    // Se pasan mes/año a la vista para que el <select> quede precargado
+    // con el período actual (y no solo la consulta detrás de cámaras).
+    return view('reportes.pagos_por_mes', compact('pagos', 'mes', 'anio'));
 }
 
 public function exportPagosPorMesPDF()

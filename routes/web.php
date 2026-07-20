@@ -24,7 +24,10 @@ use App\Http\Controllers\RutinaController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\PromocionController;
 use App\Http\Controllers\ClientePortalController;
+use App\Http\Controllers\CalendarioMusculoController;
 use App\Http\Controllers\DescuentoController;
+use App\Http\Controllers\EjercicioController;
+use App\Http\Controllers\GrupoMuscularController;
 use App\Http\Controllers\QrPagoController;
 
 // -----------------------------------------------------------------------
@@ -32,6 +35,18 @@ use App\Http\Controllers\QrPagoController;
 // -----------------------------------------------------------------------
 Route::get('/', fn () => view('welcome'));
 Route::get('/public', fn () => view('layouts.public'))->name('public');
+
+// -----------------------------------------------------------------------
+// PREVIEW de la nueva home pública (plantilla GymOn, Homepage 2). Ruta de
+// prueba en paralelo a "/" — no reemplaza la home real todavía.
+// -----------------------------------------------------------------------
+Route::get('/preview-gymon', function (\Illuminate\Http\Request $request) {
+    $temaOscuro = $request->cookie('gymon_tema', 'dark') !== 'light';
+    $waLink = 'https://wa.me/59176372337?text=Hola,%20quiero%20unirme%20a%20la%20Calistenia%20MadBarzz.';
+    $membresias = \App\Models\Membresia::orderBy('precio')->get();
+
+    return view('welcome-gymon', compact('temaOscuro', 'waLink', 'membresias'));
+})->name('preview.gymon');
 
 // -----------------------------------------------------------------------
 // Autenticación (Breeze)
@@ -89,6 +104,27 @@ Route::middleware(['auth', 'role:Administrador'])->group(function () {
     Route::resource('membresias', MembresiaController::class)->except(['index']);
     Route::resource('descuentos', DescuentoController::class)->except(['index', 'show']);
 
+    // Catálogo de grupos musculares (base del futuro calendario de rutinas):
+    // SOLO Admin gestiona. El listado (index) es de solo lectura para todo
+    // el personal (ver grupo de los tres roles más abajo).
+    Route::resource('grupos_musculares', GrupoMuscularController::class)
+        ->except(['index', 'show'])
+        ->parameters(['grupos_musculares' => 'grupo_muscular']);
+
+    // Calendario mensual de grupos musculares (Etapa 2 del módulo de
+    // rutinas): SOLO Admin por ahora. Entrenador y Cliente lo consumirán
+    // en etapas siguientes (aún no tienen ninguna ruta de lectura aquí).
+    Route::get('calendario-musculos',        [CalendarioMusculoController::class, 'index'])       ->name('calendario_musculos.index');
+    Route::put('calendario-musculos/dia/{fecha}', [CalendarioMusculoController::class, 'asignarDia'])
+        ->where('fecha', '\d{4}-\d{2}-\d{2}')
+        ->name('calendario_musculos.dia');
+    Route::post('calendario-musculos/patron', [CalendarioMusculoController::class, 'aplicarPatron'])->name('calendario_musculos.patron');
+
+    // Catálogo de ejercicios (importado del dataset externo): listado de
+    // solo lectura para verificar la importación. Armar rutinas con esto es
+    // una etapa posterior; por ahora, solo el Administrador lo ve.
+    Route::get('ejercicios', [EjercicioController::class, 'index'])->name('ejercicios.index');
+
     // Borrar personal: solo Admin (Recepcionista solo ve/crea/edita)
     Route::delete('entrenadores/{id}',   [EntrenadorController::class,    'destroy'])->name('entrenadores.destroy');
     Route::delete('recepcionistas/{id}', [RecepcionistaController::class, 'destroy'])->name('recepcionistas.destroy');
@@ -144,12 +180,27 @@ Route::middleware(['auth', 'role:Administrador,Recepcionista,Entrenador'])->grou
     // Comprobante de pago (imagen privada): solo personal, nunca URL pública
     Route::get('pagos/{pago}/comprobante', [PagoController::class, 'comprobante'])->name('pagos.comprobante');
 
-    Route::resource('rutinas', RutinaController::class);
-    Route::get('/rutinas/ver/{id}', [RutinaController::class, 'verRutina'])->name('rutinas.ver');
-
     // Catálogo en SOLO LECTURA para todo el personal (gestión: solo Admin)
     Route::get('membresias', [MembresiaController::class, 'index'])->name('membresias.index');
     Route::get('descuentos', [DescuentoController::class, 'index'])->name('descuentos.index');
+    Route::get('grupos_musculares', [GrupoMuscularController::class, 'index'])->name('grupos_musculares.index');
+});
+
+// -----------------------------------------------------------------------
+// Rutinas (Etapa 3 del módulo de rutinas): el Entrenador arma SU rutina
+// para un día del calendario; el Admin arma la suya y puede borrar la de
+// cualquiera. La Recepcionista, por ahora, no arma rutinas.
+// -----------------------------------------------------------------------
+Route::middleware(['auth', 'role:Administrador,Entrenador'])->group(function () {
+    Route::get('rutinas', [RutinaController::class, 'index'])->name('rutinas.index');
+    Route::get('rutinas/dia/{fecha}', [RutinaController::class, 'edit'])
+        ->where('fecha', '\d{4}-\d{2}-\d{2}')
+        ->name('rutinas.edit');
+    Route::put('rutinas/dia/{fecha}', [RutinaController::class, 'update'])
+        ->where('fecha', '\d{4}-\d{2}-\d{2}')
+        ->name('rutinas.update');
+    Route::get('rutinas/{rutina}', [RutinaController::class, 'show'])->whereNumber('rutina')->name('rutinas.show');
+    Route::delete('rutinas/{rutina}', [RutinaController::class, 'destroy'])->whereNumber('rutina')->name('rutinas.destroy');
 });
 
 // -----------------------------------------------------------------------
@@ -160,7 +211,7 @@ Route::middleware(['auth', 'role:Cliente'])->group(function () {
     Route::get('mis-pagos',       [PagoController::class,       'misPagos'])      ->name('pagos.mis-pagos');
     Route::get('mis-pagos/{pago}/comprobante', [PagoController::class, 'miComprobante'])->name('pagos.mis.comprobante');
     Route::get('mi-membresia',    [ClientePortalController::class, 'miMembresia'])->name('portal.membresia');
-    Route::get('mis-rutinas',     [ClientePortalController::class, 'misRutinas']) ->name('portal.rutinas');
+    Route::get('mi-rutina',       [ClientePortalController::class, 'miRutina'])   ->name('portal.rutina');
 
     Route::get('/portal/carnet/descargar', [ClientePortalController::class, 'descargarCarnet'])->name('portal.carnet.descargar');
 

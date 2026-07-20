@@ -88,4 +88,27 @@ class User extends Authenticatable implements FilamentUser
 
         return null;
     }
+
+    /**
+     * Igual que nombreCompleto(), pero agrega el apellido paterno (ej. "Marcos
+     * Antonio Olea") — para pantallas donde el nombre solo no alcanza para
+     * identificar a la persona (ej. elegir entrenador en el portal del
+     * cliente). No reemplaza nombreCompleto() para no afectar las pantallas
+     * que ya lo usan.
+     */
+    public function nombreCompletoConApellido(): ?string
+    {
+        foreach (['administradores', 'recepcionistas', 'entrenadores', 'clientes'] as $tabla) {
+            $persona = \Illuminate\Support\Facades\DB::table($tabla)
+                ->join('personas', 'personas.id_persona', '=', "{$tabla}.id_persona")
+                ->where("{$tabla}.id_usuario", $this->id)
+                ->first(['personas.nombre_completo', 'personas.apellido_paterno']);
+
+            if ($persona && $persona->nombre_completo) {
+                return trim($persona->nombre_completo . ' ' . ($persona->apellido_paterno ?? ''));
+            }
+        }
+
+        return null;
+    }
 }

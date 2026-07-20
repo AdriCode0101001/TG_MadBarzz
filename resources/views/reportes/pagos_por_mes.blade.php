@@ -16,16 +16,16 @@
 
  <div class="d-flex justify-content-between mb-3">
     <!-- 🔹 Botón Exportar PDF -->
-    <a href="{{ route('reportes.pagos.mes.pdf', request()->all()) }}" class="btn btn-danger">
+    <a href="{{ route('reportes.pagos.mes.pdf', ['mes' => $mes, 'anio' => $anio]) }}" class="btn btn-danger">
         Exportar PDF
     </a>
 
-    <!-- 🔹 Formulario de filtro -->
+    <!-- 🔹 Formulario de filtro: precargado con el mes/año actual (ver ReporteController) -->
     <form method="GET" action="{{ route('reportes.pagos.mes') }}" class="d-flex">
         <select name="mes" class="me-2">
             <option value="">Mes</option>
             @for($m = 1; $m <= 12; $m++)
-                <option value="{{ $m }}" {{ request('mes') == $m ? 'selected' : '' }}>
+                <option value="{{ $m }}" {{ $mes == $m ? 'selected' : '' }}>
                     {{ \Carbon\Carbon::create()->month($m)->locale('es')->isoFormat('MMMM') }}
                 </option>
             @endfor
@@ -34,7 +34,7 @@
 <select name="anio" class="me-2">
     <option value="">Año</option>
     @for($y = 2025; $y <= 2040; $y++)
-        <option value="{{ $y }}" {{ request('anio') == $y ? 'selected' : '' }}>{{ $y }}</option>
+        <option value="{{ $y }}" {{ $anio == $y ? 'selected' : '' }}>{{ $y }}</option>
     @endfor
 </select>
 

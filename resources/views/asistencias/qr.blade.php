@@ -171,18 +171,30 @@
             avatar = '<div class="mb-qr-resultado__icono"><i class="fa-solid ' + icono + '"></i></div>';
         }
 
+        // Fecha/hora de la marcación (hora local de Bolivia, la calcula el
+        // servidor): en "registrada" se ve la fecha completa; en "ya marcó
+        // hoy"/"duplicado" basta la hora (siempre es el mismo día). En los
+        // rechazos por membresía no aplica (el servidor no manda 'fecha').
+        var lineaHora = '';
+        if (data.estado === 'ok' && data.fecha && data.hora) {
+            lineaHora = '<div class="mb-qr-resultado__hora">Registrada el ' + esc(data.fecha) + ' a las ' + esc(data.hora) + '</div>';
+        } else if (data.estado === 'duplicado' && data.hora) {
+            lineaHora = '<div class="mb-qr-resultado__hora">Marcó a las ' + esc(data.hora) + '</div>';
+        }
+
         $res.className = 'mb-qr-resultado mb-qr-resultado--' + clase;
         $res.innerHTML =
             avatar +
             (data.cliente ? '<div class="mb-qr-resultado__titulo">' + esc(data.cliente.nombre) + '</div>' : '') +
             '<div class="mb-qr-resultado__detalle"><i class="fa-solid ' + icono + ' me-1"></i>' + esc(data.mensaje) + '</div>' +
-            (data.estado === 'ok' && data.hora ? '<div class="mb-qr-resultado__hora">Hora: ' + esc(data.hora) + '</div>' : '');
+            lineaHora;
 
-        // registro en la lista de últimos escaneos
+        // registro en la lista de últimos escaneos (con la hora del evento)
         var li = document.createElement('li');
         li.innerHTML =
             '<span>' + esc(data.cliente ? data.cliente.nombre : 'Carnet no válido') + '</span>' +
-            '<span class="mb-' + clase + '">' + esc(data.estado === 'ok' ? ('✔ ' + (data.hora || '')) : data.mensaje) + '</span>';
+            '<span class="mb-' + clase + '">' + esc(data.estado === 'ok' ? '✔ Registrada' : data.mensaje) +
+                (data.hora ? ' · ' + esc(data.hora) : '') + '</span>';
         $log.prepend(li);
         while ($log.children.length > 6) $log.removeChild($log.lastChild);
     }

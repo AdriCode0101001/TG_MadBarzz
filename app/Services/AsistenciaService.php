@@ -91,32 +91,36 @@ class AsistenciaService
         }
 
         // Regla: una sola asistencia por día calendario (hora local de la app)
-        // en la sede. Caso informativo, no error.
-        $yaMarcoHoy = Asistencia::withoutGlobalScope(SedeScope::class)
+        // en la sede. Caso informativo, no error. Se trae el registro (no solo
+        // exists()) para poder informar A QUÉ HORA marcó (pantallas de agente/QR).
+        $marcaDeHoy = Asistencia::withoutGlobalScope(SedeScope::class)
             ->where('id_cliente', $cliente->id_cliente)
             ->where('id_sede', $idSede)
             ->whereDate('fecha_hora_entrada', now()->toDateString())
-            ->exists();
+            ->latest('fecha_hora_entrada')
+            ->first();
 
-        if ($yaMarcoHoy) {
-            return $this->resultado(self::YA_MARCO_HOY, self::MENSAJE_YA_MARCO_HOY, $ventana);
+        if ($marcaDeHoy) {
+            return $this->resultado(self::YA_MARCO_HOY, self::MENSAJE_YA_MARCO_HOY, $ventana, $marcaDeHoy);
         }
 
         // Anti-duplicado por ventana de minutos (cubre además el caso borde
         // de dos marcaciones seguidas a ambos lados de la medianoche).
         $desde = now()->subMinutes($ventana);
 
-        $yaExiste = Asistencia::withoutGlobalScope(SedeScope::class)
+        $marcaReciente = Asistencia::withoutGlobalScope(SedeScope::class)
             ->where('id_cliente', $cliente->id_cliente)
             ->where('id_sede', $idSede)
             ->where('fecha_hora_entrada', '>=', $desde)
-            ->exists();
+            ->latest('fecha_hora_entrada')
+            ->first();
 
-        if ($yaExiste) {
+        if ($marcaReciente) {
             return $this->resultado(
                 self::DUPLICADO,
                 "El cliente ya registró asistencia en los últimos {$ventana} minutos.",
-                $ventana
+                $ventana,
+                $marcaReciente
             );
         }
 

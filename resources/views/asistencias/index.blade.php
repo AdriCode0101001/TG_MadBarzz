@@ -68,7 +68,10 @@
         </div>
     </div>
     @if(method_exists($asistencias, 'links'))
-        <div class="card-footer d-flex justify-content-end">{{ $asistencias->withQueryString()->links() }}</div>
+        {{-- pagination::bootstrap-5: la vista default de ->links() es Tailwind (SVGs
+             con clases w-5/h-5 que no existen en este layout Bootstrap) y se ve rota
+             si esta lista llega a paginarse alguna vez — ver fix en ejercicios/index. --}}
+        <div class="card-footer d-flex justify-content-end">{{ $asistencias->withQueryString()->links('pagination::bootstrap-5') }}</div>
     @endif
 </div>
 

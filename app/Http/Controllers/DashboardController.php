@@ -56,17 +56,9 @@ class DashboardController extends Controller
             ->orderBy('fecha_pago', 'desc')
             ->get();
 
-        // Las rutinas solo se muestran con membresía vigente (mismo criterio
-        // que el control de asistencia: Cliente::tieneMembresiaVigente()).
-        $tieneMembresiaVigente = $cliente->tieneMembresiaVigente();
-
-        $rutinas = $tieneMembresiaVigente
-            ? Rutina::with('entrenador.persona')->get()
-            : collect();
-
         $qrCarnet = $cliente->qr_token ? $carnet->qrDataUri($cliente, 300) : null;
 
-        return view('dashboard.cliente', compact('cliente', 'membresia', 'asistencias', 'pagos', 'rutinas', 'qrCarnet', 'tieneMembresiaVigente'));
+        return view('dashboard.cliente', compact('cliente', 'membresia', 'asistencias', 'pagos', 'qrCarnet'));
     }
 
     // Dashboard para entrenador
@@ -76,7 +68,11 @@ class DashboardController extends Controller
 
         $entrenador = Entrenador::with('persona')->where('id_usuario', $user->id)->first();
 
-        $rutinas    = Rutina::where('id_entrenador', optional($entrenador)->id_entrenador)->latest()->get();
+        $rutinas = Rutina::with('grupoMuscular')
+            ->withCount('ejercicios')
+            ->where('id_usuario', $user->id)
+            ->orderByDesc('fecha')
+            ->get();
         $clientes   = Cliente::with('persona')->get();
         $asistenciasHoy = Asistencia::whereDate('fecha_hora_entrada', Carbon::today())->count();
 

@@ -96,7 +96,8 @@
             </div>
         </div>
         @if (method_exists($pagos, 'links'))
-            <div class="card-footer d-flex justify-content-end">{{ $pagos->withQueryString()->links() }}</div>
+            {{-- pagination::bootstrap-5: ver fix/motivo en ejercicios/index.blade.php --}}
+            <div class="card-footer d-flex justify-content-end">{{ $pagos->withQueryString()->links('pagination::bootstrap-5') }}</div>
         @endif
     </div>
 </div>

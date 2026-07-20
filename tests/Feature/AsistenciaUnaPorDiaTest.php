@@ -184,13 +184,15 @@ class AsistenciaUnaPorDiaTest extends TestCase
         $this->crearMembresia($cliente);
         $operador = $this->crearOperador($sede);
 
-        // Primera marcación del día → registra
+        // Primera marcación del día → registra, con fecha y hora de Bolivia
         $this->actingAs($operador)
              ->postJson('/asistencias-qr', ['qr_token' => $cliente->qr_token])
              ->assertStatus(200)
-             ->assertJsonFragment(['estado' => 'ok']);
+             ->assertJsonFragment(['estado' => 'ok', 'fecha' => '10/06/2030', 'hora' => '08:00']);
 
-        // Segunda marcación el mismo día → ámbar informativo "ya marcaste hoy"
+        // Segunda marcación el mismo día → ámbar informativo "ya marcaste hoy",
+        // y la hora mostrada es la de la marca ORIGINAL (08:00), no la del
+        // segundo intento (17:30): así el operador sabe a qué hora entrenó.
         $this->enFecha('2030-06-10 17:30:00');
         $this->actingAs($operador)
              ->postJson('/asistencias-qr', ['qr_token' => $cliente->qr_token])
@@ -198,6 +200,7 @@ class AsistenciaUnaPorDiaTest extends TestCase
              ->assertJsonFragment([
                  'estado'  => 'duplicado',
                  'mensaje' => AsistenciaService::MENSAJE_YA_MARCO_HOY,
+                 'hora'    => '08:00',
              ]);
 
         $this->assertDatabaseCount('asistencias', 1);
@@ -225,12 +228,31 @@ class AsistenciaUnaPorDiaTest extends TestCase
              ->postJson('/asistencias-qr', ['qr_token' => $cliente->qr_token])
              ->assertJsonFragment(['estado' => 'ok']);
 
-        // Re-escaneo al minuto: también rechazado (una por día ya lo cubre)
+        // Re-escaneo al minuto: también rechazado (una por día ya lo cubre),
+        // y la hora informada sigue siendo la de la marca real (08:00)
         $this->enFecha('2030-06-10 08:01:00');
         $this->actingAs($operador)
              ->postJson('/asistencias-qr', ['qr_token' => $cliente->qr_token])
-             ->assertJsonFragment(['estado' => 'duplicado']);
+             ->assertJsonFragment(['estado' => 'duplicado', 'hora' => '08:00']);
 
         $this->assertDatabaseCount('asistencias', 1);
+    }
+
+    // ── Fecha/hora en la respuesta del escáner QR ─────────────────────────────
+
+    public function test_qr_rechazo_por_falta_de_membresia_no_informa_fecha(): void
+    {
+        $this->enFecha('2030-06-10 08:00:00');
+
+        $sede     = $this->crearSede();
+        $cliente  = $this->crearCliente($sede); // sin membresía
+        $operador = $this->crearOperador($sede);
+
+        $this->actingAs($operador)
+             ->postJson('/asistencias-qr', ['qr_token' => $cliente->qr_token])
+             ->assertStatus(200)
+             ->assertJsonFragment(['estado' => 'sin_membresia', 'fecha' => null]);
+
+        $this->assertDatabaseCount('asistencias', 0);
     }
 }

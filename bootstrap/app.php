@@ -29,6 +29,21 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             NormalizarTelefono::class,
         ]);
+
+        // Confía en el proxy local (túneles como Cloudflare/ngrok, o un
+        // reverse proxy en producción) para que Laravel respete el header
+        // X-Forwarded-Proto y genere URLs https:// en asset()/route()/etc.
+        // Sin esto, detrás de un túnel HTTPS -> artisan serve HTTP, la app
+        // sigue generando enlaces http:// y el navegador los bloquea como
+        // contenido mixto: CSS/JS no cargan y la página se ve rota.
+        $middleware->trustProxies(at: '*');
+
+        // Cookie de preferencia de tema (oscuro/claro) de la vista previa
+        // pública GymOn: la escribe JS plano (document.cookie), así que debe
+        // quedar exenta del cifrado de cookies para que el servidor pueda
+        // leerla en la siguiente carga (si no, la lee como ausente y siempre
+        // vuelve al tema por defecto).
+        $middleware->encryptCookies(except: ['gymon_tema']);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

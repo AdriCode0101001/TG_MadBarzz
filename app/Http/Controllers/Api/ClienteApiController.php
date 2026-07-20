@@ -7,7 +7,6 @@ use App\Models\Asistencia;
 use App\Models\Cliente;
 use App\Models\MembresiaCliente;
 use App\Models\Pago;
-use App\Models\Rutina;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -107,23 +106,5 @@ class ClienteApiController extends Controller
             ->get(['id_asistencia', 'fecha_hora_entrada']);
 
         return response()->json(['asistencias' => $asistencias]);
-    }
-
-    public function rutinas(Request $request): JsonResponse
-    {
-        if (!$request->user()->hasRole('Cliente')) {
-            return response()->json(['message' => 'Acceso denegado.'], 403);
-        }
-
-        $rutinas = Rutina::with('entrenador.persona')
-            ->get()
-            ->map(fn ($r) => [
-                'id'          => $r->id_rutina,
-                'titulo'      => $r->titulo,
-                'descripcion' => $r->descripcion,
-                'entrenador'  => $r->entrenador?->persona?->nombre_completo,
-            ]);
-
-        return response()->json(['rutinas' => $rutinas]);
     }
 }

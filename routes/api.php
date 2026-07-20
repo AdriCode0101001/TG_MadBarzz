@@ -23,5 +23,4 @@ Route::middleware('auth:sanctum')->prefix('cliente')->group(function () {
     Route::get('/membresia',   [ClienteApiController::class, 'membresia']);
     Route::get('/pagos',       [ClienteApiController::class, 'pagos']);
     Route::get('/asistencias', [ClienteApiController::class, 'asistencias']);
-    Route::get('/rutinas',     [ClienteApiController::class, 'rutinas']);
 });

@@ -76,6 +76,13 @@ class AsistenciaQrController extends Controller
             mb_substr($cliente->persona->apellido_paterno ?? '', 0, 1)
         ) ?: 'C';
 
+        // Hora local de Bolivia (config('app.timezone')). Si hay un evento real
+        // (registrada ahora, o "ya marcó hoy"/"duplicado" con su marca previa)
+        // se informa SU fecha/hora; si no hubo marca (rechazo) no aplica.
+        $momento = $resultado['asistencia']
+            ? Carbon::parse($resultado['asistencia']->fecha_hora_entrada)
+            : null;
+
         return response()->json([
             'estado'  => $estado,
             'mensaje' => $resultado['motivo'] === AsistenciaService::DUPLICADO
@@ -86,9 +93,8 @@ class AsistenciaQrController extends Controller
                 'iniciales' => $iniciales,
                 'foto'      => $cliente->user?->foto ? asset($cliente->user->foto) : null,
             ],
-            'hora'    => $resultado['asistencia']
-                ? Carbon::parse($resultado['asistencia']->fecha_hora_entrada)->format('H:i')
-                : now()->format('H:i'),
+            'fecha'   => $momento?->format('d/m/Y'),
+            'hora'    => $momento?->format('H:i') ?? now()->format('H:i'),
         ]);
     }
 }

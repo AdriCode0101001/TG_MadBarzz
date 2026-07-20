@@ -11,11 +11,11 @@ use Tests\TestCase;
  * Matriz de permisos por rol:
  *  - Administrador: acceso total, incluida la GESTIÓN del catálogo
  *    (crear/editar/borrar tipos de membresía y descuentos).
- *  - Recepcionista: clientes, pagos, asistencias, rutinas, personal
- *    (ver/crear/editar), asignar membresías, catálogo SOLO LECTURA.
- *  - Entrenador: clientes (sin borrar), rutinas, asistencias, registrar
- *    pagos (sin editar/borrar), asignar membresías, catálogo SOLO LECTURA.
- *    NO gestiona personal.
+ *  - Recepcionista: clientes, pagos, asistencias, personal (ver/crear/
+ *    editar), asignar membresías, catálogo SOLO LECTURA. NO arma rutinas.
+ *  - Entrenador: clientes (sin borrar), arma SUS rutinas, asistencias,
+ *    registra pagos (sin editar/borrar), asigna membresías, catálogo SOLO
+ *    LECTURA. NO gestiona personal.
  *  - Cliente: solo su portal; rutas de administración → 403.
  *
  * assertNotForbidden() = el middleware dejó pasar (cualquier cosa menos 403).
@@ -57,9 +57,12 @@ class RolMiddlewareTest extends TestCase
             'asistencias'  => ['/asistencias'],
             'rutinas'      => ['/rutinas'],
             'entrenadores' => ['/entrenadores'],
-            'membresias'   => ['/membresias'],
-            'descuentos'   => ['/descuentos'],
-            'reportes'     => ['/reportes/clientes-estado'],
+            'membresias'          => ['/membresias'],
+            'descuentos'          => ['/descuentos'],
+            'grupos_musculares'   => ['/grupos_musculares'],
+            'calendario_musculos' => ['/calendario-musculos'],
+            'ejercicios'          => ['/ejercicios'],
+            'reportes'            => ['/reportes/clientes-estado'],
         ];
     }
 
@@ -87,11 +90,15 @@ class RolMiddlewareTest extends TestCase
             'administradores'   => ['/administradores'],
             'recepcionistas'    => ['/recepcionistas'],
             'entrenadores'      => ['/entrenadores'],
-            'membresias'        => ['/membresias'],
-            'membresias-crear'  => ['/membresias/create'],
-            'descuentos'        => ['/descuentos'],
-            'descuentos-crear'  => ['/descuentos/create'],
-            'membresia_cliente' => ['/membresia_cliente'],
+            'membresias'                 => ['/membresias'],
+            'membresias-crear'           => ['/membresias/create'],
+            'descuentos'                 => ['/descuentos'],
+            'descuentos-crear'           => ['/descuentos/create'],
+            'grupos_musculares'          => ['/grupos_musculares'],
+            'grupos_musculares-crear'    => ['/grupos_musculares/create'],
+            'calendario_musculos'        => ['/calendario-musculos'],
+            'ejercicios'                 => ['/ejercicios'],
+            'membresia_cliente'          => ['/membresia_cliente'],
             'notificaciones'    => ['/notificaciones'],
             'rutinas'           => ['/rutinas'],
             'promociones'       => ['/promociones'],
@@ -121,10 +128,10 @@ class RolMiddlewareTest extends TestCase
             'pagos-crear'        => ['/pagos/create'],
             'asistencias'        => ['/asistencias'],
             'asistencias-qr'     => ['/asistencias-qr'],
-            'rutinas'            => ['/rutinas'],
             'notificaciones'     => ['/notificaciones'],
             'membresias'         => ['/membresias'],
             'descuentos'         => ['/descuentos'],
+            'grupos_musculares'  => ['/grupos_musculares'],
             'membresia_cliente'  => ['/membresia_cliente'],
             'recepcionistas'     => ['/recepcionistas'],
             'entrenadores'       => ['/entrenadores'],       // hoy fallaba: debe poder
@@ -153,6 +160,11 @@ class RolMiddlewareTest extends TestCase
             'catalogo-descuento-crear'  => ['GET', '/descuentos/create'],
             'catalogo-descuento-editar' => ['GET', '/descuentos/1/edit'],
             'catalogo-descuento-borrar' => ['DELETE', '/descuentos/1'],
+            'catalogo-grupo_muscular-crear'  => ['GET', '/grupos_musculares/create'],
+            'calendario_musculos'       => ['GET', '/calendario-musculos'],
+            'ejercicios'                => ['GET', '/ejercicios'],
+            // Etapa 3: armar rutinas es solo de Administrador y Entrenador
+            'rutinas'                   => ['GET', '/rutinas'],
             'borrar-entrenador'         => ['DELETE', '/entrenadores/1'],
             'borrar-recepcionista'      => ['DELETE', '/recepcionistas/1'],
         ];
@@ -181,6 +193,7 @@ class RolMiddlewareTest extends TestCase
             'asistencias-qr'    => ['/asistencias-qr'],
             'membresias'        => ['/membresias'],
             'descuentos'        => ['/descuentos'],
+            'grupos_musculares' => ['/grupos_musculares'],
             'membresia_cliente' => ['/membresia_cliente'],
         ];
     }
@@ -205,6 +218,9 @@ class RolMiddlewareTest extends TestCase
             'catalogo-membresia-borrar' => ['DELETE', '/membresias/1'],
             'catalogo-descuento-crear'  => ['GET', '/descuentos/create'],
             'catalogo-descuento-borrar' => ['DELETE', '/descuentos/1'],
+            'catalogo-grupo_muscular-crear'  => ['GET', '/grupos_musculares/create'],
+            'calendario_musculos'       => ['GET', '/calendario-musculos'],
+            'ejercicios'                => ['GET', '/ejercicios'],
             // Pagos: solo registra, no edita ni borra
             'editar-pago' => ['GET', '/pagos/1/edit'],
         ];
@@ -244,6 +260,30 @@ class RolMiddlewareTest extends TestCase
         $this->actingAs($this->makeUser('Entrenador'));
         $this->delete('/pagos/' . $idPago)->assertStatus(403);
         $this->assertDatabaseHas('pagos', ['id_pago' => $idPago]);
+    }
+
+    // El controlador de grupos musculares usa binding implícito de modelo
+    // (a diferencia de membresias/descuentos), así que /edit y destroy
+    // necesitan una fila real para comprobar el 403 y no un 404.
+
+    public function test_recepcionista_no_puede_editar_ni_borrar_grupos_musculares(): void
+    {
+        $grupo = \App\Models\GrupoMuscular::create(['nombre' => 'Pierna', 'activo' => true]);
+
+        $this->actingAs($this->makeUser('Recepcionista'));
+        $this->get("/grupos_musculares/{$grupo->id}/edit")->assertStatus(403);
+        $this->delete("/grupos_musculares/{$grupo->id}")->assertStatus(403);
+        $this->assertDatabaseHas('grupos_musculares', ['id' => $grupo->id, 'deleted_at' => null]);
+    }
+
+    public function test_entrenador_no_puede_editar_ni_borrar_grupos_musculares(): void
+    {
+        $grupo = \App\Models\GrupoMuscular::create(['nombre' => 'Hombro', 'activo' => true]);
+
+        $this->actingAs($this->makeUser('Entrenador'));
+        $this->get("/grupos_musculares/{$grupo->id}/edit")->assertStatus(403);
+        $this->delete("/grupos_musculares/{$grupo->id}")->assertStatus(403);
+        $this->assertDatabaseHas('grupos_musculares', ['id' => $grupo->id, 'deleted_at' => null]);
     }
 
     private function crearClienteReal(): \App\Models\Cliente

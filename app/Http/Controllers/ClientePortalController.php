@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CalendarioMusculo;
 use App\Models\Cliente;
 use App\Models\Rutina;
 use App\Services\CarnetService;
@@ -9,6 +10,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -40,10 +42,13 @@ class ClientePortalController extends Controller
     }
 
     /**
-     * Mis Rutinas: las rutinas del gimnasio solo se muestran a clientes
-     * con membresía vigente; sin ella se invita a pagar en recepción.
+     * Mi Rutina: qué músculo toca en la fecha elegida (hoy por defecto) y las
+     * rutinas que los entrenadores subieron ese día, para que el cliente
+     * elija de cuál seguir. Igual que Mi Membresía: el bloqueo es del
+     * SERVIDOR — sin membresía vigente, el calendario y las rutinas ni
+     * siquiera se consultan.
      */
-    public function misRutinas(): View|RedirectResponse
+    public function miRutina(Request $request): View|RedirectResponse
     {
         $cliente = Cliente::where('id_usuario', Auth::id())->first();
 
@@ -51,16 +56,64 @@ class ClientePortalController extends Controller
             return redirect()->route('dashboard')->with('error', 'No tienes un perfil de cliente asociado.');
         }
 
-        // Mismo criterio de "membresía al día" que usa el control de asistencia.
-        // El bloqueo es del SERVIDOR: sin membresía vigente, las rutinas ni
-        // siquiera se consultan ni se envían a la vista.
         $membresiaVigente = $cliente->tieneMembresiaVigente();
 
-        $rutinas = $membresiaVigente
-            ? Rutina::with('entrenador.persona')->latest()->get()
-            : collect();
+        $hoy = Carbon::now('America/La_Paz')->startOfDay();
+        $fecha = $hoy->copy();
+        if ($request->filled('fecha')) {
+            try {
+                $fecha = Carbon::createFromFormat('Y-m-d', $request->query('fecha'))->startOfDay();
+            } catch (\Exception) {
+                $fecha = $hoy->copy();
+            }
+        }
+        // No se pueden ver fechas futuras: se recorta a hoy.
+        if ($fecha->gt($hoy)) {
+            $fecha = $hoy->copy();
+        }
 
-        return view('portal.mis-rutinas', compact('cliente', 'membresiaVigente', 'rutinas'));
+        $datos = [
+            'cliente'            => $cliente,
+            'membresiaVigente'   => $membresiaVigente,
+            'fecha'              => $fecha,
+            'hoy'                => $hoy,
+            'esDomingo'          => $fecha->dayOfWeekIso === 7,
+            'calendario'         => null,
+            'rutinasDelDia'      => collect(),
+            'rutinaSeleccionada' => null,
+        ];
+
+        if (!$membresiaVigente) {
+            return view('portal.mi-rutina', $datos);
+        }
+
+        $sedeId = $cliente->id_sede ?? 1;
+
+        $calendario = CalendarioMusculo::with('grupoMuscular')
+            ->where('id_sede', $sedeId)
+            ->where('fecha', $fecha->toDateString())
+            ->first();
+        $datos['calendario'] = $calendario;
+
+        if ($calendario) {
+            $rutinasDelDia = Rutina::with('usuario')
+                ->withCount('ejercicios')
+                ->where('id_sede', $sedeId)
+                ->where('fecha', $fecha->toDateString())
+                ->get();
+            $datos['rutinasDelDia'] = $rutinasDelDia;
+
+            $idEntrenador = $request->query('entrenador');
+            if ($idEntrenador) {
+                $rutinaSeleccionada = $rutinasDelDia->firstWhere('id_usuario', (int) $idEntrenador);
+                if ($rutinaSeleccionada) {
+                    $rutinaSeleccionada->load('ejercicios.ejercicio');
+                    $datos['rutinaSeleccionada'] = $rutinaSeleccionada;
+                }
+            }
+        }
+
+        return view('portal.mi-rutina', $datos);
     }
 
     /**
