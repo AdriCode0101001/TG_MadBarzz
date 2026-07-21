@@ -1,25 +1,44 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
+@extends('layouts.auth')
+@section('contenido')
+
+<div class="mb-auth">
+  <div class="mb-auth__wrap">
+
+    <div class="mb-auth__visual">
+      <div class="bg" style="background-image:url('{{ asset('assets/images/login-bg.jpg') }}');"></div>
+      <div class="ov"></div>
+      <div class="mb-auth-logo"><img src="{{ asset('assets_private/images/log_text_mad.png') }}" alt="MadBarzz"></div>
+      <div class="mb-auth-quote">
+        <h2>¿Olvidaste tu<br>contraseña?</h2>
+        <p>Sin problema. Escribí tu correo y te enviamos un enlace para elegir una nueva.</p>
+      </div>
     </div>
 
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <div class="mb-auth__form">
+      <div class="mb-auth-card">
+        <h1 class="mb-auth-h">Recuperar contraseña</h1>
+        <p class="mb-auth-sub">Te enviaremos un enlace a tu correo para restablecerla</p>
 
-    <form method="POST" action="{{ route('password.email') }}">
-        @csrf
+        @if (session('status'))
+          <div class="mb-ok">{{ session('status') }}</div>
+        @endif
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+        <form method="POST" action="{{ route('password.email') }}">
+          @csrf
+          <label for="email">Correo electrónico</label>
+          <div class="mb-input mb-input--no-icon">
+            <input type="email" name="email" id="email" placeholder="tucorreo@ejemplo.com" value="{{ old('email') }}" required autofocus>
+            <i class="fa-solid fa-envelope mb-icon-right"></i>
+          </div>
+          @error('email')<div class="mb-err">{{ $message }}</div>@enderror
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+          <button type="submit" class="mb-submit"><i class="fa-solid fa-paper-plane me-2"></i> Enviar enlace</button>
+        </form>
+
+        <p class="mb-auth-foot"><a href="{{ route('login') }}"><i class="fa-solid fa-arrow-left me-1"></i> Volver a iniciar sesión</a></p>
+      </div>
+    </div>
+
+  </div>
+</div>
+@endsection

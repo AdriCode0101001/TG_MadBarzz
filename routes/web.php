@@ -4,9 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PrivateFileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PersonaController;
@@ -38,22 +36,46 @@ Route::get('/public', fn () => view('layouts.public'))->name('public');
 
 // -----------------------------------------------------------------------
 // PREVIEW de la nueva home pública (plantilla GymOn, Homepage 2). Ruta de
-// prueba en paralelo a "/" — no reemplaza la home real todavía.
+// prueba en paralelo a "/" — no reemplaza la home real todavía. Siempre en
+// modo oscuro (dark_version de GymOn) — la parte pública no tiene toggle
+// de tema.
 // -----------------------------------------------------------------------
-Route::get('/preview-gymon', function (\Illuminate\Http\Request $request) {
-    $temaOscuro = $request->cookie('gymon_tema', 'dark') !== 'light';
+Route::get('/preview-gymon', function () {
     $waLink = 'https://wa.me/59176372337?text=Hola,%20quiero%20unirme%20a%20la%20Calistenia%20MadBarzz.';
     $membresias = \App\Models\Membresia::orderBy('precio')->get();
 
-    return view('welcome-gymon', compact('temaOscuro', 'waLink', 'membresias'));
+    return view('welcome-gymon', compact('waLink', 'membresias'));
 })->name('preview.gymon');
 
 // -----------------------------------------------------------------------
-// Autenticación (Breeze)
+// PREVIEW del formulario de auto-registro (Etapa 2). El /register público
+// real sigue bloqueado (Etapa 0, ver routes/auth.php) — esta ruta solo
+// muestra la MISMA vista (auth.register) para revisar el diseño, sin
+// reactivar el registro público. Quitar cuando se reactive /register.
 // -----------------------------------------------------------------------
-Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
-Route::post('/register', [RegisteredUserController::class, 'store']);
-Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+Route::get('/preview-registro', function () {
+    return view('auth.register', [
+        'sedes' => \App\Models\Sede::where('activo', true)->orderBy('nombre')->get(),
+    ]);
+})->name('preview.registro');
+
+// -----------------------------------------------------------------------
+// PREVIEW de login + registro juntos en una sola pantalla (pestañas), como
+// propone login.html de GymOn dark. El /register público real sigue
+// bloqueado (Etapa 0) — el login SÍ funciona de verdad desde acá. Quitar
+// o fusionar con /login cuando se apruebe el diseño combinado.
+// -----------------------------------------------------------------------
+Route::get('/preview-login-registro', function () {
+    return view('auth.login-register-preview', [
+        'sedes' => \App\Models\Sede::where('activo', true)->orderBy('nombre')->get(),
+    ]);
+})->name('preview.login-registro');
+
+// -----------------------------------------------------------------------
+// Autenticación (Breeze): register/login/logout/password viven SOLO en
+// routes/auth.php (requerido al final de este archivo) — ahí están
+// envueltas en el middleware 'guest'/'auth' correcto. No duplicar acá.
+// -----------------------------------------------------------------------
 
 // -----------------------------------------------------------------------
 // Dashboard — dispatcher y vistas por rol
@@ -67,7 +89,11 @@ Route::middleware('auth')->group(function () {
     })->name('dashboard');
 
     Route::get('/dashboard/index',      [DashboardController::class, 'index'])     ->name('dashboard.index');
-    Route::get('/dashboard/cliente',    [DashboardController::class, 'cliente'])   ->name('dashboard.cliente');
+    // 'verified': SOLO en la del cliente. Es la que ve justo después de
+    // loguearse/registrarse, así que es el punto en el que Laravel debe
+    // desviarlo a "Verificá tu correo" si todavía no confirmó — el resto del
+    // personal (index/entrenador) no lleva esta restricción.
+    Route::get('/dashboard/cliente',    [DashboardController::class, 'cliente'])   ->name('dashboard.cliente')->middleware('verified');
     Route::get('/dashboard/entrenador', [DashboardController::class, 'entrenador'])->name('dashboard.entrenador');
 });
 
@@ -205,8 +231,13 @@ Route::middleware(['auth', 'role:Administrador,Entrenador'])->group(function () 
 
 // -----------------------------------------------------------------------
 // Rutas exclusivas del Cliente (su propio historial + Telegram)
+// 'verified': todo el portal del cliente (membresía, rutina, pagos,
+// asistencias, carnet, Telegram) requiere correo verificado. Un cliente
+// auto-registrado sin verificar puede loguearse, pero cualquiera de estas
+// rutas lo manda a la pantalla "Verificá tu correo" en vez de mostrarle
+// contenido — no hay acceso parcial al portal.
 // -----------------------------------------------------------------------
-Route::middleware(['auth', 'role:Cliente'])->group(function () {
+Route::middleware(['auth', 'role:Cliente', 'verified'])->group(function () {
     Route::get('mis-asistencias', [AsistenciaController::class, 'misAsistencias'])->name('asistencias.mis');
     Route::get('mis-pagos',       [PagoController::class,       'misPagos'])      ->name('pagos.mis-pagos');
     Route::get('mis-pagos/{pago}/comprobante', [PagoController::class, 'miComprobante'])->name('pagos.mis.comprobante');

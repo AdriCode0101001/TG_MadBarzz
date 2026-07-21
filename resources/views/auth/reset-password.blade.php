@@ -1,39 +1,55 @@
-<x-guest-layout>
-    <form method="POST" action="{{ route('password.store') }}">
-        @csrf
+@extends('layouts.auth')
+@section('contenido')
 
-        <!-- Password Reset Token -->
-        <input type="hidden" name="token" value="{{ $request->route('token') }}">
+<div class="mb-auth">
+  <div class="mb-auth__wrap">
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+    <div class="mb-auth__visual">
+      <div class="bg" style="background-image:url('{{ asset('assets/images/login-bg.jpg') }}');"></div>
+      <div class="ov"></div>
+      <div class="mb-auth-logo"><img src="{{ asset('assets_private/images/log_text_mad.png') }}" alt="MadBarzz"></div>
+      <div class="mb-auth-quote">
+        <h2>Elegí una<br>nueva contraseña.</h2>
+        <p>Ya casi está — poné tu nueva contraseña para volver a entrenar.</p>
+      </div>
+    </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+    <div class="mb-auth__form">
+      <div class="mb-auth-card">
+        <h1 class="mb-auth-h">Restablecer contraseña</h1>
+        <p class="mb-auth-sub">Definí tu nueva contraseña de acceso</p>
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+        <form method="POST" action="{{ route('password.store') }}">
+          @csrf
+          <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                                type="password"
-                                name="password_confirmation" required autocomplete="new-password" />
+          <label for="email">Correo electrónico</label>
+          <div class="mb-input mb-input--no-icon">
+            <input type="email" name="email" id="email" placeholder="tucorreo@ejemplo.com"
+                   value="{{ old('email', $request->email) }}" required autofocus autocomplete="username">
+            <i class="fa-solid fa-envelope mb-icon-right"></i>
+          </div>
+          @error('email')<div class="mb-err">{{ $message }}</div>@enderror
 
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
+          <label for="password">Nueva contraseña</label>
+          <div class="mb-input mb-input--no-icon">
+            <input type="password" name="password" id="password" placeholder="••••••••" required autocomplete="new-password">
+            <i class="fa-solid fa-eye mb-pass-toggle" data-target="password" title="Mostrar/ocultar"></i>
+          </div>
+          @error('password')<div class="mb-err">{{ $message }}</div>@enderror
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Reset Password') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+          <label for="password_confirmation">Confirmar contraseña</label>
+          <div class="mb-input mb-input--no-icon">
+            <input type="password" name="password_confirmation" id="password_confirmation" placeholder="••••••••" required autocomplete="new-password">
+            <i class="fa-solid fa-eye mb-pass-toggle" data-target="password_confirmation" title="Mostrar/ocultar"></i>
+          </div>
+          @error('password_confirmation')<div class="mb-err">{{ $message }}</div>@enderror
+
+          <button type="submit" class="mb-submit"><i class="fa-solid fa-key me-2"></i> Restablecer contraseña</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+@endsection

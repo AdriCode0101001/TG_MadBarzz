@@ -85,6 +85,16 @@ public function index(Request $request)
             'email'    => $request->email,
             'password' => Hash::make($request->password),
             'rol_id'   => Rol::firstOrCreate(['nombre' => 'Cliente'])->id,
+            // Verificado de entrada: lo da de alta el personal en persona, no
+            // hace falta que confirme su correo (a diferencia del
+            // auto-registro público, ver AltaClienteService).
+            'email_verified_at' => now(),
+            // La tabla "users" tiene id_sede con default(1) a nivel de BD —
+            // sin esto, el usuario del cliente quedaría con la sede por
+            // defecto aunque Cliente.id_sede sea otra (BelongsToSede la toma
+            // de Auth::user()->id_sede más abajo), y SedeScope lo dejaría
+            // sin ver su propio registro en cuanto la sede real no sea la 1.
+            'id_sede'  => Auth::user()->id_sede,
         ]);
 
         Cliente::create([

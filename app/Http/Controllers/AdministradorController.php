@@ -71,6 +71,8 @@ public function index(Request $request)
             'email'    => $request->email,
             'password' => Hash::make($request->password),
             'rol_id'   => $rolAdmin->id,
+            // Personal: verificado desde que se crea, no requiere confirmar correo.
+            'email_verified_at' => now(),
         ]);
 
         Administrador::create([

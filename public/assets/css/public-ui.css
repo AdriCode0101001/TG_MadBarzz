@@ -194,6 +194,10 @@
 .mb-auth-card .mb-auth-foot a{color:var(--mb-o2);font-weight:600;text-decoration:none;}
 .mb-auth-card .mb-auth-foot a:hover{text-decoration:underline;}
 .mb-auth-card .mb-err{color:#ff8a8a;font-size:.82rem;margin-top:-.8rem;margin-bottom:1rem;}
+.mb-auth-card .mb-ok{
+  color:#8dffb0;font-size:.85rem;margin-bottom:1.4rem;padding:.7rem 1rem;border-radius:.6rem;
+  border:1px solid rgba(141,255,176,.35);background:rgba(141,255,176,.08);
+}
 .mb-back-home{position:absolute;top:2rem;right:2.4rem;color:rgba(255,255,255,.7);text-decoration:none;font-size:.88rem;display:inline-flex;align-items:center;gap:.4rem;z-index:5;}
 .mb-back-home:hover{color:#fff;}
 

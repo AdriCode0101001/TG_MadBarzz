@@ -63,6 +63,9 @@ public function index(Request $request)
             'password' => Hash::make($request->password),
             'rol_id'   => $request->rol_id,
             'foto'     => $fotoPath,
+            // Ruta exclusiva del Administrador (gestión interna de cuentas):
+            // verificado desde que se crea, cualquiera sea el rol elegido.
+            'email_verified_at' => now(),
         ]);
 
         return redirect()->route('users.index')->with('success', 'Usuario creado correctamente.');

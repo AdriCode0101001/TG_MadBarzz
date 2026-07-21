@@ -1,31 +1,45 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
+@extends('layouts.auth')
+@section('contenido')
+
+<div class="mb-auth">
+  <div class="mb-auth__wrap">
+
+    <div class="mb-auth__visual">
+      <div class="bg" style="background-image:url('{{ asset('assets/images/login-bg.jpg') }}');"></div>
+      <div class="ov"></div>
+      <div class="mb-auth-logo"><img src="{{ asset('assets_private/images/log_text_mad.png') }}" alt="MadBarzz"></div>
+      <div class="mb-auth-quote">
+        <h2>Ya casi<br>estás adentro.</h2>
+        <p>Confirmá tu correo para empezar a usar tu cuenta de Calistenia MadBarzz.</p>
+      </div>
     </div>
 
-    @if (session('status') == 'verification-link-sent')
-        <div class="mb-4 font-medium text-sm text-green-600 dark:text-green-400">
-            {{ __('A new verification link has been sent to the email address you provided during registration.') }}
-        </div>
-    @endif
+    <div class="mb-auth__form">
+      <div class="mb-auth-card">
+        <h1 class="mb-auth-h">Verificá tu correo</h1>
+        <p class="mb-auth-sub">
+          ¡Gracias por registrarte! Antes de empezar, confirmá tu dirección de correo haciendo clic en el
+          enlace que te enviamos. Si no te llegó, te podemos mandar otro.
+        </p>
 
-    <div class="mt-4 flex items-center justify-between">
+        @if (session('status') == 'verification-link-sent')
+          <div class="mb-ok">Te enviamos un nuevo enlace de verificación al correo que usaste para registrarte.</div>
+        @endif
+
         <form method="POST" action="{{ route('verification.send') }}">
-            @csrf
-
-            <div>
-                <x-primary-button>
-                    {{ __('Resend Verification Email') }}
-                </x-primary-button>
-            </div>
+          @csrf
+          <button type="submit" class="mb-submit"><i class="fa-solid fa-paper-plane me-2"></i> Reenviar enlace de verificación</button>
         </form>
 
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-
-            <button type="submit" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
-                {{ __('Log Out') }}
-            </button>
+        <form method="POST" action="{{ route('logout') }}" style="margin-top:1.2rem;">
+          @csrf
+          <button type="submit" class="mb-auth-foot" style="background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;">
+            Cerrar sesión
+          </button>
         </form>
+      </div>
     </div>
-</x-guest-layout>
+
+  </div>
+</div>
+@endsection

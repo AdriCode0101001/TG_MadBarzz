@@ -15,6 +15,43 @@
     $loginImage = asset('assets/images/login-bg.jpg');   // <-- CAMBIA ESTE ARCHIVO por tu imagen (public/assets/images/login-bg.jpg)
 @endphp
 
+{{-- ===== Fila "Recordarme / ¿Olvidaste tu contraseña?", tomada de la fila
+     .remember del login.html de GymOn (dark version): checkbox + label a la
+     izquierda, link a la derecha. GymOn no la trae con su propio color de
+     acento — acá usa el naranja MadBarzz (var(--mb-o)). Scoped a esta vista,
+     no toca public-ui.css. ===== --}}
+<style>
+  .mb-remember {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .6rem;
+    margin: -.4rem 0 1.4rem;
+  }
+  .mb-remember .first { display: flex; align-items: center; gap: .5rem; }
+  .mb-remember input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--mb-o);
+    cursor: pointer;
+  }
+  .mb-remember label {
+    color: rgba(255,255,255,.75);
+    font-size: .85rem;
+    font-weight: 600;
+    margin: 0;
+    cursor: pointer;
+  }
+  .mb-remember .second a {
+    color: var(--mb-o2);
+    font-size: .85rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .mb-remember .second a:hover { text-decoration: underline; }
+</style>
+
 <div class="mb-auth">
   <div class="mb-auth__wrap">
 
@@ -46,16 +83,29 @@
 
           <label for="password">Contraseña</label>
           <div class="mb-input mb-input--no-icon">
-            <input type="password" name="password" id="password" placeholder="••••••••" required>
+            <input type="password" name="password" id="password" placeholder="••••••••" required autocomplete="current-password">
             <i class="fa-solid fa-eye mb-pass-toggle" data-target="password" title="Mostrar/ocultar"></i>
           </div>
           @error('password')<div class="mb-err">{{ $message }}</div>@enderror
 
+          <div class="mb-remember">
+            <div class="first">
+              <input type="checkbox" name="remember" id="remember">
+              <label for="remember">Recordarme</label>
+            </div>
+            <div class="second">
+              <a href="{{ route('password.request') }}">¿Olvidaste tu contraseña?</a>
+            </div>
+          </div>
+
           <button type="submit" class="mb-submit"><i class="fa-solid fa-right-to-bracket me-2"></i> Iniciar sesión</button>
         </form>
 
-        <p class="mb-auth-foot">¿Olvidaste tu contraseña o no tienes cuenta?<br>
-          <a href="{{ $whatsappLink }}" target="_blank"><i class="fa-brands fa-whatsapp"></i> Solicita acceso en recepción</a>
+        <p class="mb-auth-foot">¿No tenés cuenta?
+          <a href="{{ route('register') }}">Registrate</a>
+        </p>
+        <p class="mb-auth-foot" style="margin-top:.6rem;">
+          <a href="{{ $whatsappLink }}" target="_blank"><i class="fa-brands fa-whatsapp"></i> ¿Problemas para acceder? Escribinos por WhatsApp</a>
         </p>
       </div>
     </div>

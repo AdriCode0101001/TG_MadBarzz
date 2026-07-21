@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MadBarzz · Acceso</title>
-  <link rel="stylesheet" type="text/css" href="assets/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/bootstrap.min.css') }}">
   <link rel="icon" type="image/png" href="{{ asset('assets_private/images/logo_mad.png') }}">
-  <link rel="stylesheet" href="assets/font/flaticon_mycollection.css">
-  <link rel="stylesheet" type="text/css" href="assets/css/fontawesome.min.css">
-  <link rel="stylesheet" type="text/css" href="assets/css/style.css">
-  <link rel="stylesheet" type="text/css" href="assets/css/style-dark.css">
-  <link rel="stylesheet" type="text/css" href="assets/css/responsive.css">
+  <link rel="stylesheet" href="{{ asset('assets/font/flaticon_mycollection.css') }}">
+  <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/fontawesome.min.css') }}">
+  <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/style.css') }}">
+  <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/style-dark.css') }}">
+  <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/responsive.css') }}">
   <link rel="stylesheet" href="{{ asset('assets/css/public-ui.css') }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -28,8 +28,8 @@
     @yield('contenido')
   </main>
 
-  <script src="assets/js/jquery.min.js"></script>
-  <script src="assets/js/bootstrap.min.js"></script>
+  <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
+  <script src="{{ asset('assets/js/bootstrap.min.js') }}"></script>
   <script>
     // mostrar/ocultar contraseña
     document.addEventListener('click', function(e){

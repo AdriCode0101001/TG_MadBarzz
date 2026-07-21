@@ -37,13 +37,6 @@ return Application::configure(basePath: dirname(__DIR__))
         // sigue generando enlaces http:// y el navegador los bloquea como
         // contenido mixto: CSS/JS no cargan y la página se ve rota.
         $middleware->trustProxies(at: '*');
-
-        // Cookie de preferencia de tema (oscuro/claro) de la vista previa
-        // pública GymOn: la escribe JS plano (document.cookie), así que debe
-        // quedar exenta del cifrado de cookies para que el servidor pueda
-        // leerla en la siguiente carga (si no, la lee como ausente y siempre
-        // vuelve al tema por defecto).
-        $middleware->encryptCookies(except: ['gymon_tema']);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
@@ -51,6 +44,16 @@ return Application::configure(basePath: dirname(__DIR__))
     ->booted(function () {
         // Rate-limit: máximo 5 intentos de login por minuto por IP
         RateLimiter::for('login', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
+        });
+
+        // Etapa 4 del auto-registro: máximo 5 registros por minuto por IP.
+        // El registro crea 3 filas en BD (persona+user+cliente) y dispara un
+        // correo de verificación — más costoso que un intento de login
+        // fallido, así que amerita el mismo límite (no uno más laxo) para
+        // frenar altas masivas automatizadas. Mismo valor que 'login' para
+        // no inventar un número nuevo sin motivo.
+        RateLimiter::for('register', function (Request $request) {
             return Limit::perMinute(5)->by($request->ip());
         });
     })

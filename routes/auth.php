@@ -12,10 +12,28 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
-        ->name('register');
+    // ───────────────────────────────────────────────────────────────────
+    // BLOQUEO TEMPORAL (Etapa 0 del auto-registro, ver plan): el registro
+    // público de Breeze crea SOLO un User (sin Persona ni Cliente) —
+    // cuentas incompletas e irrecuperables hasta que se reescriba en las
+    // Etapas 1-2. Se bloquea la entrada acá; RegisteredUserController NO
+    // se toca.
+    //
+    // Para reactivar cuando el flujo nuevo esté listo: borrar estas 2
+    // rutas y descomentar las 2 originales (dejadas debajo, intactas).
+    // ───────────────────────────────────────────────────────────────────
+    Route::get('register', function () {
+        return view('auth.registro-proximamente');
+    })->name('register');
 
-    Route::post('register', [RegisteredUserController::class, 'store']);
+    Route::post('register', function () {
+        return redirect()->route('register');
+    });
+
+    // Route::get('register', [RegisteredUserController::class, 'create'])
+    //     ->name('register');
+    // Route::post('register', [RegisteredUserController::class, 'store'])
+    //     ->middleware('throttle:register');
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');

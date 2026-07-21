@@ -18,26 +18,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    /* ===== PREVIEW: banner de aviso (se retira cuando esto reemplace la home real) ===== */
-    .mb-preview-banner {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 99999;
-      background: #FD6A01; color: #111; font-weight: 700; font-size: .82rem;
-      text-align: center; padding: 6px 10px;
-    }
-    body { padding-top: 30px; }
-
-    /* ===== El header de GymOn, al bajar y volver a subir el scroll, se
-       vuelve position:fixed;top:0 (clase .slideDown, para reaparecer al
-       instante). Mi banner de vista previa TAMBIÉN es fixed;top:0 con más
-       z-index: sin este ajuste, el banner tapa la franja superior del
-       header cada vez que reaparece fijo, dejándolo con menos "cuerpo"
-       visible que en estado normal (donde sí respeta los 30px del banner
-       vía el padding-top del body). Se empuja el header fijo 30px hacia
-       abajo para que siempre quede completo, debajo del banner. ===== */
-    .mb-gymon-page #stickyHeader.slideDown,
-    .mb-gymon-page #stickyHeader.slideUp {
-      top: 30px !important;
-    }
+    /* ===== ROJO → NARANJA: la plantilla centraliza casi todo su acento rojo
+       en esta variable (--theme-color, usada ~100 veces en botones, bordes,
+       tabla de horario, footer, etc.). Redefinirla acá alcanza para
+       recolorear toda la página de una sola vez, en claro y oscuro por
+       igual (ninguna de las dos hojas de estilo la vuelve a definir aparte
+       por tema). Mismo naranja que ya se usaba en el banner de vista previa. ===== */
+    :root { --theme-color: #FD6A01; }
 
     /* ===== Logo del header: la plantilla fija .header-logo a img a
        width:180px (pensado para el wordmark ancho de GymOn, 503x171). El
@@ -55,16 +42,22 @@
        ancho. Se limita por alto a un tamaño prolijo para el panel. ===== */
     .res-log a img.mb-mobile-logo-img { width: auto !important; height: 56px; max-width: 100%; }
 
-    /* ===== Botón sol/luna para alternar tema ===== */
-    .mb-theme-toggle {
-      width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,.25);
-      background: rgba(255,255,255,.08); color: #fff; display: inline-flex;
-      align-items: center; justify-content: center; margin-left: 10px; cursor: pointer;
-      transition: background .15s;
+    /* ===== Tarjeta con el wordmark (letras negras) en el menú lateral: como
+       el menú tiene fondo negro, necesita un fondo claro propio detrás para
+       leerse. Se ancla abajo a la derecha del panel — esa zona queda vacía
+       en todos los tamaños (los links ocupan la parte de arriba), así que
+       nunca tapa la navegación. ===== */
+    .mb-mobile-brand-card {
+      position: absolute;
+      right: 30px;
+      bottom: 30px;
+      max-width: 55%;
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.3);
     }
-    .mb-theme-toggle:hover { background: rgba(255,255,255,.18); }
-    body:not(.light-d) .mb-theme-toggle { border-color: rgba(0,0,0,.15); background: rgba(0,0,0,.05); color: #111; }
-    body:not(.light-d) .mb-theme-toggle:hover { background: rgba(0,0,0,.1); }
+    .mb-mobile-brand-card img { display: block; width: 100%; height: auto; }
 
     /* ===== Corrección: las tarjetas "Clases de Calistenia / Cardio / Fitness"
        posicionan su título con position:absolute sobre la altura de la foto
@@ -100,19 +93,28 @@
     .mb-horario-tabla thead th:first-child, .mb-horario-tabla tbody td:first-child {
       text-align: left; white-space: nowrap; font-weight: 700;
     }
-    body.light-d .mb-horario-tabla tbody tr { background: #171717; color: #eee; }
-    body:not(.light-d) .mb-horario-tabla tbody tr { background: #f2f2f2; color: #222; }
+    .mb-horario-tabla tbody tr { background: #171717; color: #eee; }
     .mb-horario-tabla tbody td:first-child { color: var(--theme-color, #ea2127); }
     .mb-horario-tabla .mb-libre { opacity: .55; font-style: italic; }
     .mb-horario-tabla .mb-cerrado { opacity: .35; }
+
+    /* ===== Bug real de responsive: en mobile/tablet (max-width:1200px), la
+       plantilla tiene DOS reglas para el fondo del header que compiten al
+       mismo breakpoint — ".header-style-one .desktop-nav{background:black}"
+       y, más abajo en el mismo archivo, ".header-style-one.two .desktop-nav
+       {background-color:#fff}". Esta última tiene más especificidad (nuestro
+       header usa la clase "two") y gana, dejando el header BLANCO en mobile/
+       tablet — con el ícono de hamburguesa (líneas blancas) invisible sobre
+       ese fondo. En desktop no pasa: ahí el header queda transparente y se
+       ve el negro de la página detrás. Se fuerza el mismo fondo oscuro que
+       el resto del sitio en ese rango. ===== */
+    @media (max-width: 1200px) {
+      .header-style-one.two .desktop-nav { background-color: #0a0a0a !important; }
+    }
   </style>
 </head>
 
-<body class="mb-gymon-page {{ $temaOscuro ? 'light-d' : '' }}">
-
-  <div class="mb-preview-banner">
-    VISTA PREVIA — plantilla GymOn (Homepage 2) · esto NO es la página de inicio real todavía
-  </div>
+<body class="mb-gymon-page light-d">
 
   <div class="preloader">
     <div class="loader-wrap-heading">
@@ -166,9 +168,6 @@
                       <li><a href="#contacto">Contacto</a></li>
                     </ul>
                     <div class="extras">
-                      <button type="button" id="mbGymonThemeToggle" class="mb-theme-toggle" aria-label="Cambiar entre modo oscuro y claro">
-                        <i class="fa-solid fa-sun"></i>
-                      </button>
                       <a href="{{ $waLink }}" target="_blank" data-bs-toggle="modal" data-bs-target="#exampleModal" class="theme-btn">Únete hoy</a>
                     </div>
                   </div>
@@ -199,6 +198,9 @@
               <li><a href="{{ route('login') }}">Iniciar sesión</a></li>
             @endauth
           </ul>
+          <div class="mb-mobile-brand-card">
+            <img src="{{ asset('assets/images/log_text_mad.png') }}" alt="MadBarzz">
+          </div>
           <a href="JavaScript:void(0)" id="res-cross"></a>
         </div>
       </div>
@@ -217,20 +219,20 @@
         </div>
       </div>
     </div>
-    <div data-dot="<button><span>02</span> Cardio</button>" class="item featured-section-three" style="background-image:url(https://via.placeholder.com/1920x770);">
+    <div data-dot="<button><span>02</span> Peso Corporal</button>" class="item featured-section-three" style="background-image:url(https://via.placeholder.com/1920x770);">
       <div class="container">
         <div class="featured-text-two">
-          <h1>Programa de Cardio</h1>
-          <p>Rutinas diseñadas para mejorar tu resistencia, quemar grasa y potenciar tu fuerza funcional.</p>
+          <h1>Entrena Tu Peso Corporal</h1>
+          <p>Domina movimientos de fuerza y control usando tu propio cuerpo, sin máquinas ni excusas.</p>
           <a href="{{ $waLink }}" target="_blank" class="theme-btn">ÚNETE AHORA</a>
         </div>
       </div>
     </div>
-    <div data-dot="<button><span>03</span> Fitness</button>" class="item featured-section-three" style="background-image:url(https://via.placeholder.com/1920x770);">
+    <div data-dot="<button><span>03</span> Fuerza y Control</button>" class="item featured-section-three" style="background-image:url(https://via.placeholder.com/1920x770);">
       <div class="container">
         <div class="featured-text-two">
-          <h1>Estudio de Fitness</h1>
-          <p>Espacio equipado con áreas adaptadas para todos los niveles y acompañamiento personalizado.</p>
+          <h1>Fuerza y Control</h1>
+          <p>Progresá de lo básico a la barra avanzada con una comunidad y entrenadores que te acompañan en cada paso.</p>
           <a href="{{ $waLink }}" target="_blank" class="theme-btn">ÚNETE AHORA</a>
         </div>
       </div>
@@ -300,20 +302,26 @@
   <a id="servicios-horarios"></a>
   <section class="gap shop-style-one timetable-section">
     <div class="heading">
-      <figure><img src="{{ asset('assets_gymon/images/heading-icon.png') }}" alt="icono"></figure>
+      <figure><img src="{{ asset('assets_gymon/images/heading-icon-orange.png') }}" alt="icono"></figure>
       <span>PARA TU ENTRENAMIENTO</span>
       <h2>Horarios</h2>
     </div>
     <div class="container">
       <div class="inner-container">
+        {{-- El título va FUERA de .table-outer: ese contenedor scrollea
+             horizontalmente en mobile (la tabla tiene 7 columnas y no entra
+             en 375-768px). Si el título queda adentro, scrollea con la
+             tabla y se corta ("Horario Semanal · Cal...") apenas cargada la
+             página, antes de que el usuario deslice. Afuera, siempre se ve
+             completo sin importar la posición del scroll de la tabla. --}}
+        <div class="table-title-box clearfix">
+          <div class="data">
+            <span>ENCONTRÁ TU HORARIO</span>
+            <h2>Horario Semanal · Calistenia</h2>
+          </div>
+        </div>
         <div class="table-outer">
           <div class="table-inner">
-            <div class="table-title-box clearfix">
-              <div class="data">
-                <span>ENCONTRÁ TU HORARIO</span>
-                <h2>Horario Semanal · Calistenia</h2>
-              </div>
-            </div>
             @php
                 $dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -404,7 +412,7 @@
   <a id="membresias"></a>
   <section class="gap payment-product" style="background-image:url(https://via.placeholder.com/1920x846);">
     <div class="heading">
-      <figure><img src="{{ asset('assets_gymon/images/heading-icon.png') }}" alt="icono"></figure>
+      <figure><img src="{{ asset('assets_gymon/images/heading-icon-orange.png') }}" alt="icono"></figure>
       <span>PLANES</span>
       <h2>Elegí tu Membresía</h2>
     </div>
@@ -614,25 +622,5 @@
   <script src="{{ asset('assets_gymon/js/owl.carousel.min.js') }}"></script>
   <script src="{{ asset('assets_gymon/js/marquee.js') }}"></script>
   <script src="{{ asset('assets_gymon/js/custom.js') }}"></script>
-
-  {{-- ===== Alternar modo oscuro/claro: clase en <body> + cookie para que el servidor
-       recuerde la preferencia en la próxima carga (arranca en oscuro por defecto). ===== --}}
-  <script>
-  (function () {
-    var btn = document.getElementById('mbGymonThemeToggle');
-    if (!btn) return;
-
-    function actualizarIcono(oscuro) {
-      btn.innerHTML = oscuro ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
-    }
-    actualizarIcono(document.body.classList.contains('light-d'));
-
-    btn.addEventListener('click', function () {
-      var oscuro = document.body.classList.toggle('light-d');
-      document.cookie = 'gymon_tema=' + (oscuro ? 'dark' : 'light') + '; path=/; max-age=' + (60 * 60 * 24 * 365);
-      actualizarIcono(oscuro);
-    });
-  })();
-  </script>
 </body>
 </html>

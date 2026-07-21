@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Sede;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -15,7 +16,18 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-class User extends Authenticatable implements FilamentUser
+/**
+ * Implementa MustVerifyEmail (la interfaz — el trait que hace el trabajo real
+ * ya viene incluido en Illuminate\Foundation\Auth\User, la clase base detrás
+ * de "Authenticatable"). Esto activa la verificación de correo para
+ * CUALQUIER User, pero en la práctica solo bloquea a los clientes que se
+ * auto-registraron: el personal (Administrador/Recepcionista/Entrenador) y
+ * los clientes dados de alta por el personal quedan con `email_verified_at`
+ * puesto en el momento de crearse (ver esos controladores y
+ * AltaClienteService) — para ellos `hasVerifiedEmail()` ya da true desde el
+ * primer segundo, así que el middleware 'verified' nunca los frena.
+ */
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes, LogsActivity;
 
@@ -34,6 +46,12 @@ class User extends Authenticatable implements FilamentUser
         'rol_id',
         'foto',
         'id_sede',
+        // El personal y los clientes dados de alta por el personal se
+        // marcan verificados desde User::create() (ver ClienteController,
+        // RecepcionistaController, EntrenadorController,
+        // AdministradorController, UserController) — sin esto en $fillable,
+        // ese valor se descarta en silencio y el usuario queda sin verificar.
+        'email_verified_at',
     ];
 
     protected $hidden = [
