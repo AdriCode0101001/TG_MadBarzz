@@ -13,14 +13,14 @@ use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 /**
- * Etapa 4 del auto-registro: endurecimiento de seguridad antes de reactivar
- * el registro público (que sigue bloqueado, Etapa 0).
+ * Etapa 4 del auto-registro: endurecimiento de seguridad, ya con el
+ * registro público REACTIVADO (el bloqueo de la Etapa 0 se quitó).
  *
- * Como en RegistroPublicoClienteTest y VerificacionEmailEtapa3Test, se
- * registra una ruta propia solo para el proceso de test, apuntando directo
- * al controlador — así se prueba sin reactivar /register. Acá además se le
- * agrega 'throttle:register' (el límite real que tendrá la ruta cuando se
- * reactive, ver routes/auth.php) para poder probarlo de verdad.
+ * Como en RegistroPublicoClienteTest y VerificacionEmailEtapa3Test, se usa
+ * una ruta propia registrada en el proceso de test, con la misma cadena de
+ * middleware que la ruta real ('web' + 'throttle:register'), para probar el
+ * controlador/servicio en aislado sin pisarse con otros tests que también
+ * pegan contra /register.
  */
 class RegistroSeguridadEtapa4Test extends TestCase
 {
@@ -213,18 +213,26 @@ class RegistroSeguridadEtapa4Test extends TestCase
         $this->postearRegistro($this->payload(['ci' => "1234; DROP TABLE users;--"]))->assertSessionHasErrors('ci');
     }
 
-    // ── 5. Sigue bloqueado al público ─────────────────────────────────────────
+    // ── 5. El registro público real ya funciona (y con su propio límite) ────
 
-    public function test_registro_publico_real_sigue_bloqueado(): void
+    public function test_el_registro_publico_real_funciona_con_su_propio_rate_limit(): void
     {
+        Cache::flush();
+
         $this->get(route('register'))
             ->assertStatus(200)
-            ->assertDontSee('name="nombre_completo"', false)
-            ->assertSee('Registro');
+            ->assertSee('name="nombre_completo"', false);
 
-        $this->post(route('register'), $this->payload())
-            ->assertRedirect(route('register'));
+        $this->post(route('register'), $this->payload(['email' => 'realseg@test.com']))
+            ->assertRedirect(route('dashboard'));
 
-        $this->assertDatabaseCount('clientes', 0);
+        $this->assertDatabaseHas('users', ['email' => 'realseg@test.com']);
+
+        // El límite de la ruta real es el mismo 'throttle:register': agotar
+        // los 5 restantes también lo bloquea.
+        for ($i = 1; $i <= 4; $i++) {
+            $this->post(route('register'), []);
+        }
+        $this->post(route('register'), [])->assertStatus(429);
     }
 }

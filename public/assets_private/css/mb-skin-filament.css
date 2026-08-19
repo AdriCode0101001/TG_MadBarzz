@@ -165,6 +165,13 @@ body.mb-skin .content-body .mb-hero-admin__eyebrow { color: var(--mbf-primary); 
 body.mb-skin .content-body .mb-hero-stat__num      { color: #f1f5f9; }
 body.mb-skin .content-body .mb-hero-stat__lbl      { color: #94a3b8; }
 
+/* Mismo problema, mismo motivo: el hero de Cliente/Entrenador (mb-cli-hero,
+   clase compartida por dashboard/cliente.blade.php y dashboard/entrenador.
+   blade.php) también tiene fondo oscuro fijo en ambos modos. El nombre es un
+   <h2> y cae bajo la regla h1..h6 de arriba, que en modo claro lo pintaba
+   casi negro sobre el banner oscuro. */
+body.mb-skin .content-body .mb-cli-hero__nombre { color: #fff; }
+
 /* ============================================================================
    Dashboard admin · realce del MODO CLARO  (solo body.mb-dash, solo claro)
    ----------------------------------------------------------------------------

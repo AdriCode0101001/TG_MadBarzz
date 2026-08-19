@@ -32,39 +32,41 @@
         </form>
     </div>
 
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>#</th>
-                <th>Nombre Completo</th>
-                <th>CI</th>
-                <th>Teléfono</th>
-                <th>Email</th>
-                <th>Estado</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($clientes as $index => $cliente)
+    <div class="table-responsive" style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+        <table class="table table-bordered table-striped" style="min-width:760px;">
+            <thead class="table-dark">
                 <tr>
-                    <td>{{ $index + 1 }}</td>
-                    <td>
-                        {{ $cliente->persona->nombre_completo ?? 'N/A' }}
-                        {{ $cliente->persona->apellido_paterno ?? '' }}
-                        {{ $cliente->persona->apellido_materno ?? '' }}
-                    </td>
-                    <td>{{ $cliente->persona->ci ?? 'N/A' }}</td>
-                    <td>{{ $cliente->persona->telefono ?? 'N/A' }}</td>
-                    <td>{{ $cliente->user->email ?? 'N/A' }}</td>
-                    <td class="{{ strtolower($cliente->estado) === 'activo' ? 'text-success fw-bold' : 'text-danger fw-bold' }}">
-                        {{ ucfirst($cliente->estado) }}
-                    </td>
+                    <th>#</th>
+                    <th>Nombre Completo</th>
+                    <th>CI</th>
+                    <th>Teléfono</th>
+                    <th>Email</th>
+                    <th>Estado</th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="6" class="text-center">No hay clientes registrados según el filtro seleccionado.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse($clientes as $index => $cliente)
+                    <tr>
+                        <td>{{ $index + 1 }}</td>
+                        <td>
+                            {{ $cliente->persona->nombre_completo ?? 'N/A' }}
+                            {{ $cliente->persona->apellido_paterno ?? '' }}
+                            {{ $cliente->persona->apellido_materno ?? '' }}
+                        </td>
+                        <td>{{ $cliente->persona->ci ?? 'N/A' }}</td>
+                        <td>{{ $cliente->persona->telefono ?? 'N/A' }}</td>
+                        <td>{{ $cliente->user->email ?? 'N/A' }}</td>
+                        <td class="{{ strtolower($cliente->estado) === 'activo' ? 'text-success fw-bold' : 'text-danger fw-bold' }}">
+                            {{ ucfirst($cliente->estado) }}
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="text-center">No hay clientes registrados según el filtro seleccionado.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection

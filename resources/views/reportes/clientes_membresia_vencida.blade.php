@@ -40,51 +40,53 @@
         </form>
     </div>
 
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>#</th>
-                <th>Nombre Completo</th>
-                <th>CI</th>
-                <th>Teléfono</th>
-                <th>Email</th>
-                <th>Fecha Vencimiento</th>
-                <th>Estado</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($clientes as $index => $cliente)
-                @php
-                    // Última membresía por fecha_fin
-                    $ultimaMembresia = $cliente->membresias()
-                        ->orderBy('fecha_fin', 'desc')
-                        ->first();
-
-                    $fechaFin = $ultimaMembresia ? \Carbon\Carbon::parse($ultimaMembresia->pivot->fecha_fin)->format('d/m/Y') : 'No registrada';
-
-                    $colorEstado = strtolower($cliente->estado) === 'activo' ? 'text-success' : 'text-danger';
-                @endphp
-                @if($ultimaMembresia)
+    <div class="table-responsive" style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+        <table class="table table-bordered table-striped" style="min-width:820px;">
+            <thead class="table-dark">
                 <tr>
-                    <td>{{ $index + 1 }}</td>
-                    <td>
-                        {{ $cliente->persona->nombre_completo ?? 'N/A' }}
-                        {{ $cliente->persona->apellido_paterno ?? '' }}
-                        {{ $cliente->persona->apellido_materno ?? '' }}
-                    </td>
-                    <td>{{ $cliente->persona->ci ?? 'N/A' }}</td>
-                    <td>{{ $cliente->persona->telefono ?? 'N/A' }}</td>
-                    <td>{{ $cliente->user->email ?? 'N/A' }}</td>
-                    <td>{{ $fechaFin }}</td>
-                    <td class="fw-bold {{ $colorEstado }}">{{ ucfirst($cliente->estado) }}</td>
+                    <th>#</th>
+                    <th>Nombre Completo</th>
+                    <th>CI</th>
+                    <th>Teléfono</th>
+                    <th>Email</th>
+                    <th>Fecha Vencimiento</th>
+                    <th>Estado</th>
                 </tr>
-                @endif
-            @empty
-            <tr>
-                <td colspan="7" class="text-center">No hay clientes con membresía vencida o por vencer.</td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse($clientes as $index => $cliente)
+                    @php
+                        // Última membresía por fecha_fin
+                        $ultimaMembresia = $cliente->membresias()
+                            ->orderBy('fecha_fin', 'desc')
+                            ->first();
+
+                        $fechaFin = $ultimaMembresia ? \Carbon\Carbon::parse($ultimaMembresia->pivot->fecha_fin)->format('d/m/Y') : 'No registrada';
+
+                        $colorEstado = strtolower($cliente->estado) === 'activo' ? 'text-success' : 'text-danger';
+                    @endphp
+                    @if($ultimaMembresia)
+                    <tr>
+                        <td>{{ $index + 1 }}</td>
+                        <td>
+                            {{ $cliente->persona->nombre_completo ?? 'N/A' }}
+                            {{ $cliente->persona->apellido_paterno ?? '' }}
+                            {{ $cliente->persona->apellido_materno ?? '' }}
+                        </td>
+                        <td>{{ $cliente->persona->ci ?? 'N/A' }}</td>
+                        <td>{{ $cliente->persona->telefono ?? 'N/A' }}</td>
+                        <td>{{ $cliente->user->email ?? 'N/A' }}</td>
+                        <td>{{ $fechaFin }}</td>
+                        <td class="fw-bold {{ $colorEstado }}">{{ ucfirst($cliente->estado) }}</td>
+                    </tr>
+                    @endif
+                @empty
+                <tr>
+                    <td colspan="7" class="text-center">No hay clientes con membresía vencida o por vencer.</td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection

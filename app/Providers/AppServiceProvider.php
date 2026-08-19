@@ -50,6 +50,19 @@ class AppServiceProvider extends ServiceProvider
                 ->first();
             $view->with('superadmin', $superadmin);
         });
+
+        // Campanita de Avisos (Etapa 2): solo corre para layouts/private.blade.php
+        // (no '*'), y adentro se corta de una si el rol no es Cliente — cero
+        // consultas extra para el resto de los roles.
+        view()->composer('layouts.private', \App\View\Composers\AvisosClienteComposer::class);
+
+        // Web Push (Etapa 1): en Windows, cualquier operación con claves EC
+        // (VAPID) falla si el proceso no sabe dónde está openssl.cnf — se
+        // fija una vez acá, al bootear la app, para que TODO código que
+        // termine usando minishlink/web-push (WebPushChannel, tests, un
+        // comando de generar claves, etc.) quede cubierto sin repetir este
+        // chequeo en cada lugar. No hace nada fuera de Windows.
+        \App\Notifications\Channels\WebPushChannel::asegurarOpensslConfEnWindows();
     }
 
 

@@ -24,12 +24,14 @@ class RegisteredUserController extends Controller
     private const EDAD_MINIMA = 14;
 
     /**
-     * Display the registration view.
+     * Display the registration view (pantalla combinada login + registro,
+     * con la pestaña "Crear cuenta" activa).
      */
     public function create(): View
     {
-        return view('auth.register', [
-            'sedes' => Sede::where('activo', true)->orderBy('nombre')->get(),
+        return view('auth.login-register', [
+            'tabActiva' => 'register',
+            'sedes'     => Sede::where('activo', true)->orderBy('nombre')->get(),
         ]);
     }
 

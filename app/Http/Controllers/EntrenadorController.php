@@ -8,6 +8,7 @@ use App\Models\Rol;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class EntrenadorController extends Controller
 {
@@ -57,6 +58,11 @@ public function index(Request $request)
             'experiencia'      => 'required|string|max:255',
             'disponibilidad'   => 'required|array|min:1',
             'estado'           => 'required|in:activo,inactivo',
+
+            // Foto (opcional): misma columna/disco que usa "Usuarios del
+            // Sistema" (users.foto, disco 'privado') — se sirve públicamente
+            // para la home a través de una ruta dedicada (ver fotoPublica()).
+            'foto'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         $persona = Persona::create([
@@ -71,11 +77,17 @@ public function index(Request $request)
 
         $rolEnt = Rol::where('nombre', 'Entrenador')->first();
 
+        $fotoPath = null;
+        if ($request->hasFile('foto')) {
+            $fotoPath = $request->file('foto')->store('fotos_perfil', 'privado');
+        }
+
         $usuario = User::create([
             'name'     => $request->name,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
             'rol_id'   => $rolEnt->id,
+            'foto'     => $fotoPath,
             // Personal: verificado desde que se crea, no requiere confirmar correo.
             'email_verified_at' => now(),
         ]);
@@ -125,6 +137,8 @@ public function index(Request $request)
             'experiencia'      => 'required|string|max:255',
             'disponibilidad'   => 'required|array|min:1',
             'estado'           => 'required|in:activo,inactivo',
+
+            'foto'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         $persona->update($request->only([
@@ -141,6 +155,13 @@ public function index(Request $request)
             $usuarioData['password'] = Hash::make($request->password);
         }
 
+        if ($request->hasFile('foto')) {
+            if ($usuario->foto) {
+                Storage::disk('privado')->delete($usuario->foto);
+            }
+            $usuarioData['foto'] = $request->file('foto')->store('fotos_perfil', 'privado');
+        }
+
         $usuario->update($usuarioData);
 
         $entrenador->update([
@@ -151,6 +172,22 @@ public function index(Request $request)
         ]);
 
         return redirect()->route('entrenadores.index')->with('success', 'Entrenador actualizado correctamente.');
+    }
+
+    /**
+     * Sirve la foto del entrenador para la home PÚBLICA (sin auth): el
+     * archivo sigue viviendo en el disco 'privado' (misma columna/carpeta
+     * que "Usuarios del Sistema" usa para el resto de los roles, incluido el
+     * kiosko de asistencia), pero esta ruta es la única forma de leerlo sin
+     * sesión, y solo entrega la imagen — nunca ningún otro dato del usuario.
+     */
+    public function fotoPublica(Entrenador $entrenador)
+    {
+        $foto = $entrenador->user?->foto;
+
+        abort_unless($foto && Storage::disk('privado')->exists($foto), 404);
+
+        return Storage::disk('privado')->response($foto);
     }
 
     public function destroy($id)

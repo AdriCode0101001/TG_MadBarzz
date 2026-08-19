@@ -39,7 +39,7 @@
 
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="fw-bold mb-0" style="color:#e2e8f0;">{{ $p->titulo }}</h6>
+                            <h6 class="fw-bold mb-0" style="color:var(--mbf-text,#e2e8f0);">{{ $p->titulo }}</h6>
                             <span class="badge {{ $activa ? 'bg-success' : ($vencida ? 'bg-danger' : 'bg-warning text-dark') }} ms-2" style="flex-shrink:0;">
                                 {{ $activa ? 'Activa' : ($vencida ? 'Vencida' : ucfirst($p->estado)) }}
                             </span>
@@ -48,16 +48,16 @@
                         <div class="d-flex flex-column gap-1 mt-3">
                             <div class="d-flex align-items-center gap-2">
                                 <i class="fa-solid fa-calendar-plus" style="color:#10b981;font-size:.8rem;width:14px;"></i>
-                                <span style="font-size:.8rem;color:#94a3b8;">Inicio: <strong style="color:#e2e8f0;">{{ $inicio->format('d/m/Y') }}</strong></span>
+                                <span style="font-size:.8rem;color:var(--mbf-text-muted,#94a3b8);">Inicio: <strong style="color:var(--mbf-text,#e2e8f0);">{{ $inicio->format('d/m/Y') }}</strong></span>
                             </div>
                             <div class="d-flex align-items-center gap-2">
                                 <i class="fa-solid fa-calendar-xmark" style="color:#f5365c;font-size:.8rem;width:14px;"></i>
-                                <span style="font-size:.8rem;color:#94a3b8;">Fin: <strong style="color:#e2e8f0;">{{ $fin->format('d/m/Y') }}</strong></span>
+                                <span style="font-size:.8rem;color:var(--mbf-text-muted,#94a3b8);">Fin: <strong style="color:var(--mbf-text,#e2e8f0);">{{ $fin->format('d/m/Y') }}</strong></span>
                             </div>
                             @if($p->administrador)
                             <div class="d-flex align-items-center gap-2">
                                 <i class="fa-solid fa-user-shield" style="color:#6366f1;font-size:.8rem;width:14px;"></i>
-                                <span style="font-size:.8rem;color:#94a3b8;">{{ $p->administrador->persona->nombre_completo ?? '—' }}</span>
+                                <span style="font-size:.8rem;color:var(--mbf-text-muted,#94a3b8);">{{ $p->administrador->persona->nombre_completo ?? '—' }}</span>
                             </div>
                             @endif
                         </div>

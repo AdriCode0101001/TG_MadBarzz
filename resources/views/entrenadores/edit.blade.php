@@ -24,7 +24,7 @@
                     </div>
                 @endif
 
-                <form action="{{ route('entrenadores.update', $entrenador->id_entrenador) }}" method="POST">
+                <form action="{{ route('entrenadores.update', $entrenador->id_entrenador) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -62,6 +62,29 @@
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white">Fecha de Nacimiento</label>
                             <input type="date" name="fecha_nacimiento" class="form-control" value="{{ old('fecha_nacimiento', $entrenador->persona->fecha_nacimiento) }}" required>
+                        </div>
+
+                        <!-- Foto (se muestra en la home pública) -->
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold text-dark dark-text-white">
+                                Foto <small class="text-muted fw-normal">(opcional — se muestra en la sección de Entrenadores de la home pública)</small>
+                            </label>
+                            <div class="d-flex align-items-center gap-3 flex-wrap">
+                                <div id="preview-edit" style="width:90px;height:90px;border-radius:50%;overflow:hidden;border:2px dashed #ccc;display:flex;align-items:center;justify-content:center;background:#f5f5f5;flex-shrink:0;">
+                                    @if($entrenador->user->foto)
+                                        <img src="{{ route('entrenadores.foto_publica', $entrenador->id_entrenador) }}" style="width:100%;height:100%;object-fit:cover;">
+                                    @else
+                                        <i class="fa-solid fa-user" style="font-size:2rem;color:#bbb;"></i>
+                                    @endif
+                                </div>
+                                <div class="flex-grow-1">
+                                    <input type="file" class="form-control @error('foto') is-invalid @enderror"
+                                           name="foto" id="foto" accept="image/jpg,image/jpeg,image/png,image/webp"
+                                           onchange="previewFoto(this,'preview-edit')">
+                                    <small class="text-muted">JPG, PNG o WEBP — máx. 2MB. Dejar vacío para mantener la foto actual.</small>
+                                    @error('foto')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -149,5 +172,20 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+function previewFoto(input, previewId) {
+    const preview = document.getElementById(previewId);
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">`;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+@endpush
 
 @endsection

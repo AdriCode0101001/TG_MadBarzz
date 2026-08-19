@@ -48,7 +48,7 @@
                     </div>
 
                     <div class="card-body text-center pt-2">
-                        <h6 class="fw-bold mb-0" style="color:#e2e8f0;">{{ $nombre ?: '—' }}</h6>
+                        <h6 class="fw-bold mb-0" style="color:var(--mbf-text,#e2e8f0);">{{ $nombre ?: '—' }}</h6>
                         <small class="text-muted">{{ optional($e->user)->email ?? '' }}</small>
 
                         {{-- Especialidades --}}
@@ -60,22 +60,22 @@
                             </div>
                         @endif
 
-                        <hr style="border-color:rgba(255,255,255,.07);margin:.75rem 0;">
+                        <hr style="border-color:var(--mbf-border,rgba(255,255,255,.07));margin:.75rem 0;">
 
                         <div class="d-flex justify-content-around text-center">
                             <div>
-                                <div style="font-size:.7rem;color:#94a3b8;">CI</div>
-                                <div style="font-size:.82rem;color:#e2e8f0;font-weight:600;">{{ $e->persona->ci ?? '—' }}</div>
+                                <div style="font-size:.7rem;color:var(--mbf-text-muted,#94a3b8);">CI</div>
+                                <div style="font-size:.82rem;color:var(--mbf-text,#e2e8f0);font-weight:600;">{{ $e->persona->ci ?? '—' }}</div>
                             </div>
                             <div>
-                                <div style="font-size:.7rem;color:#94a3b8;">Experiencia</div>
-                                <div style="font-size:.82rem;color:#e2e8f0;font-weight:600;">{{ $e->experiencia ?? '—' }}</div>
+                                <div style="font-size:.7rem;color:var(--mbf-text-muted,#94a3b8);">Experiencia</div>
+                                <div style="font-size:.82rem;color:var(--mbf-text,#e2e8f0);font-weight:600;">{{ $e->experiencia ?? '—' }}</div>
                             </div>
                         </div>
 
                         @if(count($disps))
                             <div class="mt-2">
-                                <div style="font-size:.7rem;color:#94a3b8;margin-bottom:.3rem;">Disponibilidad</div>
+                                <div style="font-size:.7rem;color:var(--mbf-text-muted,#94a3b8);margin-bottom:.3rem;">Disponibilidad</div>
                                 <div class="d-flex flex-wrap justify-content-center gap-1">
                                     @foreach($disps as $d)
                                         <span class="badge" style="background:rgba(99,102,241,.15);color:#6366f1;font-size:.68rem;">{{ $d }}</span>

@@ -647,14 +647,17 @@
                                 request()->routeIs('rutinas.*')                      => ['fa-solid fa-list-check',        'Rutinas'],
                                 request()->routeIs('grupos_musculares.*')            => ['fa-solid fa-dumbbell',          'Grupos Musculares'],
                                 request()->routeIs('calendario_musculos.*')          => ['fa-solid fa-calendar-days',     'Calendario de Músculos'],
+                                request()->routeIs('horarios_entrenadores.*')        => ['fa-solid fa-clock',             'Horario de Entrenadores'],
                                 request()->routeIs('ejercicios.*')                   => ['fa-solid fa-book-open',         'Ejercicios'],
                                 request()->routeIs('asistencias.qr')                 => ['fa-solid fa-qrcode',            'Registrar Asistencia por QR'],
                                 request()->routeIs('asistencias.*')                  => ['fa-solid fa-calendar-check',   'Asistencias'],
                                 request()->routeIs('reportes.*')                     => ['fa-solid fa-chart-bar',         'Reportes'],
                                 request()->routeIs('notificaciones.*')               => ['fa-solid fa-bell',              'Notificaciones'],
+                                request()->routeIs('avisos.*')                       => ['fa-solid fa-bullhorn',          'Avisos'],
                                 request()->routeIs('promociones.*')                  => ['fa-solid fa-tags',              'Promociones'],
                                 request()->routeIs('descuentos.*')                   => ['fa-solid fa-tags',              'Descuentos'],
                                 request()->routeIs('qr_pago.edit')                   => ['fa-solid fa-qrcode',            'QR de Pago'],
+                                request()->routeIs('configuracion.imagenes_home.*')  => ['fa-solid fa-images',            'Imágenes de la Home'],
                                 request()->routeIs('portal.membresia')               => ['fa-solid fa-id-badge',          'Mi Membresía'],
                                 request()->routeIs('portal.rutina')                  => ['fa-solid fa-dumbbell',          'Mi Rutina'],
                                 request()->routeIs('profile.*')                      => ['fa-solid fa-circle-user',       'Mi Perfil'],
@@ -686,6 +689,69 @@
                                 </a>
                             </li>
 
+                            {{-- Campanita de Avisos (Etapas 2 y 3 del sistema de avisos): SOLO para
+                                 el rol Cliente. $avisosNoLeidosCount / $avisosParaCampanita vienen del
+                                 view composer AvisosClienteComposer (registrado en
+                                 AppServiceProvider), que ya corta solo si el rol no es Cliente — acá
+                                 el @if es nada más para no imprimir el HTML de más para el resto. --}}
+                            @if (Auth::user() && Auth::user()->hasRole('Cliente'))
+                                <li class="nav-item" style="position:relative;">
+                                    <a class="nav-link" href="javascript:void(0)" onclick="mbToggleAvisos(event)" aria-label="Avisos">
+                                        <i class="fa-solid fa-bell"></i>
+                                        @if ($avisosNoLeidosCount > 0)
+                                            <span id="mbAvisosBadge" class="badge rounded-pill bg-danger" style="position:absolute; top:2px; right:-2px; font-size:.62rem; padding:.25em .45em;">
+                                                {{ $avisosNoLeidosCount > 9 ? '9+' : $avisosNoLeidosCount }}
+                                            </span>
+                                        @endif
+                                    </a>
+                                    <div id="mbAvisosMenu" style="display:none;position:fixed;z-index:99999;background:#222327;border:1px solid #333a54;border-radius:.5rem;box-shadow:0 4px 24px rgba(0,0,0,.4);max-height:420px;overflow-y:auto;">
+                                        <div class="p-2 px-3" style="border-bottom:1px solid #333a54;">
+                                            <strong class="text-white">Avisos</strong>
+                                        </div>
+                                        @forelse ($avisosParaCampanita as $aviso)
+                                            <div class="d-flex gap-2 p-2 px-3 mb-aviso-item" style="border-bottom:1px solid #2c2d33;cursor:pointer;{{ $aviso->yaLeido ? 'opacity:.65;' : '' }}"
+                                                 onclick="mbAbrirAvisoDetalle(this)"
+                                                 data-titulo="{{ $aviso->titulo }}"
+                                                 data-texto="{{ $aviso->texto }}"
+                                                 data-fecha="{{ $aviso->created_at->format('d/m/Y H:i') }}"
+                                                 data-imagen="{{ $aviso->imagen ? \Illuminate\Support\Facades\Storage::disk('public')->url($aviso->imagen) : '' }}">
+                                                @if ($aviso->imagen)
+                                                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($aviso->imagen) }}" alt=""
+                                                         style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0;">
+                                                @else
+                                                    <div style="width:44px;height:44px;border-radius:6px;flex-shrink:0;background:#2c2d33;display:flex;align-items:center;justify-content:center;">
+                                                        <i class="fa-solid fa-bullhorn text-muted"></i>
+                                                    </div>
+                                                @endif
+                                                <div style="min-width:0;">
+                                                    <div class="text-white {{ $aviso->yaLeido ? '' : 'fw-semibold' }}" style="font-size:.85rem;">{{ $aviso->titulo }}</div>
+                                                    <div class="text-muted text-truncate" style="font-size:.78rem;max-width:220px;">{{ $aviso->texto }}</div>
+                                                    <div class="text-muted" style="font-size:.7rem;">{{ $aviso->created_at->format('d/m/Y H:i') }}</div>
+                                                </div>
+                                            </div>
+                                        @empty
+                                            <div class="p-3 text-center text-muted" style="font-size:.85rem;">No tenés avisos.</div>
+                                        @endforelse
+                                    </div>
+                                </li>
+
+                                {{-- Detalle completo de un aviso (Etapa 3): overlay simple mostrado/
+                                     ocultado a mano, mismo criterio que el resto de esta campanita (sin
+                                     el modal de Bootstrap) — se llena con los data-* de la tarjeta
+                                     clickeada, sin pedir nada al servidor de nuevo. --}}
+                                <div id="mbAvisoDetalleOverlay" style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:16px;" onclick="mbCerrarAvisoDetalle(event)">
+                                    <div style="max-width:480px;width:100%;max-height:85vh;overflow-y:auto;background:#222327;border:1px solid #333a54;border-radius:.75rem;padding:1.25rem;" onclick="event.stopPropagation()">
+                                        <div class="d-flex justify-content-between align-items-start mb-2 gap-3">
+                                            <h5 class="mb-0 text-white" id="mbAvisoDetalleTitulo"></h5>
+                                            <button type="button" class="btn-close btn-close-white" onclick="mbCerrarAvisoDetalle(event)" aria-label="Cerrar"></button>
+                                        </div>
+                                        <img id="mbAvisoDetalleImagen" src="" alt="" style="display:none;width:100%;max-height:260px;object-fit:contain;border-radius:8px;margin-bottom:.75rem;background:#111;">
+                                        <p class="text-white" id="mbAvisoDetalleTexto" style="white-space:pre-line;"></p>
+                                        <small class="text-muted" id="mbAvisoDetalleFecha"></small>
+                                    </div>
+                                </div>
+                            @endif
+
                             <li class="nav-item header-profile" style="position:relative;">
                                 <a class="nav-link" href="javascript:void(0)" onclick="mbToggleProfile(event)">
                                     <img src="{{ asset('assets_private/images/profile/17.jpg') }}" width="20" alt="">
@@ -697,7 +763,15 @@
                                         <p class="fs-12 mb-0">{{ Auth::user()->rol->nombre ?? 'Usuario' }}</p>
                                     </div>
                                 </a>
-                                <div id="mbProfileMenu" style="display:none;position:fixed;right:0;top:90px;z-index:99999;min-width:200px;background:#222327;border:1px solid #333a54;border-radius:.5rem;box-shadow:0 4px 24px rgba(0,0,0,.4);padding:.5rem 0;">
+                                {{-- .dropdown-menu: misma clase que usa el dropdown de perfil de la
+                                     plantilla Gymove original (index.html), así hereda su color de
+                                     fondo/borde YA theme-aware (ver [data-theme-version=dark]
+                                     .dropdown-menu en style.css) en vez de un color fijo a mano. La
+                                     posición la sigue calculando mbToggleProfile() en JS (mismo
+                                     mecanismo que ya usa Avisos), pero ahora alineada al borde
+                                     DERECHO del trigger y con clamp de "no salirse del viewport",
+                                     como el dropdown-menu-end + Popper del original. --}}
+                                <div id="mbProfileMenu" class="dropdown-menu" style="display:none;position:fixed;z-index:99999;">
 
                                     @auth
                                         {{-- El Admin edita desde el módulo de usuarios; los demás roles editan su propio perfil (incluido su username) --}}
@@ -850,15 +924,18 @@
                                     <!--  <li><a href="{{ route('asistencias.index') }}">Asistencias</a></li> -->
                                     @if (in_array($userRol, ['Administrador', 'Recepcionista']))
                                         <li><a href="{{ route('notificaciones.index') }}"><i class="fa-solid fa-bell me-2"></i>Notificaciones</a></li>
+                                        <li><a href="{{ route('avisos.index') }}"><i class="fa-solid fa-bullhorn me-2"></i>Avisos</a></li>
                                     @endif
                                     <li><a href="{{ route('pagos.index') }}"><i class="fa-solid fa-money-bill-wave me-2"></i>Pagos</a></li>
                                     @if (in_array($userRol, ['Administrador', 'Entrenador']))
                                         <li><a href="{{ route('rutinas.index') }}"><i class="fa-solid fa-list-check me-2"></i>Rutinas</a></li>
                                     @endif
                                     <li><a href="{{ route('grupos_musculares.index') }}"><i class="fa-solid fa-dumbbell me-2"></i>Grupos Musculares</a></li>
+                                    <li><a href="{{ route('horarios_entrenadores.index') }}"><i class="fa-solid fa-clock me-2"></i>Horario de Entrenadores</a></li>
                                     @if ($userRol === 'Administrador')
                                         <li><a href="{{ route('calendario_musculos.index') }}"><i class="fa-solid fa-calendar-days me-2"></i>Calendario de Músculos</a></li>
                                         <li><a href="{{ route('ejercicios.index') }}"><i class="fa-solid fa-book-open me-2"></i>Ejercicios</a></li>
+                                        <li><a href="{{ route('configuracion.imagenes_home.index') }}"><i class="fa-solid fa-images me-2"></i>Imágenes de la Home</a></li>
                                     @endif
                                 @endif
                             </ul>
@@ -927,10 +1004,14 @@
         Main wrapper end
     ***********************************-->
 
-    <!-- SERVICE WORKER -->
+    <!-- SERVICE WORKER (Web Push, Etapa 2) -->
 
+    {{-- Igual que la campanita de Avisos: solo Cliente ve/ejecuta esto. El
+         botón real vive en dashboard/cliente.blade.php (tarjeta "Notificaciones
+         push"); acá solo se definen las funciones que ese botón llama. --}}
+    @if (Auth::user() && Auth::user()->hasRole('Cliente'))
     <script>
-        const publicVapidKey = {!! json_encode(env('VAPID_PUBLIC_KEY')) !!};
+        const publicVapidKey = {!! json_encode(config('services.webpush.public_key')) !!};
 
         function urlBase64ToUint8Array(base64String) {
             const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -939,55 +1020,156 @@
             return new Uint8Array([...rawData].map(c => c.charCodeAt(0)));
         }
 
+        // Safari en iOS solo permite push si la web está agregada a la
+        // pantalla de inicio (modo standalone) — si no, ni tiene sentido
+        // pedir permiso.
+        function mbEsIosNoInstalado() {
+            const esIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+            const esStandalone = window.navigator.standalone === true
+                || window.matchMedia('(display-mode: standalone)').matches;
+            return esIos && !esStandalone;
+        }
+
+        function mbActualizarEstadoBotonPush(suscrito) {
+            const btn = document.getElementById('mbPushBtn');
+            if (!btn) return; // esta página no tiene la tarjeta de push
+            btn.dataset.suscrito = suscrito ? '1' : '0';
+            btn.disabled = false;
+            btn.innerHTML = suscrito
+                ? '<i class="fa-solid fa-bell-slash me-1"></i> Desactivar notificaciones'
+                : '<i class="fa-solid fa-bell me-1"></i> Activar notificaciones';
+            btn.style.background = suscrito ? '#64748b' : '#f59e0b';
+        }
+
         async function subscribeUser() {
-            if (!('serviceWorker' in navigator)) return alert('Service Worker no soportado');
+            const btn = document.getElementById('mbPushBtn');
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                if (typeof toastr !== 'undefined') toastr.error('Tu navegador no soporta notificaciones push.');
+                return;
+            }
 
             try {
                 // 1️⃣ Registrar SW
                 const register = await navigator.serviceWorker.register('/serviceworker.js');
                 await navigator.serviceWorker.ready;
-                console.log('Service Worker registrado');
 
-                // 2️⃣ Eliminar suscripción previa
+                // 2️⃣ Eliminar suscripción previa (por si quedó una vieja/inválida)
                 const existing = await register.pushManager.getSubscription();
                 if (existing) {
                     await existing.unsubscribe();
-                    console.log('Suscripción previa eliminada');
                 }
 
-                // 3️⃣ Crear nueva suscripción
+                // 3️⃣ Crear nueva suscripción (acá el navegador pide permiso si hace falta)
                 const subscription = await register.pushManager.subscribe({
                     userVisibleOnly: true,
                     applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
                 });
-                console.log('Suscripción creada:', subscription);
 
-                // 4️⃣ Guardar en backend Laravel
-                await fetch('/save-subscription', {
+                // 4️⃣ Guardar en el backend — campos planos (endpoint/p256dh/auth),
+                // no el shape anidado nativo del navegador ({endpoint, keys:{...}}).
+                const raw = subscription.toJSON();
+                await fetch('{{ route('portal.push.suscribir') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
-                    body: JSON.stringify(subscription)
+                    body: JSON.stringify({
+                        endpoint: raw.endpoint,
+                        p256dh: raw.keys.p256dh,
+                        auth: raw.keys.auth
+                    })
                 });
 
-                console.log('Suscripción enviada al servidor');
-                alert('Notificaciones activadas!');
+                mbActualizarEstadoBotonPush(true);
+                if (typeof toastr !== 'undefined') toastr.success('Notificaciones activadas.');
             } catch (err) {
-                console.error('Error registrando suscripción:', err);
-                console.log('err.name:', err.name);
-                console.log('err.message:', err.message);
-                console.log('err.stack:', err.stack);
-                console.log('Todo el objeto err:', err);
-                alert('Error registrando suscripción: ' + err.message);
+                console.error('Error registrando suscripción push:', err);
+                if (btn) btn.disabled = false;
+                if (Notification.permission === 'denied') {
+                    const aviso = document.getElementById('mbPushDenegadoAviso');
+                    if (aviso) aviso.style.display = 'block';
+                } else if (typeof toastr !== 'undefined') {
+                    toastr.error('No se pudo activar las notificaciones: ' + err.message);
+                }
             }
         }
 
-        // Push notifications se rehará en una fase posterior.
-        // var btn = document.getElementById('btnSubscribe');
-        // if (btn) btn.addEventListener('click', subscribeUser);
+        async function unsubscribeUser() {
+            if (!('serviceWorker' in navigator)) return;
+
+            try {
+                const register = await navigator.serviceWorker.getRegistration('/serviceworker.js');
+                const subscription = register && await register.pushManager.getSubscription();
+
+                if (subscription) {
+                    const endpoint = subscription.endpoint;
+                    await subscription.unsubscribe();
+                    await fetch('{{ route('portal.push.desuscribir') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ endpoint })
+                    });
+                }
+
+                mbActualizarEstadoBotonPush(false);
+                if (typeof toastr !== 'undefined') toastr.success('Notificaciones desactivadas.');
+            } catch (err) {
+                console.error('Error al desactivar la suscripción push:', err);
+                if (typeof toastr !== 'undefined') toastr.error('No se pudo desactivar las notificaciones.');
+            }
+        }
+
+        function mbTogglePush() {
+            const btn = document.getElementById('mbPushBtn');
+            if (!btn || btn.disabled) return;
+            btn.disabled = true;
+            if (btn.dataset.suscrito === '1') {
+                unsubscribeUser();
+            } else {
+                subscribeUser();
+            }
+        }
+
+        // Al cargar la página (si esta tiene la tarjeta de push): detecta
+        // iOS sin instalar / permiso ya denegado, y si no, refleja el estado
+        // real de la suscripción en el botón.
+        async function mbInicializarBotonPush() {
+            const btn = document.getElementById('mbPushBtn');
+            if (!btn) return;
+
+            if (mbEsIosNoInstalado()) {
+                const aviso = document.getElementById('mbPushIosAviso');
+                if (aviso) aviso.style.display = 'block';
+                btn.disabled = true;
+                return;
+            }
+
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                btn.disabled = true;
+                return;
+            }
+
+            if (typeof Notification !== 'undefined' && Notification.permission === 'denied') {
+                const aviso = document.getElementById('mbPushDenegadoAviso');
+                if (aviso) aviso.style.display = 'block';
+            }
+
+            try {
+                const register = await navigator.serviceWorker.register('/serviceworker.js');
+                const existing = await register.pushManager.getSubscription();
+                mbActualizarEstadoBotonPush(!!existing);
+            } catch (err) {
+                console.error('Error verificando suscripción push:', err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', mbInicializarBotonPush);
     </script>
+    @endif
 
 
 
@@ -1154,9 +1336,19 @@ function mbToggleProfile(e) {
     var menu = document.getElementById('mbProfileMenu');
     var trigger = e.currentTarget.closest('li');
     var rect = trigger.getBoundingClientRect();
+    // Ancho fijo: lo da el CSS (.header-right .header-profile .dropdown-menu
+    // => 12.5rem = 200px, heredado de la plantilla original), no rect.width
+    // del trigger — en celular el trigger se achica a solo el avatar (el
+    // texto de usuario/rol se oculta con display:none bajo 575px), y usar
+    // ESE ancho para el menú era justamente lo que lo hacía desbordar.
+    var anchoMenu = 200;
+    // Alineado al borde DERECHO del trigger (como dropdown-menu-end en el
+    // original), con clamp para que nunca se salga del viewport a ningún lado.
+    var izquierda = rect.right - anchoMenu;
+    if (izquierda + anchoMenu > window.innerWidth - 12) izquierda = window.innerWidth - anchoMenu - 12;
+    if (izquierda < 12) izquierda = 12;
     menu.style.top   = (rect.bottom + 6) + 'px';
-    menu.style.left  = rect.left + 'px';
-    menu.style.width = rect.width + 'px';
+    menu.style.left  = izquierda + 'px';
     menu.style.right = 'auto';
     menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
 }
@@ -1164,6 +1356,85 @@ document.addEventListener('click', function() {
     var menu = document.getElementById('mbProfileMenu');
     if (menu) menu.style.display = 'none';
 });
+
+// Campanita de Avisos (Etapas 2 y 3): mismo mecanismo que mbToggleProfile
+// (posicionado a mano con getBoundingClientRect, sin usar el dropdown de
+// Bootstrap) para quedar consistente con lo que ya existe — pero como
+// función APARTE, sin tocar mbToggleProfile.
+function mbToggleAvisos(e) {
+    e.stopPropagation();
+    var profileMenu = document.getElementById('mbProfileMenu');
+    if (profileMenu) profileMenu.style.display = 'none'; // no dejar los dos abiertos a la vez
+    var menu = document.getElementById('mbAvisosMenu');
+    var trigger = e.currentTarget.closest('li');
+    var rect = trigger.getBoundingClientRect();
+    var anchoMenu = Math.min(340, window.innerWidth - 24);
+    var izquierda = rect.left;
+    if (izquierda + anchoMenu > window.innerWidth - 12) {
+        izquierda = window.innerWidth - anchoMenu - 12;
+    }
+    menu.style.top   = (rect.bottom + 6) + 'px';
+    menu.style.left  = izquierda + 'px';
+    menu.style.width = anchoMenu + 'px';
+    menu.style.right = 'auto';
+    var seEstaAbriendo = menu.style.display === 'none';
+    menu.style.display = seEstaAbriendo ? 'block' : 'none';
+
+    // Al ABRIR (no al cerrar): marca todos los avisos como leídos y saca el
+    // badge sin recargar. Si el POST falla (sin conexión, etc.) no rompe
+    // nada — el dropdown ya se abrió igual, el badge queda como estaba y se
+    // reintenta la próxima vez que se abra.
+    if (seEstaAbriendo) {
+        mbMarcarAvisosLeidos();
+    }
+}
+document.addEventListener('click', function() {
+    var menu = document.getElementById('mbAvisosMenu');
+    if (menu) menu.style.display = 'none';
+});
+
+function mbMarcarAvisosLeidos() {
+    fetch('{{ route('portal.avisos.marcar_leidos') }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+        },
+    }).then(function (resp) {
+        if (resp.ok) {
+            var badge = document.getElementById('mbAvisosBadge');
+            if (badge) badge.remove();
+        }
+    }).catch(function () {
+        // Sin conexión u otro fallo: la campanita ya se abrió igual, no se
+        // avisa nada — se vuelve a intentar la próxima vez que se abra.
+    });
+}
+
+// Detalle completo de un aviso (Etapa 3): lee los data-* de la tarjeta
+// clickeada (ya vienen renderizados en el dropdown, sin pedir nada de
+// nuevo al servidor) y los muestra en el overlay compartido.
+function mbAbrirAvisoDetalle(el) {
+    document.getElementById('mbAvisoDetalleTitulo').textContent = el.dataset.titulo || '';
+    document.getElementById('mbAvisoDetalleTexto').textContent  = el.dataset.texto || '';
+    document.getElementById('mbAvisoDetalleFecha').textContent  = el.dataset.fecha || '';
+
+    var img = document.getElementById('mbAvisoDetalleImagen');
+    if (el.dataset.imagen) {
+        img.src = el.dataset.imagen;
+        img.style.display = 'block';
+    } else {
+        img.removeAttribute('src');
+        img.style.display = 'none';
+    }
+
+    document.getElementById('mbAvisoDetalleOverlay').style.display = 'flex';
+}
+function mbCerrarAvisoDetalle(e) {
+    if (e) e.stopPropagation();
+    var overlay = document.getElementById('mbAvisoDetalleOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
 </script>
 </body>
 

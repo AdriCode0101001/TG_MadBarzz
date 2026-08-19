@@ -98,6 +98,43 @@
                                 <input type="text" id="monto_info" class="form-control" value="—" readonly disabled>
                                 <small class="text-muted">Precio de la membresía menos el descuento. Lo calcula el sistema.</small>
                             </div>
+
+                            {{-- Pago en 2 Cuotas (Etapa 6): apagado por defecto — los campos
+                                 monto_pagado/fecha_limite_saldo nacen "disabled" y solo se
+                                 habilitan por JS al tildar el checkbox. Un input disabled NO
+                                 se manda en el POST, así que con el checkbox destildado el
+                                 formulario viaja EXACTAMENTE igual que antes de esta etapa. --}}
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="pagoEnCuotas">
+                                    <label class="form-check-label fw-bold text-dark dark-text-white" for="pagoEnCuotas">
+                                        <i class="fa-solid fa-layer-group me-1"></i> Pago en 2 cuotas (el cliente paga una parte ahora)
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div id="seccionCuotas" class="col-12" style="display:none;">
+                                <div class="row g-3 p-3 mt-1" style="background:var(--mbf-primary-soft,rgba(99,102,241,.08));border-radius:12px;border:1px solid var(--mbf-border,rgba(128,128,128,.2));">
+                                    <div class="col-md-4">
+                                        <label for="monto_pagado" class="form-label fw-bold text-dark dark-text-white">Monto que paga ahora (Bs)</label>
+                                        <input type="number" name="monto_pagado" id="monto_pagado" class="form-control" step="0.01" min="0.01" disabled>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="fecha_limite_saldo" class="form-label fw-bold text-dark dark-text-white">Fecha límite del saldo</label>
+                                        <input type="date" name="fecha_limite_saldo" id="fecha_limite_saldo" class="form-control" disabled>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold text-dark dark-text-white">Saldo que quedará pendiente</label>
+                                        <input type="text" id="saldo_info" class="form-control" value="—" readonly disabled>
+                                    </div>
+                                    <div class="col-12">
+                                        <small class="text-muted">
+                                            El cliente entra con huella con normalidad. Si no paga el saldo antes de la fecha límite,
+                                            la membresía se suspende automáticamente (sin perder los días de vencimiento ya calculados).
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <hr class="my-4">
@@ -234,6 +271,62 @@
     membresiaSel.addEventListener('change', actualizar);
     descuentoSel.addEventListener('change', actualizar);
     actualizar();
+
+    // ── Pago en 2 Cuotas (Etapa 6) ───────────────────────────────────────────
+    var chkCuotas      = document.getElementById('pagoEnCuotas');
+    var seccionCuotas  = document.getElementById('seccionCuotas');
+    var montoPagadoInp = document.getElementById('monto_pagado');
+    var fechaLimiteInp = document.getElementById('fecha_limite_saldo');
+    var saldoInfo      = document.getElementById('saldo_info');
+
+    function precioActual() {
+        return parseFloat(montoInfo.value) || 0;
+    }
+
+    // Solo VISTA PREVIA (igual que el resto del formulario): el saldo real
+    // lo calcula el servidor con el precio final que él mismo recalcula.
+    function actualizarSaldoCuotas() {
+        var precio = precioActual();
+        var pagado = parseFloat(montoPagadoInp.value) || 0;
+        var saldo  = precio - pagado;
+        saldoInfo.value = saldo > 0 ? saldo.toFixed(2) : '0.00';
+    }
+
+    function limitesFechaSaldo() {
+        var manana = new Date();
+        manana.setDate(manana.getDate() + 1);
+        var limite = new Date();
+        limite.setMonth(limite.getMonth() + 3);
+        // Mismo margen que valida el servidor (posterior a hoy, hasta 3 meses)
+        fechaLimiteInp.min = manana.toISOString().slice(0, 10);
+        fechaLimiteInp.max = limite.toISOString().slice(0, 10);
+    }
+
+    function toggleCuotas() {
+        var activo = chkCuotas.checked;
+        seccionCuotas.style.display = activo ? 'block' : 'none';
+        montoPagadoInp.disabled = !activo;
+        fechaLimiteInp.disabled = !activo;
+
+        if (activo) {
+            montoPagadoInp.max = precioActual();
+            limitesFechaSaldo();
+            actualizarSaldoCuotas();
+        } else {
+            montoPagadoInp.value = '';
+            fechaLimiteInp.value = '';
+            saldoInfo.value = '—';
+        }
+    }
+
+    chkCuotas.addEventListener('change', toggleCuotas);
+    montoPagadoInp.addEventListener('input', actualizarSaldoCuotas);
+    membresiaSel.addEventListener('change', function () {
+        if (chkCuotas.checked) { montoPagadoInp.max = precioActual(); actualizarSaldoCuotas(); }
+    });
+    descuentoSel.addEventListener('change', function () {
+        if (chkCuotas.checked) { montoPagadoInp.max = precioActual(); actualizarSaldoCuotas(); }
+    });
 
     // ── Aviso de ACUMULACIÓN antes de guardar ───────────────────────────────
     // Mapa (del servidor) de clientes con membresía vigente: hasta cuándo llega

@@ -56,4 +56,13 @@ return [
         'token'           => env('WHATSAPP_CLOUD_TOKEN'),
     ],
 
+    // ── Web Push (VAPID) — notificaciones al celular del cliente sin app ─────
+    // Claves generadas con \Minishlink\WebPush\VAPID::createVapidKeys().
+    // "subject" es el mailto/URL de contacto que exige el estándar VAPID.
+    'webpush' => [
+        'public_key'  => env('VAPID_PUBLIC_KEY'),
+        'private_key' => env('VAPID_PRIVATE_KEY'),
+        'subject'     => env('VAPID_SUBJECT', 'mailto:admin@madbarzz.com'),
+    ],
+
 ];

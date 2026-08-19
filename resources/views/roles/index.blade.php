@@ -17,38 +17,40 @@
         <i class="ti ti-plus me-2 fs-5"></i> Agregar nuevo rol
     </a>
 
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($roles as $rol)
+    <div class="table-responsive" style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+        <table class="table table-bordered table-striped" style="min-width:400px;">
+            <thead>
                 <tr>
-                    <td>{{ $rol->id }}</td>
-                    <td>{{ $rol->nombre }}</td>
-                    <td class="d-flex justify-content-center align-items-center gap-1">
-                        <a href="{{ route('roles.edit', $rol->id) }}" class="btn btn-warning btn-sm content-icon" aria-label="Editar rol {{ $rol->nombre }}">
-                            <i class="fa-solid fa-pen-to-square"></i>
-                        </a>
-                        <form action="{{ route('roles.destroy', $rol->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Estás seguro de eliminar el rol {{ $rol->nombre }}?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm content-icon" aria-label="Eliminar rol {{ $rol->nombre }}">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </form>
-                    </td>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Acciones</th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="4">No hay roles registrados.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse ($roles as $rol)
+                    <tr>
+                        <td>{{ $rol->id }}</td>
+                        <td>{{ $rol->nombre }}</td>
+                        <td class="d-flex justify-content-center align-items-center gap-1">
+                            <a href="{{ route('roles.edit', $rol->id) }}" class="btn btn-warning btn-sm content-icon" aria-label="Editar rol {{ $rol->nombre }}">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                            <form action="{{ route('roles.destroy', $rol->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Estás seguro de eliminar el rol {{ $rol->nombre }}?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm content-icon" aria-label="Eliminar rol {{ $rol->nombre }}">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="4">No hay roles registrados.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection

@@ -44,35 +44,37 @@
 </div>
 
 
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>#</th>
-                <th>Cliente</th>
-                <th>CI</th>
-                <th>Fecha Pago</th>
-                <th>Monto</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($pagos as $index => $pago)
+    <div class="table-responsive" style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+        <table class="table table-bordered table-striped" style="min-width:650px;">
+            <thead class="table-dark">
                 <tr>
-                    <td>{{ $index + 1 }}</td>
-                    <td>
-                        {{ $pago->cliente->persona->nombre_completo ?? 'N/A' }}
-                        {{ $pago->cliente->persona->apellido_paterno ?? '' }}
-                        {{ $pago->cliente->persona->apellido_materno ?? '' }}
-                    </td>
-                    <td>{{ $pago->cliente->persona->ci ?? 'N/A' }}</td>
-                    <td>{{ \Carbon\Carbon::parse($pago->fecha_pago)->format('d/m/Y') }}</td>
-                    <td>{{ number_format($pago->monto, 2) }} Bs</td>
+                    <th>#</th>
+                    <th>Cliente</th>
+                    <th>CI</th>
+                    <th>Fecha Pago</th>
+                    <th>Monto</th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="5" class="text-center">No se encontraron pagos para el filtro seleccionado.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse($pagos as $index => $pago)
+                    <tr>
+                        <td>{{ $index + 1 }}</td>
+                        <td>
+                            {{ $pago->cliente->persona->nombre_completo ?? 'N/A' }}
+                            {{ $pago->cliente->persona->apellido_paterno ?? '' }}
+                            {{ $pago->cliente->persona->apellido_materno ?? '' }}
+                        </td>
+                        <td>{{ $pago->cliente->persona->ci ?? 'N/A' }}</td>
+                        <td>{{ \Carbon\Carbon::parse($pago->fecha_pago)->format('d/m/Y') }}</td>
+                        <td>{{ number_format($pago->monto, 2) }} Bs</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="text-center">No se encontraron pagos para el filtro seleccionado.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection

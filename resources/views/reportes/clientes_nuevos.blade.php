@@ -49,35 +49,37 @@
     </div>
 <br>
     <!-- Tabla de clientes -->
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>#</th>
-                <th>Nombre Completo</th>
-                <th>CI</th>
-                <th>Celular</th>
-                <th>Fecha Registro</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($clientes as $index => $cliente)
-            <tr>
-                <td>{{ $index + 1 }}</td>
-                <td>
-                    {{ $cliente->persona->nombre_completo ?? 'N/A' }}
-                    {{ $cliente->persona->apellido_paterno ?? '' }}
-                    {{ $cliente->persona->apellido_materno ?? '' }}
-                </td>
-                <td>{{ $cliente->persona->ci ?? 'N/A' }}</td>
-                <td>{{ $cliente->persona?->telefonoLegible() ?? 'N/A' }}</td>
-                <td>{{ $cliente->created_at ? \Carbon\Carbon::parse($cliente->created_at)->format('d/m/Y') : 'No registrada' }}</td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="5" class="text-center">No hay clientes nuevos para este mes y año.</td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
+    <div class="table-responsive" style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+        <table class="table table-bordered table-striped" style="min-width:650px;">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Nombre Completo</th>
+                    <th>CI</th>
+                    <th>Celular</th>
+                    <th>Fecha Registro</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($clientes as $index => $cliente)
+                <tr>
+                    <td>{{ $index + 1 }}</td>
+                    <td>
+                        {{ $cliente->persona->nombre_completo ?? 'N/A' }}
+                        {{ $cliente->persona->apellido_paterno ?? '' }}
+                        {{ $cliente->persona->apellido_materno ?? '' }}
+                    </td>
+                    <td>{{ $cliente->persona->ci ?? 'N/A' }}</td>
+                    <td>{{ $cliente->persona?->telefonoLegible() ?? 'N/A' }}</td>
+                    <td>{{ $cliente->created_at ? \Carbon\Carbon::parse($cliente->created_at)->format('d/m/Y') : 'No registrada' }}</td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="5" class="text-center">No hay clientes nuevos para este mes y año.</td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection

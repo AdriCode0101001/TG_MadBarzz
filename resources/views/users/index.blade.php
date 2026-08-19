@@ -23,47 +23,49 @@
         </form>
     </div>
 
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre de Usuario</th>
-                <th>Email</th>
-                <th>Rol</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($usuarios as $usuario)
+    <div class="table-responsive" style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+        <table class="table table-bordered table-striped" style="min-width:650px;">
+            <thead>
                 <tr>
-                    <td>{{ $usuario->id }}</td>
-                    <td>{{ $usuario->name }}</td>
-                    <td>{{ $usuario->email }}</td>
-                    <td>{{ $usuario->rol->nombre ?? 'Sin rol' }}</td>
-                    <td class="d-flex justify-content-center align-items-center gap-1">
-                        <a href="{{ route('users.edit', $usuario->id) }}" 
-                           class="btn btn-warning btn-sm" 
-                           title="Editar {{ $usuario->name }}">
-                            <i class="fa-solid fa-pen-to-square"></i>
-                        </a>
-                        <form action="{{ route('users.destroy', $usuario->id) }}" 
-                              method="POST" 
-                              style="display:inline;" 
-                              onsubmit="return confirm('¿Estás seguro de eliminar a {{ $usuario->name }}?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </form>
-                    </td>
+                    <th>ID</th>
+                    <th>Nombre de Usuario</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Acciones</th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="5" class="text-center">No hay usuarios registrados.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse ($usuarios as $usuario)
+                    <tr>
+                        <td>{{ $usuario->id }}</td>
+                        <td>{{ $usuario->name }}</td>
+                        <td>{{ $usuario->email }}</td>
+                        <td>{{ $usuario->rol->nombre ?? 'Sin rol' }}</td>
+                        <td class="d-flex justify-content-center align-items-center gap-1">
+                            <a href="{{ route('users.edit', $usuario->id) }}"
+                               class="btn btn-warning btn-sm"
+                               title="Editar {{ $usuario->name }}">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                            <form action="{{ route('users.destroy', $usuario->id) }}"
+                                  method="POST"
+                                  style="display:inline;"
+                                  onsubmit="return confirm('¿Estás seguro de eliminar a {{ $usuario->name }}?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="text-center">No hay usuarios registrados.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection

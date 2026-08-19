@@ -39,8 +39,12 @@
                 <tbody>
                     @forelse($membresiasClientes as $mc)
                         @php
-                            $pendiente = $mc->estado !== 'activa';
-                            $vencida   = !$pendiente && \Carbon\Carbon::parse($mc->fecha_fin)->isPast();
+                            // suspendida_saldo (Pago en 2 Cuotas, Etapa 4) es un caso propio,
+                            // distinto de "nunca pagó nada" — se separa del resto para no
+                            // mezclarlo bajo la misma etiqueta "Pendiente de pago".
+                            $suspendidaSaldo = $mc->estado === 'suspendida_saldo';
+                            $pendiente = !$suspendidaSaldo && $mc->estado !== 'activa';
+                            $vencida   = !$pendiente && !$suspendidaSaldo && \Carbon\Carbon::parse($mc->fecha_fin)->isPast();
                             $nombre    = trim(($mc->cliente->persona->nombre_completo ?? '') . ' ' . ($mc->cliente->persona->apellido_paterno ?? '') . ' ' . ($mc->cliente->persona->apellido_materno ?? ''));
                             $inicial   = strtoupper(mb_substr($nombre ?: 'C', 0, 1));
                         @endphp
@@ -72,12 +76,29 @@
                             </td>
                             <td class="fw-bold" style="white-space:nowrap;">Bs. {{ number_format($mc->precio_final ?? 0, 2) }}</td>
                             <td class="text-center">
-                                <span class="badge {{ $pendiente ? 'bg-warning text-dark' : ($vencida ? 'bg-danger' : 'bg-success') }} mb-badge-dot">
-                                    {{ $pendiente ? 'Pendiente de pago' : ($vencida ? 'Vencida' : 'Activa') }}
+                                <span class="badge {{ $suspendidaSaldo ? 'bg-danger' : ($pendiente ? 'bg-warning text-dark' : ($vencida ? 'bg-danger' : 'bg-success')) }} mb-badge-dot">
+                                    {{ $suspendidaSaldo ? 'Suspendida (saldo)' : ($pendiente ? 'Pendiente de pago' : ($vencida ? 'Vencida' : 'Activa')) }}
                                 </span>
+                                {{-- Pago en 2 Cuotas (Etapa 6): indicador de saldo, sea cual sea
+                                     el estado actual (activa con saldo, o ya suspendida). --}}
+                                @if($mc->tieneSaldoPendiente())
+                                    <div class="text-muted" style="font-size:.7rem;margin-top:.2rem;white-space:nowrap;">
+                                        <i class="fa-solid fa-circle-exclamation me-1" style="color:#f59e0b;"></i>Debe Bs {{ number_format($mc->saldo_pendiente, 2) }}
+                                        <br>vence {{ $mc->fecha_limite_saldo?->format('d/m/Y') }}
+                                    </div>
+                                @endif
                             </td>
                             <td class="text-end">
                                 <div class="mb-actions justify-content-end">
+                                    @if($mc->tieneSaldoPendiente())
+                                        <button type="button" class="btn btn-sm btn-success mb-btn-pagar-saldo"
+                                                data-url="{{ route('pagos.saldo', $mc->id) }}"
+                                                data-monto="{{ number_format($mc->saldo_pendiente, 2) }}"
+                                                data-cliente="{{ $nombre }}"
+                                                title="Pagar saldo (Bs {{ number_format($mc->saldo_pendiente, 2) }})">
+                                            <i class="fa-solid fa-money-bill-wave"></i>
+                                        </button>
+                                    @endif
                                     <a href="{{ route('membresia_cliente.edit', $mc->id) }}" class="btn btn-sm btn-warning" title="Editar">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
@@ -113,5 +134,81 @@
         <div class="card-footer d-flex justify-content-end">{{ $membresiasClientes->withQueryString()->links('pagination::bootstrap-5') }}</div>
     @endif
 </div>
+
+{{-- Pago en 2 Cuotas (Etapa 6): un solo modal compartido para todas las
+     filas — cada botón "Pagar saldo" solo rellena su action/monto/cliente
+     antes de mostrarlo. Mismos tokens de tema (--mbf-*) que modalAcumular
+     en pagos/create.blade.php, así se ve bien en claro y oscuro. --}}
+<div id="modalPagarSaldo" style="display:none; position:fixed; inset:0; z-index:1080; background:rgba(0,0,0,.5); align-items:center; justify-content:center; padding:16px;">
+    <div style="background:var(--mbf-surface,#fff); color:var(--mbf-text,#18181b); max-width:420px; width:100%; border:1px solid var(--mbf-border,rgba(128,128,128,.2)); border-radius:12px; overflow:hidden; box-shadow:var(--mbf-shadow,0 10px 40px rgba(0,0,0,.3));">
+        <div style="padding:18px 22px; border-bottom:1px solid var(--mbf-border,rgba(128,128,128,.2));">
+            <h5 class="mb-0 fw-bold" style="color:var(--mbf-text,#18181b);"><i class="fa-solid fa-money-bill-wave me-2 text-success"></i>Pagar saldo</h5>
+        </div>
+        <form id="formPagarSaldo" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div style="padding:22px; color:var(--mbf-text,#18181b);">
+                <p class="mb-3">
+                    Vas a registrar el pago del saldo de <strong id="pagarSaldoCliente"></strong>
+                    por <strong id="pagarSaldoMonto"></strong>.
+                </p>
+                <label for="pagarSaldoMetodo" class="form-label fw-bold">Método de pago</label>
+                <select name="metodo_pago" id="pagarSaldoMetodo" class="form-control" required>
+                    <option value="efectivo">Efectivo</option>
+                    <option value="QR">QR</option>
+                </select>
+                <div id="pagarSaldoQrSection" class="mt-3" style="display:none;">
+                    <label for="pagarSaldoImagen" class="form-label fw-bold">Comprobante</label>
+                    <input type="file" name="imagen_qr" id="pagarSaldoImagen" class="form-control" accept="image/*">
+                </div>
+            </div>
+            <div style="padding:16px 22px; border-top:1px solid var(--mbf-border,rgba(128,128,128,.2)); display:flex; gap:10px; justify-content:flex-end;">
+                <button type="button" id="pagarSaldoCancelar" class="btn btn-secondary">Cancelar</button>
+                <button type="submit" class="btn btn-success">
+                    <i class="fa-solid fa-check me-2"></i>Confirmar pago
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    var modal = document.getElementById('modalPagarSaldo');
+    if (!modal) return;
+
+    var form         = document.getElementById('formPagarSaldo');
+    var clienteSpan  = document.getElementById('pagarSaldoCliente');
+    var montoSpan    = document.getElementById('pagarSaldoMonto');
+    var metodoSel    = document.getElementById('pagarSaldoMetodo');
+    var qrSection    = document.getElementById('pagarSaldoQrSection');
+    var imagenInp    = document.getElementById('pagarSaldoImagen');
+
+    document.querySelectorAll('.mb-btn-pagar-saldo').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            form.action = btn.dataset.url;
+            clienteSpan.textContent = btn.dataset.cliente;
+            montoSpan.textContent = 'Bs ' + btn.dataset.monto;
+            modal.style.display = 'flex';
+        });
+    });
+
+    document.getElementById('pagarSaldoCancelar').addEventListener('click', function () {
+        modal.style.display = 'none';
+    });
+
+    function aplicarMetodo(valor) {
+        if (valor === 'QR') {
+            qrSection.style.display = 'block';
+            imagenInp.setAttribute('required', 'required');
+        } else {
+            qrSection.style.display = 'none';
+            imagenInp.removeAttribute('required');
+            imagenInp.value = '';
+        }
+    }
+
+    metodoSel.addEventListener('change', function () { aplicarMetodo(this.value); });
+})();
+</script>
 
 @endsection

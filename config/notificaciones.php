@@ -11,11 +11,12 @@ return [
 
     /*
      | Canales de envío activos, separados por coma en NOTIF_CANALES.
-     | Valores válidos: email, telegram, whatsapp
+     | Valores válidos: email, telegram, whatsapp, push
      | Ejemplos:
      |   NOTIF_CANALES=email
      |   NOTIF_CANALES=email,telegram
      |   NOTIF_CANALES=email,telegram,whatsapp
+     |   NOTIF_CANALES=email,telegram,push
      */
     'canales' => array_values(array_filter(
         explode(',', env('NOTIF_CANALES', 'email'))

@@ -23,7 +23,7 @@
   </style>
 </head>
 <body class="light-d mb-auth-body">
-  <a href="{{ route('public') }}" class="mb-back-home"><i class="fa-solid fa-arrow-left"></i> Volver al inicio</a>
+  <a href="{{ route('home') }}" class="mb-back-home"><i class="fa-solid fa-arrow-left"></i> Volver al inicio</a>
   <main class="mb-auth-shell">
     @yield('contenido')
   </main>

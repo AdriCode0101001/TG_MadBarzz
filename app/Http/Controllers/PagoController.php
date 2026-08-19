@@ -23,7 +23,7 @@ public function index(Request $request)
 {
     $buscar = $request->input('buscar');
 
-    $pagos = Pago::with(['cliente.persona', 'membresia'])
+    $pagos = Pago::with(['cliente.persona', 'membresia', 'membresiaCliente'])
         ->when($buscar, function($query, $buscar) {
 
             // Buscar por cliente o membresía
@@ -142,6 +142,15 @@ public function index(Request $request)
      * asignación (membresia_cliente) y su pago vinculado, y la membresía
      * queda ACTIVA de inmediato (ya está pagada). "Sin pago no hay membresía
      * activa": por eso nace pendiente_pago y solo se activa tras crear el pago.
+     *
+     * Pago en 2 Cuotas (Etapa 2): "monto_pagado" es un campo NUEVO y opcional.
+     * Si no se manda (o llega igual al precio final), es EXACTAMENTE el pago
+     * de siempre — ni un byte de diferencia. Solo si llega MENOR al precio
+     * final se toma el camino de pago parcial (activa igual, pero con
+     * saldo_pendiente + fecha_limite_saldo guardados). A propósito NO se
+     * reusa el nombre de campo "monto": ya existe un test que manda
+     * monto=1 esperando que se IGNORE (como pasa siempre, porque el monto
+     * jamás vino del cliente), y debía seguir ignorándose.
      */
     public function store(Request $request, MembresiaService $servicio)
     {
@@ -176,40 +185,134 @@ public function index(Request $request)
         $fechas      = $servicio->calcularFechasSegunCliente($membresia, $cliente);
         $precioFinal = $servicio->precioFinal($membresia, $descuento);
 
+        // Sin monto_pagado en el envío: es el pago completo de siempre. Si
+        // llega, el saldo SIEMPRE se calcula acá (precioFinal - montoPagado),
+        // nunca se confía en un saldo mandado por el cliente.
+        $montoPagado   = $request->filled('monto_pagado')
+            ? round((float) $request->monto_pagado, 2)
+            : $precioFinal;
+        $esPagoParcial = $montoPagado < $precioFinal;
+
+        // Límite razonable para la fecha del saldo: 3 meses. Cubre la duración
+        // típica de las membresías (hasta trimestral) sin dejar fechas
+        // absurdamente lejanas por error de tipeo.
+        $limiteFechaSaldo = now()->addMonths(3)->toDateString();
+
+        $request->validate(array_merge(
+            [
+                'monto_pagado' => ['nullable', 'numeric', function ($attribute, $value, $fail) use ($precioFinal) {
+                    if ((float) $value <= 0) {
+                        $fail('El monto pagado debe ser mayor a 0.');
+                    } elseif ((float) $value > $precioFinal) {
+                        $fail('El monto pagado no puede superar el precio de la membresía (Bs ' . number_format($precioFinal, 2) . ').');
+                    }
+                }],
+            ],
+            $esPagoParcial ? [
+                'fecha_limite_saldo' => ['required', 'date', 'after:today', "before_or_equal:{$limiteFechaSaldo}"],
+            ] : []
+        ), [
+            'fecha_limite_saldo.required'       => 'La fecha límite del saldo es obligatoria en un pago parcial.',
+            'fecha_limite_saldo.after'          => 'La fecha límite del saldo debe ser posterior a hoy.',
+            'fecha_limite_saldo.before_or_equal' => 'La fecha límite del saldo no puede superar los 3 meses.',
+        ]);
+
         $rutaImagen = $request->hasFile('imagen_qr')
             ? $request->file('imagen_qr')->store('qrs', 'privado')
             : null;
 
-        DB::transaction(function () use ($request, $membresia, $descuento, $fechas, $precioFinal, $rutaImagen) {
+        DB::transaction(function () use ($request, $membresia, $descuento, $fechas, $precioFinal, $rutaImagen, $montoPagado, $esPagoParcial) {
             $membresiaCliente = MembresiaCliente::create([
-                'id_cliente'       => $request->id_cliente,
-                'id_membresia'     => $membresia->id_membresia,
-                'fecha_inicio'     => $fechas['fecha_inicio'],
-                'fecha_fin'        => $fechas['fecha_fin'],
-                'id_descuento'     => $descuento->id,
-                'nombre_descuento' => $descuento->nombre,
-                'descuento'        => $descuento->porcentaje,
-                'precio_final'     => $precioFinal,
-                'estado'           => MembresiaCliente::ESTADO_PENDIENTE,
+                'id_cliente'          => $request->id_cliente,
+                'id_membresia'        => $membresia->id_membresia,
+                'fecha_inicio'        => $fechas['fecha_inicio'],
+                'fecha_fin'           => $fechas['fecha_fin'],
+                'id_descuento'        => $descuento->id,
+                'nombre_descuento'    => $descuento->nombre,
+                'descuento'           => $descuento->porcentaje,
+                'precio_final'        => $precioFinal,
+                'estado'              => MembresiaCliente::ESTADO_PENDIENTE,
+                'saldo_pendiente'     => $esPagoParcial ? round($precioFinal - $montoPagado, 2) : null,
+                'fecha_limite_saldo'  => $esPagoParcial ? $request->fecha_limite_saldo : null,
             ]);
 
             Pago::create([
                 'id_cliente'           => $request->id_cliente,
                 'id_membresia'         => $membresia->id_membresia,
                 'id_membresia_cliente' => $membresiaCliente->id,
-                'monto'                => $precioFinal,
+                'monto'                => $montoPagado,
                 'fecha_pago'           => now()->toDateString(), // SIEMPRE hoy
                 'metodo_pago'          => $request->metodo_pago,
                 'observaciones'        => $request->observaciones,
                 'imagen_qr'            => $rutaImagen,
             ]);
 
-            // El pago recién creado activa la membresía de inmediato.
+            // El pago recién creado activa la membresía de inmediato — con
+            // saldo pendiente o sin él, entra con huella igual.
             $membresiaCliente->update(['estado' => MembresiaCliente::ESTADO_ACTIVA]);
         });
 
         return redirect()->route('pagos.index')
             ->with('success', 'Pago registrado y membresía activada correctamente.');
+    }
+
+    /**
+     * Pago del SALDO (cuota 2, Etapa 3): un Pago nuevo, vinculado a la MISMA
+     * membresia_cliente, por el saldo EXACTO (no se acepta otro monto — no
+     * se abren sub-cuotas). Salda la deuda y reactiva si estaba suspendida;
+     * si ya estaba activa (pagó antes del vencimiento del saldo), sigue
+     * activa. fecha_fin NUNCA se toca acá.
+     *
+     * saldo_pendiente pasa a 0 (no null): un 0 exacto es lo que le permite a
+     * destroy() reconstruir el monto si este pago se borra por error.
+     * fecha_limite_saldo se deja TAL CUAL estaba (no se limpia): es el único
+     * dato que le permite a destroy() saber si, al revertir, corresponde
+     * volver a 'activa' o a 'suspendida_saldo'. Ninguna otra parte del
+     * sistema lee fecha_limite_saldo sin antes chequear saldo_pendiente > 0,
+     * así que dejarla puesta en una membresía ya saldada no tiene efecto en
+     * nada más.
+     */
+    public function pagarSaldo(Request $request, MembresiaCliente $membresiaCliente)
+    {
+        if (!$membresiaCliente->tieneSaldoPendiente()) {
+            return redirect()->route('pagos.index')
+                ->with('error', 'Esta membresía no tiene saldo pendiente.');
+        }
+
+        $request->validate([
+            'metodo_pago'   => 'required|in:efectivo,QR',
+            'observaciones' => 'nullable|string',
+            'imagen_qr'     => 'nullable|required_if:metodo_pago,QR|image|mimes:jpeg,png,jpg,webp|max:2048',
+        ], [
+            'imagen_qr.required_if' => 'Debes subir el comprobante para un pago por QR.',
+        ]);
+
+        $rutaImagen = $request->hasFile('imagen_qr')
+            ? $request->file('imagen_qr')->store('qrs', 'privado')
+            : null;
+
+        DB::transaction(function () use ($request, $membresiaCliente, $rutaImagen) {
+            Pago::create([
+                'id_cliente'           => $membresiaCliente->id_cliente,
+                'id_membresia'         => $membresiaCliente->id_membresia,
+                'id_membresia_cliente' => $membresiaCliente->id,
+                'monto'                => $membresiaCliente->saldo_pendiente, // exacto, decide el servidor
+                'fecha_pago'           => now()->toDateString(),
+                'metodo_pago'          => $request->metodo_pago,
+                'observaciones'        => $request->observaciones,
+                'imagen_qr'            => $rutaImagen,
+            ]);
+
+            $membresiaCliente->update([
+                'saldo_pendiente' => 0,
+                'estado'          => MembresiaCliente::ESTADO_ACTIVA,
+                // fecha_fin: SIN TOCAR — el diseño ya definió que los días
+                // suspendida se pierden, la fecha original no se recalcula.
+            ]);
+        });
+
+        return redirect()->route('pagos.index')
+            ->with('success', 'Saldo pagado. La membresía quedó activa.');
     }
 
     /**
@@ -241,7 +344,7 @@ public function index(Request $request)
 
     public function show($id)
     {
-        $pago = Pago::with(['cliente.persona', 'membresia'])->findOrFail($id);
+        $pago = Pago::with(['cliente.persona', 'membresia', 'membresiaCliente'])->findOrFail($id);
         return view('pagos.show', compact('pago'));
     }
 
@@ -297,21 +400,58 @@ public function edit($id)
     }
 
     /**
-     * Al eliminar un pago, la membresía que activó vuelve a pendiente de
-     * pago (deja de dar acceso), en la misma transacción.
+     * Al eliminar un pago, qué le pasa a la membresía depende de CUÁL de sus
+     * pagos se borra (Pago en 2 Cuotas, Etapa 3 — hoy una membresía tiene
+     * como máximo 2: la cuota inicial que la activó, y opcionalmente el
+     * saldo). Se distinguen por orden cronológico (id_pago), no hace falta
+     * un campo "tipo" nuevo:
+     *
+     *   - Se borra el PRIMER pago (el único, o la cuota inicial): sin él no
+     *     hay nada acreditado — vuelve a pendiente_pago TOTAL, limpiando
+     *     saldo_pendiente/fecha_limite_saldo (si quedara un pago de saldo
+     *     posterior sin borrar también, es un caso fuera de flujo normal:
+     *     un operador borrando pagos fuera de orden — no se intenta adivinar
+     *     nada ahí, mismo criterio "vuelve a cero" de siempre).
+     *   - Se borra el SEGUNDO pago (el del saldo): se deshace SOLO eso — el
+     *     pago inicial y la membresía siguen en pie. El saldo vuelve a ser
+     *     exactamente lo que ese pago cubría, y el estado vuelve a lo que
+     *     correspondía según la fecha límite (activa si todavía no se había
+     *     cumplido, suspendida_saldo si ya estaba vencida).
      */
     public function destroy(Pago $pago)
     {
         DB::transaction(function () use ($pago) {
             if ($pago->id_membresia_cliente) {
-                MembresiaCliente::whereKey($pago->id_membresia_cliente)
-                    ->update(['estado' => MembresiaCliente::ESTADO_PENDIENTE]);
+                $membresiaCliente = MembresiaCliente::find($pago->id_membresia_cliente);
+
+                if ($membresiaCliente) {
+                    $primerPago = $membresiaCliente->pagos()->orderBy('id_pago')->first();
+                    $esElPagoInicial = $primerPago && $primerPago->id_pago === $pago->id_pago;
+
+                    if ($esElPagoInicial) {
+                        $membresiaCliente->update([
+                            'estado'             => MembresiaCliente::ESTADO_PENDIENTE,
+                            'saldo_pendiente'    => null,
+                            'fecha_limite_saldo' => null,
+                        ]);
+                    } else {
+                        $seguiaVigenteElPlazo = $membresiaCliente->fecha_limite_saldo === null
+                            || $membresiaCliente->fecha_limite_saldo->toDateString() >= now()->toDateString();
+
+                        $membresiaCliente->update([
+                            'saldo_pendiente' => $pago->monto,
+                            'estado'          => $seguiaVigenteElPlazo
+                                ? MembresiaCliente::ESTADO_ACTIVA
+                                : MembresiaCliente::ESTADO_SUSPENDIDA_SALDO,
+                        ]);
+                    }
+                }
             }
 
             $pago->delete();
         });
 
         return redirect()->route('pagos.index')
-            ->with('success', 'Pago eliminado correctamente. La membresía vinculada quedó pendiente de pago.');
+            ->with('success', 'Pago eliminado correctamente.');
     }
 }

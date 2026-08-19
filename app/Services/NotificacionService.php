@@ -7,16 +7,26 @@ use App\Models\Cliente;
 use App\Models\Notificacion;
 use App\Notifications\Channels\EmailChannel;
 use App\Notifications\Channels\TelegramChannel;
+use App\Notifications\Channels\WebPushChannel;
 use App\Notifications\Channels\WhatsAppCloudChannel;
 use Illuminate\Support\Facades\Log;
 
 class NotificacionService
 {
-    /** @var array<string, class-string<CanalNotificacion>> */
+    /**
+     * @var array<string, class-string<CanalNotificacion>>
+     *
+     * 'push' activo desde la Etapa 3 de Web Push (NOTIF_CANALES=email,
+     * telegram,push) para las notificaciones de vencimiento. Igual que los
+     * demás canales, un fallo suyo se atrapa en el try/catch de
+     * enviarACliente() y no afecta a los demás — email/telegram siguen
+     * enviándose aunque push falle o el cliente no tenga suscripción.
+     */
     private array $canalesMap = [
         'email'    => EmailChannel::class,
         'telegram' => TelegramChannel::class,
         'whatsapp' => WhatsAppCloudChannel::class,
+        'push'     => WebPushChannel::class,
     ];
 
     /**
@@ -75,6 +85,11 @@ class NotificacionService
             'email'    => $cliente->user?->email,
             'telegram' => $cliente->persona?->telegram_chat_id ?? null,
             'whatsapp' => $cliente->persona?->telefono ?? null,
+            // El "destino" es el id_cliente: WebPushChannel busca ADENTRO
+            // todas sus suscripciones (puede tener varias, o ninguna — en
+            // ese caso el propio canal devuelve false, no hace falta
+            // chequear acá si tiene alguna cargada).
+            'push'     => (string) $cliente->id_cliente,
             default    => null,
         };
     }

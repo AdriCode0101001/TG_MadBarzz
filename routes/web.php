@@ -27,49 +27,56 @@ use App\Http\Controllers\DescuentoController;
 use App\Http\Controllers\EjercicioController;
 use App\Http\Controllers\GrupoMuscularController;
 use App\Http\Controllers\QrPagoController;
+use App\Http\Controllers\HorarioEntrenadorController;
+use App\Http\Controllers\ImagenHomeController;
+use App\Http\Controllers\AvisoController;
 
 // -----------------------------------------------------------------------
-// Página de inicio pública
+// Página de inicio pública: home real en diseño GymOn dark. La home vieja
+// (welcome.blade.php) queda sin usar pero sin borrar, por si hace falta
+// volver atrás — ningún route apunta a ella.
 // -----------------------------------------------------------------------
-Route::get('/', fn () => view('welcome'));
-Route::get('/public', fn () => view('layouts.public'))->name('public');
-
-// -----------------------------------------------------------------------
-// PREVIEW de la nueva home pública (plantilla GymOn, Homepage 2). Ruta de
-// prueba en paralelo a "/" — no reemplaza la home real todavía. Siempre en
-// modo oscuro (dark_version de GymOn) — la parte pública no tiene toggle
-// de tema.
-// -----------------------------------------------------------------------
-Route::get('/preview-gymon', function () {
+Route::get('/', function () {
     $waLink = 'https://wa.me/59176372337?text=Hola,%20quiero%20unirme%20a%20la%20Calistenia%20MadBarzz.';
     $membresias = \App\Models\Membresia::orderBy('precio')->get();
 
-    return view('welcome-gymon', compact('waLink', 'membresias'));
-})->name('preview.gymon');
+    // Horario real de entrenadores (Parte 2): arma la grilla pública a
+    // partir de lo que el Admin cargó en el panel privado. Sin caché — lee
+    // la BD en cada visita. "Sede Principal" (id 1): la home pública
+    // todavía no distingue entre sedes.
+    $horarioServicio = new \App\Services\HorarioEntrenadorPublicoService();
+    $diasHorario    = \App\Services\HorarioEntrenadorPublicoService::DIAS;
+    $franjasHorario = $horarioServicio->franjas();
+    $gridHorario    = $horarioServicio->grid(1);
+
+    // Imágenes de contenido de la home (hero, servicios, CTA, etc.): las que
+    // el Admin subió desde "Imágenes de la Home", o el placeholder de
+    // siempre si todavía no cargó nada para esa clave.
+    $imagenesHome = new \App\Services\ImagenHomeService();
+
+    // Entrenadores activos con foto real (o null si no tienen), para el
+    // marquee de la home. Mismo criterio de sede que el horario (Sede
+    // Principal, id 1) — se actualiza solo al agregar/editar/desactivar un
+    // entrenador o cambiarle la foto, sin tocar código.
+    $entrenadoresPublicos = (new \App\Services\EntrenadorPublicoService())->activos(1);
+
+    return view('welcome-gymon', compact('waLink', 'membresias', 'diasHorario', 'franjasHorario', 'gridHorario', 'imagenesHome', 'entrenadoresPublicos'));
+})->name('home');
+
+// Foto pública de un entrenador (home): sin auth a propósito, ver
+// EntrenadorController::fotoPublica.
+Route::get('entrenadores/{entrenador}/foto', [EntrenadorController::class, 'fotoPublica'])->name('entrenadores.foto_publica');
 
 // -----------------------------------------------------------------------
-// PREVIEW del formulario de auto-registro (Etapa 2). El /register público
-// real sigue bloqueado (Etapa 0, ver routes/auth.php) — esta ruta solo
-// muestra la MISMA vista (auth.register) para revisar el diseño, sin
-// reactivar el registro público. Quitar cuando se reactive /register.
+// Redirects de compatibilidad: estas URLs eran de la home vieja o de la
+// vista previa mientras el diseño GymOn dark no era la parte pública real.
+// Ahora que "/", "/login" y "/register" YA muestran ese diseño, quedan como
+// alias en vez de borrarlas (por si alguien las tiene guardadas).
 // -----------------------------------------------------------------------
-Route::get('/preview-registro', function () {
-    return view('auth.register', [
-        'sedes' => \App\Models\Sede::where('activo', true)->orderBy('nombre')->get(),
-    ]);
-})->name('preview.registro');
-
-// -----------------------------------------------------------------------
-// PREVIEW de login + registro juntos en una sola pantalla (pestañas), como
-// propone login.html de GymOn dark. El /register público real sigue
-// bloqueado (Etapa 0) — el login SÍ funciona de verdad desde acá. Quitar
-// o fusionar con /login cuando se apruebe el diseño combinado.
-// -----------------------------------------------------------------------
-Route::get('/preview-login-registro', function () {
-    return view('auth.login-register-preview', [
-        'sedes' => \App\Models\Sede::where('activo', true)->orderBy('nombre')->get(),
-    ]);
-})->name('preview.login-registro');
+Route::redirect('/public', '/', 301); // home vieja (layouts.public / welcome.blade.php, ya eliminadas)
+Route::redirect('/preview-gymon', '/', 301);
+Route::redirect('/preview-registro', '/register', 301);
+Route::redirect('/preview-login-registro', '/login', 301);
 
 // -----------------------------------------------------------------------
 // Autenticación (Breeze): register/login/logout/password viven SOLO en
@@ -146,6 +153,14 @@ Route::middleware(['auth', 'role:Administrador'])->group(function () {
         ->name('calendario_musculos.dia');
     Route::post('calendario-musculos/patron', [CalendarioMusculoController::class, 'aplicarPatron'])->name('calendario_musculos.patron');
 
+    // Horario semanal BASE de entrenadores (Parte 1: solo gestión). El
+    // listado (index) es de solo lectura para Recepcionista/Entrenador
+    // también (ver grupo de los tres roles más abajo) — solo Admin puede
+    // guardar. Guardado GENERAL: la grilla entera se arma en pantalla sin
+    // persistir nada, y este único endpoint guarda las 84 casillas juntas.
+    Route::post('horarios-entrenadores/guardar', [HorarioEntrenadorController::class, 'guardar'])
+        ->name('horarios_entrenadores.guardar');
+
     // Catálogo de ejercicios (importado del dataset externo): listado de
     // solo lectura para verificar la importación. Armar rutinas con esto es
     // una etapa posterior; por ahora, solo el Administrador lo ve.
@@ -158,6 +173,14 @@ Route::middleware(['auth', 'role:Administrador'])->group(function () {
     // QR de pago único del gimnasio: solo el Administrador lo configura/reemplaza
     Route::get('configuracion/qr-pago',  [QrPagoController::class, 'edit'])  ->name('qr_pago.edit');
     Route::post('configuracion/qr-pago', [QrPagoController::class, 'update'])->name('qr_pago.update');
+
+    // Imágenes de contenido de la home pública (hero, servicios, CTA, etc.):
+    // solo el Administrador las sube/reemplaza. Disco 'public' (a diferencia
+    // del QR de pago, estas SÍ deben ser accesibles por URL directa desde
+    // welcome-gymon.blade.php). Sin subir nada, la home sigue usando los
+    // placeholders de siempre (ver ImagenHomeService).
+    Route::get('configuracion/imagenes-home',        [ImagenHomeController::class, 'index']) ->name('configuracion.imagenes_home.index');
+    Route::post('configuracion/imagenes-home/{clave}', [ImagenHomeController::class, 'update'])->name('configuracion.imagenes_home.update');
 });
 
 // -----------------------------------------------------------------------
@@ -171,6 +194,13 @@ Route::middleware(['auth', 'role:Administrador,Recepcionista'])->group(function 
     Route::resource('notificaciones', NotificacionController::class);
     Route::get('/notificaciones/enviar',  [NotificacionController::class, 'showForm'])    ->name('notificaciones.form');
     Route::post('/notificaciones/enviar', [NotificacionController::class, 'sendWhatsapp'])->name('notificaciones.sendWhatsapp');
+
+    // Avisos: distinto de "Notificaciones" (WhatsApp a un cliente puntual) —
+    // un aviso se crea UNA vez y queda dirigido a TODOS los clientes; lo ven
+    // en su portal (campanita, Etapa 2, todavía no construida). Sin 'edit'/
+    // 'update': igual que el QR de pago, "reemplazar" no aplica acá — se
+    // retira (soft delete) y se manda uno nuevo si hace falta corregir algo.
+    Route::resource('avisos', AvisoController::class)->only(['index', 'create', 'store', 'destroy']);
 
     // El Entrenador no borra clientes ni edita/borra pagos (solo registra)
     Route::delete('clientes/{cliente}', [ClienteController::class, 'destroy'])->name('clientes.destroy');
@@ -205,11 +235,19 @@ Route::middleware(['auth', 'role:Administrador,Recepcionista,Entrenador'])->grou
     Route::resource('pagos', PagoController::class)->only(['index', 'create', 'store', 'show']);
     // Comprobante de pago (imagen privada): solo personal, nunca URL pública
     Route::get('pagos/{pago}/comprobante', [PagoController::class, 'comprobante'])->name('pagos.comprobante');
+    // Pago en 2 Cuotas (Etapa 3): registrar el pago del SALDO pendiente de
+    // una membresía. Mismos roles que "Registrar Pago" — es el mismo flujo.
+    Route::post('pagos/saldo/{membresiaCliente}', [PagoController::class, 'pagarSaldo'])->name('pagos.saldo');
 
     // Catálogo en SOLO LECTURA para todo el personal (gestión: solo Admin)
     Route::get('membresias', [MembresiaController::class, 'index'])->name('membresias.index');
     Route::get('descuentos', [DescuentoController::class, 'index'])->name('descuentos.index');
     Route::get('grupos_musculares', [GrupoMuscularController::class, 'index'])->name('grupos_musculares.index');
+
+    // Horario semanal de entrenadores: solo lectura para Recepcionista y
+    // Entrenador (les sirve para saber quién cubre cada franja); guardar
+    // cambios sigue siendo exclusivo del Administrador (ver grupo de arriba).
+    Route::get('horarios-entrenadores', [HorarioEntrenadorController::class, 'index'])->name('horarios_entrenadores.index');
 });
 
 // -----------------------------------------------------------------------
@@ -248,6 +286,18 @@ Route::middleware(['auth', 'role:Cliente', 'verified'])->group(function () {
 
     Route::post('/portal/telegram/vincular',      [ClientePortalController::class, 'vincularTelegram'])   ->name('portal.telegram.vincular');
     Route::delete('/portal/telegram/desvincular', [ClientePortalController::class, 'desvincularTelegram'])->name('portal.telegram.desvincular');
+
+    // Campanita de Avisos (Etapa 3): marca TODOS los no leídos del cliente
+    // logueado como leídos. Se llama por fetch() al abrir la campanita
+    // (layouts/private.blade.php) — mismo grupo/middleware que el resto del
+    // portal, así que Admin/Recepcionista/Entrenador reciben 403 acá igual.
+    Route::post('/portal/avisos/marcar-leidos', [ClientePortalController::class, 'marcarAvisosLeidos'])->name('portal.avisos.marcar_leidos');
+
+    // Web Push (Etapa 1, solo backend — el botón real es la Etapa 2): guardar
+    // y borrar la suscripción del navegador/dispositivo actual. Mismo grupo
+    // que el resto del portal, así que solo Cliente puede llamarlas.
+    Route::post('/portal/push/suscribir', [ClientePortalController::class, 'guardarSuscripcionPush'])->name('portal.push.suscribir');
+    Route::post('/portal/push/desuscribir', [ClientePortalController::class, 'eliminarSuscripcionPush'])->name('portal.push.desuscribir');
 });
 
 // -----------------------------------------------------------------------

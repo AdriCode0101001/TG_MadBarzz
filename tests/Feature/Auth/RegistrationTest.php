@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Sede;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,23 +18,39 @@ class RegistrationTest extends TestCase
         $response->assertStatus(200);
     }
 
+    /**
+     * El registro público (Etapa 0) ya fue reactivado: RegisteredUserController
+     * crea un cliente COMPLETO (persona + user + cliente), no el User suelto
+     * de Breeze. Cobertura más a fondo (duplicados, rol forzado, validación,
+     * rate limit) vive en RegistroPublicoClienteTest, VerificacionEmailEtapa3Test
+     * y RegistroSeguridadEtapa4Test — este test confirma el camino feliz
+     * contra la ruta REAL /register (antes esos usaban una ruta de test
+     * porque /register estaba bloqueado).
+     */
     public function test_new_users_can_register(): void
     {
-        // BLOQUEO TEMPORAL (Etapa 0 del auto-registro, ver routes/auth.php):
-        // POST /register ya no crea un usuario — redirige a la pantalla de
-        // "registro próximamente" mientras se reescribe el flujo completo
-        // (Persona + User + Cliente) en las Etapas 1-2. Quitar este skip
-        // cuando se reactive el registro real.
-        $this->markTestSkipped('Registro público bloqueado temporalmente (Etapa 0) — ver routes/auth.php.');
+        $sede = Sede::create(['nombre' => 'Sede Registro', 'direccion' => 'Calle 1', 'activo' => true]);
 
         $response = $this->post('/register', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'nombre_completo'       => 'Ana',
+            'apellido_paterno'      => 'Gutierrez',
+            'apellido_materno'      => 'Rojas',
+            'ci'                    => 'CIREGTEST1',
+            'telefono'              => '71234567',
+            'genero'                => 'femenino',
+            'fecha_nacimiento'      => '1998-05-20',
+            'id_sede'               => $sede->id_sede,
+            'email'                 => 'nuevocliente@example.com',
+            'password'              => 'Contrasena123',
+            'password_confirmation' => 'Contrasena123',
         ]);
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
+
+        $usuario = User::where('email', 'nuevocliente@example.com')->firstOrFail();
+        $this->assertTrue($usuario->hasRole('Cliente'));
+        $this->assertNull($usuario->email_verified_at); // sin verificar hasta que confirme el correo
+        $this->assertDatabaseHas('clientes', ['id_usuario' => $usuario->id]);
     }
 }

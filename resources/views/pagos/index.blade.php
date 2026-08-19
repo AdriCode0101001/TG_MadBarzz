@@ -43,7 +43,16 @@
                                 <td class="text-muted">{{ $pago->id_pago }}</td>
                                 <td>{{ $nombre ?: '—' }}</td>
                                 <td>{{ $pago->membresia->tipo_membresia ?? '—' }}</td>
-                                <td><span class="badge bg-success">{{ number_format($pago->monto, 2) }} Bs</span></td>
+                                <td>
+                                    <span class="badge bg-success">{{ number_format($pago->monto, 2) }} Bs</span>
+                                    {{-- Pago en 2 Cuotas (Etapa 6): si la membresía que este pago
+                                         activó todavía tiene saldo, se avisa acá mismo. --}}
+                                    @if($pago->membresiaCliente && $pago->membresiaCliente->tieneSaldoPendiente())
+                                        <div class="text-muted" style="font-size:.7rem;margin-top:.2rem;white-space:nowrap;">
+                                            <i class="fa-solid fa-circle-exclamation me-1" style="color:#f59e0b;"></i>Debe Bs {{ number_format($pago->membresiaCliente->saldo_pendiente, 2) }}
+                                        </div>
+                                    @endif
+                                </td>
                                 <td style="white-space:nowrap;">{{ \Carbon\Carbon::parse($pago->fecha_pago)->format('d/m/Y') }}</td>
                                 <td><span class="badge bg-secondary">{{ ucfirst($pago->metodo_pago) }}</span></td>
                                 <td class="text-truncate" style="max-width:160px">{{ $pago->observaciones }}</td>

@@ -43,3 +43,29 @@ Schedule::command('notificaciones:vencimientos')
     ->onFailure(function () {
         \Illuminate\Support\Facades\Log::error('notificaciones:vencimientos falló en la ejecución programada.');
     });
+
+// ---------------------------------------------------------------------------
+// Pago en 2 Cuotas — Etapa 5: aviso de saldo pendiente próximo a vencer
+// ---------------------------------------------------------------------------
+
+// 08:05 — Avisa a los clientes cuyo saldo pendiente vence en 3 días, antes
+// de que la desactivación automática (08:15) llegue a afectarlos.
+Schedule::command('notificaciones:saldo-pendiente')
+    ->dailyAt('08:05')
+    ->withoutOverlapping()
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('notificaciones:saldo-pendiente falló en la ejecución programada.');
+    });
+
+// ---------------------------------------------------------------------------
+// Pago en 2 Cuotas — Etapa 4: desactivación automática de saldo vencido
+// ---------------------------------------------------------------------------
+
+// 08:15 — Después de las notificaciones de vencimiento: suspende las
+// membresías activas cuyo saldo pendiente venció sin pagarse.
+Schedule::command('membresias:desactivar-saldo-vencido')
+    ->dailyAt('08:15')
+    ->withoutOverlapping()
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('membresias:desactivar-saldo-vencido falló en la ejecución programada.');
+    });

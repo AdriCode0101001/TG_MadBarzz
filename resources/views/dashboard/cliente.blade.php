@@ -229,6 +229,32 @@
         </div>
     </div>
 
+    {{-- ── NOTIFICACIONES PUSH (Etapa 2) ──
+         Las funciones subscribeUser()/unsubscribeUser()/mbTogglePush() están
+         en layouts/private.blade.php (gateadas a rol Cliente ahí también);
+         esta tarjeta solo pone el botón y los mensajes de estado. --}}
+    <div class="mb-cli-card mb-4">
+        <div class="mb-cli-card__head">
+            <i class="fa-solid fa-bell me-2" style="color:#f59e0b;"></i> Notificaciones push
+        </div>
+        <div class="mb-cli-card__body">
+            <div id="mbPushIosAviso" class="alert alert-warning border-0 rounded-3 mb-3" style="display:none;font-size:.82rem;">
+                <i class="fa-solid fa-circle-info me-1"></i>
+                En iPhone, primero agregá MadBarzz a tu pantalla de inicio (botón compartir → "Agregar a inicio") para poder activar las notificaciones.
+            </div>
+            <div id="mbPushDenegadoAviso" class="alert alert-danger border-0 rounded-3 mb-3" style="display:none;font-size:.82rem;">
+                <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                Bloqueaste los permisos de notificaciones para este sitio. Para activarlas, habilitalas desde la configuración de notificaciones de tu navegador.
+            </div>
+            <p style="font-size:.88rem;color:#94a3b8;margin-bottom:1rem;">
+                Activá las notificaciones para recibir avisos directo en tu celular, sin necesidad de instalar ninguna app.
+            </p>
+            <button type="button" id="mbPushBtn" class="btn btn-sm" style="background:#f59e0b;color:#fff;border:none;" onclick="mbTogglePush()">
+                <i class="fa-solid fa-bell me-1"></i> Activar notificaciones
+            </button>
+        </div>
+    </div>
+
     {{-- ── VINCULACIÓN DE TELEGRAM ── --}}
     @php $chatId = $cliente->persona->telegram_chat_id ?? null; @endphp
     <div class="mb-cli-card mb-4">

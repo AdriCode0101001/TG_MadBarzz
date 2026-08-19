@@ -19,9 +19,12 @@ use Tests\TestCase;
  * membresía, con las mismas reglas de CI/teléfono que el alta del personal
  * (ClienteController) — pero SIN pasar por él (no se toca).
  *
- * El registro público (/register) sigue bloqueado (Etapa 0): estos tests
- * registran rutas propias, solo para el proceso de test, que apuntan
- * directo al controlador — así se prueba sin reactivar el endpoint público.
+ * El registro público (/register) ya está reactivado (el bloqueo de la
+ * Etapa 0 se quitó una vez lista la Etapa 4). Estos tests igual usan una
+ * ruta propia registrada en el proceso de test, apuntando directo al
+ * controlador: así siguen probando el controlador/servicio en aislado, sin
+ * depender de la ruta real ni de su throttle (que tiene su propia cobertura
+ * en RegistroSeguridadEtapa4Test).
  */
 class RegistroPublicoClienteTest extends TestCase
 {
@@ -279,11 +282,11 @@ class RegistroPublicoClienteTest extends TestCase
         $respuesta->assertSee('value="' . $sede->id_sede . '" selected', false);
     }
 
-    public function test_registro_publico_sigue_bloqueado_en_la_ruta_real(): void
+    public function test_el_registro_publico_real_ya_esta_activo(): void
     {
         $this->get(route('register'))
             ->assertStatus(200)
-            ->assertDontSee('name="nombre_completo"', false)
-            ->assertSee('Registro');
+            ->assertSee('name="nombre_completo"', false)
+            ->assertSee('name="id_sede"', false);
     }
 }

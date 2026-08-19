@@ -9,6 +9,7 @@
         @php
             $fin  = \Carbon\Carbon::parse($vigente->pivot->fecha_fin);
             $dias = max(0, (int) now()->startOfDay()->diffInDays($fin->startOfDay(), false));
+            $saldoVigente = (float) ($vigente->pivot->saldo_pendiente ?? 0);
         @endphp
         <div class="card mb-4">
             <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
@@ -27,6 +28,33 @@
                 <div class="text-end">
                     <div style="font-size:1.8rem;font-weight:800;line-height:1;">{{ $dias }}</div>
                     <div class="text-muted" style="font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;">días restantes</div>
+                </div>
+            </div>
+            {{-- Pago en 2 Cuotas (Etapa 6): activa, pero con saldo — no
+                 bloquea el acceso todavía, solo avisa antes de que venza. --}}
+            @if($saldoVigente > 0)
+                <div class="alert alert-warning border-0 rounded-0 mb-0" style="border-bottom-left-radius:1rem !important;border-bottom-right-radius:1rem !important;">
+                    <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                    Tienes un saldo pendiente de <strong>Bs {{ number_format($saldoVigente, 2) }}</strong>,
+                    vence el <strong>{{ \Carbon\Carbon::parse($vigente->pivot->fecha_limite_saldo)->format('d/m/Y') }}</strong>.
+                    Acércate a pagarlo para no perder el acceso.
+                </div>
+            @endif
+        </div>
+    @elseif($masReciente && $masReciente->estaSuspendidaPorSaldo())
+        {{-- Distinto del "nunca pagó": este cliente SÍ pagó una cuota, entró
+             con huella con normalidad, y quedó suspendido por no pagar el
+             saldo a tiempo — el mensaje tiene que dejar eso claro. --}}
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="mb-empty py-4">
+                    <div class="mb-empty-icon" style="color:#f5365c;"><i class="fa-solid fa-lock"></i></div>
+                    <h5 class="mb-2">Tu membresía está suspendida</h5>
+                    <p class="mb-1">
+                        No se pagó el saldo pendiente de <strong>Bs {{ number_format((float) $masReciente->saldo_pendiente, 2) }}</strong>
+                        antes del {{ $masReciente->fecha_limite_saldo?->format('d/m/Y') }}.
+                    </p>
+                    <p class="mb-0">Acércate a recepción a pagarlo para reactivarla.</p>
                 </div>
             </div>
         </div>
@@ -59,17 +87,24 @@
                         <tbody>
                             @foreach($historial as $m)
                                 @php
-                                    $pendiente = $m->pivot->estado !== 'activa';
-                                    $vigente   = !$pendiente && \Carbon\Carbon::parse($m->pivot->fecha_fin)->gte(now()->startOfDay());
+                                    $suspendidaSaldo = $m->pivot->estado === 'suspendida_saldo';
+                                    $pendiente = !$suspendidaSaldo && $m->pivot->estado !== 'activa';
+                                    $vigente   = !$pendiente && !$suspendidaSaldo && \Carbon\Carbon::parse($m->pivot->fecha_fin)->gte(now()->startOfDay());
+                                    $saldoFila = (float) ($m->pivot->saldo_pendiente ?? 0);
                                 @endphp
                                 <tr>
                                     <td>{{ $m->tipo_membresia }}</td>
                                     <td>{{ \Carbon\Carbon::parse($m->pivot->fecha_inicio)->format('d/m/Y') }}</td>
                                     <td>{{ \Carbon\Carbon::parse($m->pivot->fecha_fin)->format('d/m/Y') }}</td>
                                     <td class="text-center">
-                                        <span class="badge {{ $pendiente ? 'bg-warning text-dark' : ($vigente ? 'bg-success' : 'bg-secondary') }} mb-badge-dot">
-                                            {{ $pendiente ? 'Pendiente de pago' : ($vigente ? 'Vigente' : 'Vencida') }}
+                                        <span class="badge {{ $suspendidaSaldo ? 'bg-danger' : ($pendiente ? 'bg-warning text-dark' : ($vigente ? 'bg-success' : 'bg-secondary')) }} mb-badge-dot">
+                                            {{ $suspendidaSaldo ? 'Suspendida (saldo)' : ($pendiente ? 'Pendiente de pago' : ($vigente ? 'Vigente' : 'Vencida')) }}
                                         </span>
+                                        @if($saldoFila > 0)
+                                            <div class="text-muted" style="font-size:.72rem;margin-top:.2rem;">
+                                                Debe Bs {{ number_format($saldoFila, 2) }}
+                                            </div>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

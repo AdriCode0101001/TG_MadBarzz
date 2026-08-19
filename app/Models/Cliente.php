@@ -20,6 +20,12 @@ class Cliente extends Model
     {
         return LogOptions::defaults()
             ->logFillable()
+            // Bitácora de Auditoría — Etapa 1: huella_digital es la plantilla
+            // biométrica (dato sensible, nunca en texto plano en un
+            // historial); qr_token es el identificador secreto del carnet QR
+            // del cliente — ninguno de los dos debe poder reconstruirse
+            // mirando el historial de cambios, aunque solo lo vea el Admin.
+            ->logExcept(['huella_digital', 'qr_token'])
             ->logOnlyDirty()
             ->setDescriptionForEvent(fn (string $event) => "Cliente {$event}");
     }
@@ -54,6 +60,11 @@ class Cliente extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'id_usuario')->withTrashed();
+    }
+
+    public function pushSubscriptions()
+    {
+        return $this->hasMany(PushSubscription::class, 'id_cliente');
     }
 
     public function membresiaActual()
@@ -98,7 +109,7 @@ class Cliente extends Model
     public function membresias()
 {
     return $this->belongsToMany(Membresia::class, 'membresia_cliente', 'id_cliente', 'id_membresia')
-                ->withPivot('fecha_inicio', 'fecha_fin', 'estado', 'precio_final', 'descuento', 'nombre_descuento');
+                ->withPivot('fecha_inicio', 'fecha_fin', 'estado', 'precio_final', 'descuento', 'nombre_descuento', 'saldo_pendiente', 'fecha_limite_saldo');
 }
 public function ultimaMembresia()
 {

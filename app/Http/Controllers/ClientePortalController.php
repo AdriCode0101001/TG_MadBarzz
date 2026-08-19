@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Aviso;
+use App\Models\AvisoCliente;
 use App\Models\CalendarioMusculo;
 use App\Models\Cliente;
+use App\Models\PushSubscription;
 use App\Models\Rutina;
 use App\Services\CarnetService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -38,7 +42,14 @@ class ClientePortalController extends Controller
             ->orderByPivot('fecha_fin', 'desc')
             ->get();
 
-        return view('portal.mi-membresia', compact('cliente', 'vigente', 'historial'));
+        // Pago en 2 Cuotas (Etapa 6): $vigente exige estado='activa', así que
+        // una membresía suspendida por saldo (suspendida_saldo) NUNCA cae ahí
+        // — sin esto, el cliente vería el mismo "No tienes membresía activa"
+        // genérico que alguien que nunca pagó nada. $masReciente (sin el
+        // filtro de estado) es la única forma de distinguir ambos casos.
+        $masReciente = $cliente->membresiaMasReciente();
+
+        return view('portal.mi-membresia', compact('cliente', 'vigente', 'historial', 'masReciente'));
     }
 
     /**
@@ -188,5 +199,96 @@ class ClientePortalController extends Controller
             ->update(['telegram_chat_id' => null]);
 
         return back()->with('success', 'Telegram desvinculado.');
+    }
+
+    /**
+     * Marca TODOS los avisos no leídos del cliente autenticado como leídos
+     * (se llama al abrir la campanita, ver layouts/private.blade.php). Crea
+     * las filas en aviso_cliente con firstOrCreate — idempotente: llamarlo
+     * de nuevo con los mismos avisos ya leídos no duplica nada (y tampoco
+     * rompe si, entre medio, llegó un aviso nuevo: ese va a quedar sin leer
+     * hasta la próxima apertura).
+     */
+    public function marcarAvisosLeidos(): JsonResponse
+    {
+        $cliente = Cliente::where('id_usuario', Auth::id())->first();
+
+        if (!$cliente) {
+            return response()->json(['ok' => false], 422);
+        }
+
+        $idsNoLeidos = Aviso::whereDoesntHave('lecturas', function ($q) use ($cliente) {
+            $q->where('id_cliente', $cliente->id_cliente);
+        })->pluck('id');
+
+        foreach ($idsNoLeidos as $idAviso) {
+            AvisoCliente::firstOrCreate([
+                'id_aviso'   => $idAviso,
+                'id_cliente' => $cliente->id_cliente,
+            ]);
+        }
+
+        return response()->json(['ok' => true]);
+    }
+
+    /**
+     * Guarda (o actualiza) la suscripción Web Push del navegador/dispositivo
+     * actual del cliente. Idempotente por "endpoint" (único): si el mismo
+     * navegador ya estaba suscripto, se actualiza en vez de duplicar fila
+     * — un cliente puede tener varias suscripciones a la vez (celular,
+     * tablet...), cada una es su propio endpoint.
+     *
+     * Etapa 2: subscribeUser() (layouts/private.blade.php) le pega acá con
+     * campos planos — el shape nativo del navegador ({endpoint, keys:{p256dh,
+     * auth}}) se aplana ahí mismo antes de mandarlo, para no ensuciar esta
+     * ruta con la forma anidada de PushSubscription.toJSON().
+     */
+    public function guardarSuscripcionPush(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'endpoint' => 'required|string|max:500',
+            'p256dh'   => 'required|string',
+            'auth'     => 'required|string',
+        ]);
+
+        $cliente = Cliente::where('id_usuario', Auth::id())->first();
+
+        if (!$cliente) {
+            return response()->json(['ok' => false], 422);
+        }
+
+        PushSubscription::updateOrCreate(
+            ['endpoint' => $data['endpoint']],
+            [
+                'id_cliente' => $cliente->id_cliente,
+                'p256dh'     => $data['p256dh'],
+                'auth'       => $data['auth'],
+            ]
+        );
+
+        return response()->json(['ok' => true]);
+    }
+
+    /**
+     * Borra la suscripción Web Push de ESE endpoint puntual (el cliente
+     * puede tener otras en otros dispositivos, que quedan intactas).
+     */
+    public function eliminarSuscripcionPush(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'endpoint' => 'required|string|max:500',
+        ]);
+
+        $cliente = Cliente::where('id_usuario', Auth::id())->first();
+
+        if (!$cliente) {
+            return response()->json(['ok' => false], 422);
+        }
+
+        PushSubscription::where('id_cliente', $cliente->id_cliente)
+            ->where('endpoint', $data['endpoint'])
+            ->delete();
+
+        return response()->json(['ok' => true]);
     }
 }

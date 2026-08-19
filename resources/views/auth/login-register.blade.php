@@ -10,16 +10,28 @@
     $loginImage = asset('assets/images/login-bg.jpg');
     $sedes = $sedes ?? collect();
     $sedeSeleccionada = old('id_sede', $sedes->count() === 1 ? $sedes->first()->id_sede : '');
+
+    // Qué pestaña abre primero: /login entra en "login", /register entra
+    // directo en "register" (ver AuthenticatedSessionController::create() y
+    // RegisteredUserController::create()). Si el formulario de registro
+    // vuelve con errores de validación, se queda en "register" aunque el
+    // valor por defecto fuera otro.
+    $tabActiva = old('_tab', $tabActiva ?? 'login');
+    if ($errors->has('nombre_completo') || $errors->has('ci') || $errors->has('id_sede')) {
+        $tabActiva = 'register';
+    }
 @endphp
 
-{{-- ===== PREVIEW: login y registro juntos en una sola pantalla, con
-     pestañas ("Iniciar sesión" / "Crear cuenta"), como propone login.html
-     de GymOn dark (que trae ambos formularios lado a lado). El registro de
-     MadBarzz tiene 11 campos (mucho más largo que el de GymOn), así que en
-     vez de mostrar las dos cajas siempre visibles una al lado de la otra
-     (se vería aplastado/desbordado), se resuelve con pestañas: un solo
-     formulario visible a la vez, la tarjeta se ensancha solo cuando la
-     pestaña activa es "Crear cuenta". Todo scoped a esta vista. ===== --}}
+{{-- ===== Login y registro juntos en una sola pantalla, con pestañas
+     ("Iniciar sesión" / "Crear cuenta"), como propone login.html de GymOn
+     dark (que trae ambos formularios lado a lado). El registro de MadBarzz
+     tiene 11 campos (mucho más largo que el de GymOn), así que en vez de
+     mostrar las dos cajas siempre visibles una al lado de la otra (se vería
+     aplastado/desbordado), se resuelve con pestañas: un solo formulario
+     visible a la vez, la tarjeta se ensancha solo cuando la pestaña activa
+     es "Crear cuenta". La pestaña inicial se decide en el servidor
+     ($tabActiva) para que /login y /register abran cada uno en la suya sin
+     depender de JS. Todo scoped a esta vista. ===== --}}
 <style>
   .mb-auth-tabs{
     display:flex; gap:.4rem; margin-bottom:2rem;
@@ -76,11 +88,11 @@
       <div class="ov"></div>
       <div class="mb-auth-logo"><img src="{{ asset('assets_private/images/log_text_mad.png') }}" alt="MadBarzz"></div>
 
-      <div class="mb-auth-quote" data-quote="login">
+      <div class="mb-auth-quote" data-quote="login" @if($tabActiva !== 'login') style="display:none;" @endif>
         <h2>Tu disciplina<br>construye tu fuerza.</h2>
         <p>Accede a tu cuenta para ver tus rutinas, pagos y progreso en Calistenia MadBarzz.</p>
       </div>
-      <div class="mb-auth-quote" data-quote="register" style="display:none;">
+      <div class="mb-auth-quote" data-quote="register" @if($tabActiva !== 'register') style="display:none;" @endif>
         <h2>Sumate a<br>Calistenia MadBarzz.</h2>
         <p>Creá tu cuenta, elegí tu sede y arrancá tu progreso. La membresía se activa cuando pasás a pagar al gimnasio.</p>
       </div>
@@ -88,15 +100,15 @@
 
     {{-- Formulario --}}
     <div class="mb-auth__form">
-      <div class="mb-auth-card" id="authCard">
+      <div class="mb-auth-card @if($tabActiva === 'register') mb-auth-card--wide @endif" id="authCard">
 
         <div class="mb-auth-tabs" role="tablist">
-          <button type="button" class="mb-auth-tab is-active" data-tab="login">Iniciar sesión</button>
-          <button type="button" class="mb-auth-tab" data-tab="register">Crear cuenta</button>
+          <button type="button" class="mb-auth-tab @if($tabActiva === 'login') is-active @endif" data-tab="login">Iniciar sesión</button>
+          <button type="button" class="mb-auth-tab @if($tabActiva === 'register') is-active @endif" data-tab="register">Crear cuenta</button>
         </div>
 
         {{-- ── Panel: Iniciar sesión ───────────────────────────────────── --}}
-        <div class="mb-auth-tab-panel is-active" data-panel="login">
+        <div class="mb-auth-tab-panel @if($tabActiva === 'login') is-active @endif" data-panel="login">
           <h1 class="mb-auth-h">Bienvenido de vuelta 👋</h1>
           <p class="mb-auth-sub">Inicia sesión para continuar tu entrenamiento</p>
 
@@ -104,14 +116,14 @@
             @csrf
             <label for="email">Correo o usuario</label>
             <div class="mb-input mb-input--no-icon">
-              <input type="text" name="email" id="email" placeholder="tucorreo@ejemplo.com o usuario" value="{{ old('email') }}" required autofocus autocomplete="username">
+              <input type="text" name="email" id="email" placeholder="tucorreo@ejemplo.com o usuario" value="{{ old('email') }}" autocomplete="username">
               <i class="fa-solid fa-envelope mb-icon-right"></i>
             </div>
             @error('email')<div class="mb-err">{{ $message }}</div>@enderror
 
             <label for="password">Contraseña</label>
             <div class="mb-input mb-input--no-icon">
-              <input type="password" name="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+              <input type="password" name="password" id="password" placeholder="••••••••" autocomplete="current-password">
               <i class="fa-solid fa-eye mb-pass-toggle" data-target="password" title="Mostrar/ocultar"></i>
             </div>
             @error('password')<div class="mb-err">{{ $message }}</div>@enderror
@@ -138,12 +150,13 @@
         </div>
 
         {{-- ── Panel: Crear cuenta ─────────────────────────────────────── --}}
-        <div class="mb-auth-tab-panel" data-panel="register">
+        <div class="mb-auth-tab-panel @if($tabActiva === 'register') is-active @endif" data-panel="register">
           <h1 class="mb-auth-h">Creá tu cuenta</h1>
           <p class="mb-auth-sub">Completá tus datos para registrarte</p>
 
           <form method="POST" action="{{ route('register') }}">
             @csrf
+            <input type="hidden" name="_tab" value="register">
 
             <div class="row g-3">
               <div class="col-md-6 mb-field">

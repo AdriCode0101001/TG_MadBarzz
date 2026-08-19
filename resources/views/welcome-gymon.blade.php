@@ -3,9 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calistenia MadBarzz · Domina tu propio cuerpo (vista previa GymOn)</title>
+  <title>Calistenia MadBarzz · Domina tu propio cuerpo</title>
   <link rel="stylesheet" href="{{ asset('assets_gymon/css/bootstrap.min.css') }}">
-  <link rel="icon" type="image/png" href="{{ asset('assets_gymon/images/favicon.png') }}">
+  <link rel="icon" type="image/png" href="{{ asset('assets_private/images/logo_mad.png') }}">
+  <link rel="shortcut icon" type="image/png" href="{{ asset('assets_private/images/logo_mad.png') }}">
   <link rel="stylesheet" href="{{ asset('assets_gymon/css/owl.carousel.min.css') }}">
   <link rel="stylesheet" href="{{ asset('assets_gymon/font/flaticon_mycollection.css') }}">
   <link rel="stylesheet" href="{{ asset('assets_gymon/css/owl.theme.default.min.css') }}">
@@ -26,38 +27,160 @@
        por tema). Mismo naranja que ya se usaba en el banner de vista previa. ===== */
     :root { --theme-color: #FD6A01; }
 
+    /* ===== Preloader (pantalla de carga inicial): style.css define
+       ".preloader" DOS veces — una con fondo rojo fijo (#f42828, línea
+       ~6316) y otra más abajo (línea ~7445) con fondo
+       "background-color:var(--theme-color)", que GANA por venir después en
+       el mismo archivo. Como --theme-color ya es nuestro naranja, quedaba
+       fondo naranja con el texto ("CARGANDO") en blanco (color original de
+       ".load-text") — bajo contraste, y encima cada letra hace un pulso de
+       opacidad (100%→0%) que en los valles casi la borra. Se invierte: fondo
+       oscuro (el mismo negro del resto del sitio) y letras en naranja, que
+       sí contrastan fuerte contra el negro incluso a mitad del pulso. Solo
+       color — no se toca el pulso ni la lógica de cuándo aparece/desaparece
+       (eso sigue en custom.js / la clase "page-loaded" del body). ===== */
+    .preloader { background: #0a0a0a; }
+    .loader-wrap-heading .load-text { color: var(--theme-color, #FD6A01); }
+
     /* ===== Logo del header: la plantilla fija .header-logo a img a
        width:180px (pensado para el wordmark ancho de GymOn, 503x171). El
        logo de MadBarzz es un emblema casi cuadrado (664x622): a lo ancho
        quedaría gigante (~168px de alto). Se iguala por ALTO al del original
        (180px de ancho x su proporción 171/503 ≈ 61px de alto) para que
        ocupe el mismo espacio vertical en el header, sin importar el ancho. ===== */
-    .header-logo a img.mb-header-logo-img { width: auto !important; height: 61px; }
+    .header-logo a img.mb-header-logo-img { width: auto !important; height: 96px; }
 
-    /* ===== Logo del menú lateral desplegable: sin restricción propia, solo
-       hereda el reset de Bootstrap img{max-width:100%}. El logo ancho de
-       GymOn (503x171) así ya queda moderado (~109px de alto); el emblema
-       casi cuadrado de MadBarzz, en cambio, terminaba enorme (~300px de
-       alto) porque al ser más "cuadrado" ocupa mucha más altura al mismo
-       ancho. Se limita por alto a un tamaño prolijo para el panel. ===== */
-    .res-log a img.mb-mobile-logo-img { width: auto !important; height: 56px; max-width: 100%; }
+    /* ===== Wordmark de MadBarzz como adorno de sección (arriba de
+       "Horarios" y "Elegí tu Membresía"): antes era el emblema redondo
+       (casi cuadrado); ahora es el logo de texto "MADBARZZ"
+       (log_text_mad.png, 952x247 — bien ancho), así que en vez del
+       width:50px genérico de la plantilla (pensado para un ícono cuadrado)
+       se le da un ancho propio acorde a esa proporción.
 
-    /* ===== Tarjeta con el wordmark (letras negras) en el menú lateral: como
-       el menú tiene fondo negro, necesita un fondo claro propio detrás para
-       leerse. Se ancla abajo a la derecha del panel — esa zona queda vacía
-       en todos los tamaños (los links ocupan la parte de arriba), así que
-       nunca tapa la navegación. ===== */
-    .mb-mobile-brand-card {
-      position: absolute;
-      right: 30px;
-      bottom: 30px;
-      max-width: 55%;
-      background: #fff;
-      border-radius: 12px;
-      padding: 14px 16px;
-      box-shadow: 0 4px 16px rgba(0,0,0,.3);
+       Letras NEGRAS sobre fondo oscuro: en vez de un halo/óvalo difuso
+       DETRÁS de toda la imagen (como se probó antes), ahora el brillo sigue
+       el CONTORNO real de las letras con filter:drop-shadow — a diferencia
+       de box-shadow (que dibuja un rectángulo), drop-shadow usa el canal
+       alfa del PNG, así que el resplandor abraza la silueta de cada letra.
+       Se apilan 3 drop-shadow (chico y nítido + medio + grande y difuso)
+       para un efecto de brillo con profundidad, no un solo borde plano.
+
+       Arranca APAGADO (drop-shadow con alpha 0, letras casi invisibles) y
+       se ENCIENDE/APAGA con transición suave cada vez que la sección entra
+       o sale de pantalla — la clase ".mb-halo-lit" la agrega y saca un
+       IntersectionObserver (ver el <script> antes de cerrar el body), así
+       que el efecto se repite cada vez que se cruza esa sección, subiendo o
+       bajando. Sin JS (o navegador muy viejo sin soporte), ese script deja
+       el brillo encendido de una para que las letras nunca queden
+       invisibles. Con "prefers-reduced-motion" el brillo queda fijo
+       prendido, sin transición (ver el @media más abajo). ===== */
+    .mb-heading-wordmark-halo {
+      position: relative;
+      display: inline-block;
+      padding: 8px 12px;
     }
-    .mb-mobile-brand-card img { display: block; width: 100%; height: auto; }
+    .mb-gymon-page .heading img.mb-heading-wordmark-img {
+      filter:
+        drop-shadow(0 0 3px rgba(255,255,255,0))
+        drop-shadow(0 0 9px rgba(255,255,255,0))
+        drop-shadow(0 0 20px rgba(255,255,255,0));
+      transition: filter .8s ease-out;
+    }
+    .mb-heading-wordmark-halo.mb-halo-lit img.mb-heading-wordmark-img {
+      filter:
+        drop-shadow(0 0 3px rgba(255,255,255,.95))
+        drop-shadow(0 0 9px rgba(255,255,255,.75))
+        drop-shadow(0 0 20px rgba(255,255,255,.5));
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .mb-gymon-page .heading img.mb-heading-wordmark-img {
+        filter:
+          drop-shadow(0 0 3px rgba(255,255,255,.95))
+          drop-shadow(0 0 9px rgba(255,255,255,.75))
+          drop-shadow(0 0 20px rgba(255,255,255,.5));
+        transition: none;
+      }
+    }
+    .mb-gymon-page .heading img.mb-heading-wordmark-img {
+      display: block;
+      width: 150px;
+      height: auto;
+      margin: 0 auto;
+    }
+
+    /* ===== Logo del header en móvil: medí la altura real de la barra
+       (".desktop-nav", que a pesar del nombre es la que queda visible en
+       todos los tamaños con el menú ya colapsado a hamburguesa) en los 3
+       tamaños de referencia — 55px en escritorio (1280px), 90px en tablet
+       (768px) y apenas 65px en celular (375px), donde el logo de 96px se
+       sale de la barra y se mete sobre el contenido de abajo. Achicando por
+       debajo de 992px (mismo escalón que la barra se achica) evita que se
+       salga tanto en tablet como en celular. ===== */
+    @media (max-width: 991.98px) {
+      .header-logo a img.mb-header-logo-img { height: 70px; }
+    }
+    @media (max-width: 575.98px) {
+      .header-logo a img.mb-header-logo-img { height: 55px; }
+    }
+
+    /* ===== Centrado del logo del header: la plantilla arma la barra con
+       3 hijos flex (".nav-bar" izquierda con el menú hamburguesa + "Iniciar
+       sesión", ".header-logo" en el medio, ".nav-bar" derecha con el menú
+       Inicio/Nosotros/... + "Únete hoy") y "justify-content:space-between".
+       Eso solo garantiza que el primer y el último hijo queden pegados a
+       cada borde — el del medio NO queda centrado en la pantalla, sino en
+       el punto medio de lo que sobra entre esos dos, que cambia según el
+       ancho de cada lado (y en mobile/tablet el lado derecho se achica
+       porque el menú completo se oculta, corriendo el logo). Se saca el
+       logo del flujo del flex y se centra en el centro ABSOLUTO de la
+       barra — así queda igual de centrado sin importar cuánto pesen los
+       costados, en cualquier tamaño de pantalla. ===== */
+    .mb-gymon-page .header-style-one .d-flex-all.justify-content-between {
+      position: relative;
+    }
+    .mb-gymon-page .header-style-one .header-logo {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+    }
+
+    /* ===== Wordmark arriba del menú lateral desplegable: el logo de texto
+       (log_text_mad.png) tiene las letras en NEGRO, y el menú tiene fondo
+       negro — sin nada detrás no se leería. En vez de una tarjeta blanca
+       sólida (recuadro duro, se notaba demasiado), un HALO: un
+       radial-gradient blanco que se desvanece a transparente + blur, en un
+       ::before detrás de la imagen — las letras quedan legibles sobre el
+       centro del halo, sin ningún borde recto visible. La imagen va
+       centrada en el panel (.res-log) y más grande que el emblema redondo
+       que estaba antes acá. ===== */
+    .res-log { text-align: center; }
+
+    .mb-mobile-brand-top {
+      position: relative;
+      display: inline-block;
+      padding: 18px 26px;
+      isolation: isolate;
+    }
+    .mb-mobile-brand-top::before {
+      content: "";
+      position: absolute;
+      inset: -14px;
+      z-index: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, rgba(255,255,255,.95) 0%, rgba(255,255,255,.55) 45%, rgba(255,255,255,0) 72%);
+      filter: blur(7px);
+    }
+    .mb-mobile-brand-top img.mb-mobile-wordmark-img {
+      position: relative;
+      z-index: 1;
+      display: block;
+      width: auto;
+      height: 48px;
+      max-width: 100%;
+      margin: 0 auto;
+    }
 
     /* ===== Corrección: las tarjetas "Clases de Calistenia / Cardio / Fitness"
        posicionan su título con position:absolute sobre la altura de la foto
@@ -72,31 +195,63 @@
       min-height: 480px; height: 100%; object-fit: cover;
     }
 
-    /* ===== Tabla de horario semanal (reemplaza la grilla decorativa de la
-       plantilla, que no alineaba realmente cada casilla con su día). El
-       título de esta sección venía con position:absolute, pensado para
-       flotar sobre el bloque de pestañas (que ya no existe: solo hay
-       Calistenia); sin eso, el título quedaba flotando encima de la tabla.
-       Se vuelve a flujo normal para que quede arriba, sin superposición. ===== */
+    /* ===== Tabla de horario semanal. El título de esta sección venía con
+       position:absolute, pensado para flotar sobre el bloque de pestañas
+       (Cardio/Crossfit/Gym/Powerlifting) del index-2 original — acá no hay
+       pestañas (un solo rubro: calistenia), así que sin eso el título
+       quedaba flotando encima de la tabla. Se vuelve a flujo normal para
+       que quede arriba, sin superposición. ===== */
     .mb-gymon-page .timetable-section .table-title-box { position: static; padding-bottom: 20px; }
     .mb-gymon-page .timetable-section .table-title-box .data { transform: none; padding-bottom: 0; }
     .mb-gymon-page .timetable-section .inner-container { padding-top: 40px; }
 
-    .mb-horario-tabla { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
-    .mb-horario-tabla th, .mb-horario-tabla td {
-      padding: 12px 10px; text-align: center; font-size: .82rem; white-space: nowrap;
+    /* ===== Cajas de horario: mismo estilo que .time-box/.box-inner/.time
+       del index-2 de GymOn (dark_version) — caja negra, borde fino gris,
+       nombre de la actividad arriba, entrenador + franja horaria abajo en
+       gris claro. Días en FILAS (a la izquierda) y franjas en COLUMNAS, al
+       revés de como arma esto la plantilla original: ahí el día es una
+       columna con position:absolute y las cajas flotan al lado (float),
+       un hack que no alinea de forma confiable con una grilla real de 14
+       franjas × 6 días. Se arma como <table> real (misma idea que ya se
+       usó antes para reemplazar la grilla decorativa de la plantilla),
+       con la celda del día "pegada" (position:sticky) para que no se
+       pierda de vista al arrastrar el scroll horizontal en mobile/tablet. ===== */
+    .mb-horario-tabla { border-collapse: separate; border-spacing: 8px; }
+
+    .mb-horario-day {
+      position: sticky; left: 0; z-index: 2;
+      width: 120px; min-width: 120px;
+      background: #000; color: #fff;
+      text-align: center; text-transform: uppercase;
+      font-weight: 700; font-size: .95rem; letter-spacing: .03em;
+      border: 1px solid rgba(255,255,255,.15);
+      border-left: 3px solid var(--theme-color, #FD6A01);
     }
-    .mb-horario-tabla thead th {
-      background: var(--theme-color, #ea2127); color: #fff; text-transform: uppercase;
-      letter-spacing: .04em; font-size: .74rem; font-weight: 700;
+
+    .mb-horario-box {
+      width: 168px; min-width: 168px; height: 92px;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center; padding: 6px 8px;
+      background: #000; border: 1px solid #444;
     }
-    .mb-horario-tabla thead th:first-child, .mb-horario-tabla tbody td:first-child {
-      text-align: left; white-space: nowrap; font-weight: 700;
+    .mb-horario-box .mb-horario-actividad {
+      font-size: 1rem; font-weight: 700; text-transform: uppercase;
+      color: var(--theme-color, #FD6A01);
     }
-    .mb-horario-tabla tbody tr { background: #171717; color: #eee; }
-    .mb-horario-tabla tbody td:first-child { color: var(--theme-color, #ea2127); }
-    .mb-horario-tabla .mb-libre { opacity: .55; font-style: italic; }
-    .mb-horario-tabla .mb-cerrado { opacity: .35; }
+    .mb-horario-box .mb-horario-detalle {
+      display: block; font-size: .74rem; font-weight: 400; color: #bbb;
+      line-height: 1.5em; margin-top: 4px;
+    }
+    .mb-horario-box--cerrado { border-color: rgba(255,255,255,.12); }
+    .mb-horario-box--cerrado .mb-horario-actividad { color: #999; font-style: italic; }
+    .mb-horario-box--cerrado .mb-horario-detalle { opacity: .55; }
+
+    @media (max-width: 767.98px) {
+      .mb-horario-day { width: 92px; min-width: 92px; font-size: .78rem; }
+      .mb-horario-box { width: 138px; min-width: 138px; height: 84px; }
+      .mb-horario-box .mb-horario-actividad { font-size: .86rem; }
+      .mb-horario-box .mb-horario-detalle { font-size: .68rem; }
+    }
 
     /* ===== Bug real de responsive: en mobile/tablet (max-width:1200px), la
        plantilla tiene DOS reglas para el fondo del header que compiten al
@@ -110,6 +265,43 @@
        el resto del sitio en ese rango. ===== */
     @media (max-width: 1200px) {
       .header-style-one.two .desktop-nav { background-color: #0a0a0a !important; }
+    }
+
+    /* ===== Bug real: fondos de Membresías y Footer se veían MOSAICO con
+       fotos reales. La plantilla nunca define background-size/repeat para
+       ".payment-product"/".footer-style-one" (solo trae el color de fondo);
+       con el placeholder sólido no se notaba, pero con una foto real de
+       menor alto que la sección, el navegador la REPETÍA en mosaico hacia
+       abajo (default background-repeat:repeat + background-size:auto). Se
+       fuerza cover + no-repeat, igual que el hero — la posición exacta
+       (arriba/centro/abajo) la elige el Admin por imagen, ver
+       ImagenHomeService::posicionCssPara() e inline style de cada sección. ===== */
+    .mb-gymon-page .payment-product,
+    .mb-gymon-page .footer-style-one {
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+
+    /* ===== Marquee de Entrenadores: la plantilla no fija un tamaño para
+       ".team-style-2 img" (antes dependía del placeholder, que ya venía en
+       240x290) — ahora la imagen es la FOTO real del entrenador, con
+       cualquier proporción que haya subido el Admin. Se fija el mismo
+       tamaño de antes con object-fit:cover para que el marquee no salte de
+       tamaño entre tarjetas. El avatar de inicial (sin foto) usa el mismo
+       tamaño/redondeo para que ambos casos se vean iguales en la fila. ===== */
+    .team-style-2 figure { width: 240px; height: 290px; margin: 0 auto; }
+    .team-style-2 figure img {
+      width: 240px; height: 290px; object-fit: cover; border-radius: 8px;
+    }
+    .mb-marquee-avatar {
+      width: 240px; height: 290px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--theme-color, #FD6A01), #1a1a1a);
+      color: #fff; font-size: 4rem; font-weight: 800; text-transform: uppercase;
+    }
+    @media (max-width: 575.98px) {
+      .team-style-2 figure, .team-style-2 figure img, .mb-marquee-avatar { width: 180px; height: 218px; }
+      .mb-marquee-avatar { font-size: 3rem; }
     }
   </style>
 </head>
@@ -153,7 +345,7 @@
                     </div>
                   </div>
                   <div class="header-logo">
-                    <a href="{{ route('preview.gymon') }}">
+                    <a href="{{ route('home') }}">
                       <figure>
                         <img src="{{ asset('assets_private/images/logo_mad.png') }}" alt="MadBarzz" class="mb-header-logo-img">
                       </figure>
@@ -178,8 +370,10 @@
         </div>
         <div class="mobile-nav" id="mobile-nav">
           <div class="res-log">
-            <a href="{{ route('preview.gymon') }}">
-              <img src="{{ asset('assets_private/images/logo_mad.png') }}" alt="MadBarzz" class="mb-mobile-logo-img">
+            <a href="{{ route('home') }}">
+              <span class="mb-mobile-brand-top">
+                <img src="{{ asset('assets/images/log_text_mad.png') }}" alt="MadBarzz" class="mb-mobile-wordmark-img">
+              </span>
             </a>
           </div>
           <ul>
@@ -198,9 +392,6 @@
               <li><a href="{{ route('login') }}">Iniciar sesión</a></li>
             @endauth
           </ul>
-          <div class="mb-mobile-brand-card">
-            <img src="{{ asset('assets/images/log_text_mad.png') }}" alt="MadBarzz">
-          </div>
           <a href="JavaScript:void(0)" id="res-cross"></a>
         </div>
       </div>
@@ -210,7 +401,7 @@
   {{-- ================= HERO (owl carousel) ================= --}}
   <a id="inicio"></a>
   <section class="myslider owl-carousel owl-theme">
-    <div data-dot="<button><span>01</span> Calistenia</button>" class="item featured-section-three" style="background-image:url(https://via.placeholder.com/1920x770);">
+    <div data-dot="<button><span>01</span> Calistenia</button>" class="item featured-section-three" style="background-image:url({{ $imagenesHome->url('home_hero_1', 'https://via.placeholder.com/1920x770') }}); background-position: {{ $imagenesHome->posicionCssPara('home_hero_1') }};">
       <div class="container">
         <div class="featured-text-two">
           <h1>Clases de Calistenia</h1>
@@ -219,7 +410,7 @@
         </div>
       </div>
     </div>
-    <div data-dot="<button><span>02</span> Peso Corporal</button>" class="item featured-section-three" style="background-image:url(https://via.placeholder.com/1920x770);">
+    <div data-dot="<button><span>02</span> Peso Corporal</button>" class="item featured-section-three" style="background-image:url({{ $imagenesHome->url('home_hero_2', 'https://via.placeholder.com/1920x770') }}); background-position: {{ $imagenesHome->posicionCssPara('home_hero_2') }};">
       <div class="container">
         <div class="featured-text-two">
           <h1>Entrena Tu Peso Corporal</h1>
@@ -228,7 +419,7 @@
         </div>
       </div>
     </div>
-    <div data-dot="<button><span>03</span> Fuerza y Control</button>" class="item featured-section-three" style="background-image:url(https://via.placeholder.com/1920x770);">
+    <div data-dot="<button><span>03</span> Fuerza y Control</button>" class="item featured-section-three" style="background-image:url({{ $imagenesHome->url('home_hero_3', 'https://via.placeholder.com/1920x770') }}); background-position: {{ $imagenesHome->posicionCssPara('home_hero_3') }};">
       <div class="container">
         <div class="featured-text-two">
           <h1>Fuerza y Control</h1>
@@ -246,7 +437,7 @@
       <div class="row">
         <div class="col-lg-4 col-md-6 col-sm-12">
           <div class="history-data">
-            <figure><img class="w-100" src="https://via.placeholder.com/416x584" alt="Clases de Calistenia"></figure>
+            <figure><img class="w-100" src="{{ $imagenesHome->url('home_nosotros_calistenia', 'https://via.placeholder.com/416x584') }}" alt="Clases de Calistenia" style="object-position: {{ $imagenesHome->posicionCssPara('home_nosotros_calistenia') }};"></figure>
             <div class="details">
               <h3>Clases de Calistenia</h3>
               <p>Programas progresivos con equipos de primer nivel y entrenadores expertos para dominar tu peso corporal.</p>
@@ -256,7 +447,7 @@
         </div>
         <div class="col-lg-4 col-md-6 col-sm-12">
           <div class="history-data">
-            <figure><img class="w-100" src="https://via.placeholder.com/416x584" alt="Programa de Cardio"></figure>
+            <figure><img class="w-100" src="{{ $imagenesHome->url('home_nosotros_cardio', 'https://via.placeholder.com/416x584') }}" alt="Programa de Cardio" style="object-position: {{ $imagenesHome->posicionCssPara('home_nosotros_cardio') }};"></figure>
             <div class="details">
               <h3>Programa de Cardio</h3>
               <p>Rutinas diseñadas para mejorar tu resistencia, quemar grasa y potenciar tu fuerza funcional.</p>
@@ -266,7 +457,7 @@
         </div>
         <div class="col-lg-4 col-md-6 col-sm-12">
           <div class="history-data">
-            <figure><img class="w-100" src="https://via.placeholder.com/416x584" alt="Estudio de Fitness"></figure>
+            <figure><img class="w-100" src="{{ $imagenesHome->url('home_nosotros_fitness', 'https://via.placeholder.com/416x584') }}" alt="Estudio de Fitness" style="object-position: {{ $imagenesHome->posicionCssPara('home_nosotros_fitness') }};"></figure>
             <div class="details">
               <h3>Estudio de Fitness</h3>
               <p>Espacio equipado con áreas adaptadas para todos los niveles y acompañamiento personalizado.</p>
@@ -291,7 +482,7 @@
         </div>
         <div class="col-lg-5">
           <div class="cta-data">
-            <figure><img src="https://via.placeholder.com/858x597" alt="Entrena con nosotros"></figure>
+            <figure><img src="{{ $imagenesHome->url('home_cta', 'https://via.placeholder.com/858x597') }}" alt="Entrena con nosotros"></figure>
           </div>
         </div>
       </div>
@@ -302,7 +493,11 @@
   <a id="servicios-horarios"></a>
   <section class="gap shop-style-one timetable-section">
     <div class="heading">
-      <figure><img src="{{ asset('assets_gymon/images/heading-icon-orange.png') }}" alt="icono"></figure>
+      <figure>
+        <span class="mb-heading-wordmark-halo">
+          <img src="{{ asset('assets/images/log_text_mad.png') }}" alt="MadBarzz" class="mb-heading-wordmark-img">
+        </span>
+      </figure>
       <span>PARA TU ENTRENAMIENTO</span>
       <h2>Horarios</h2>
     </div>
@@ -323,39 +518,34 @@
         <div class="table-outer">
           <div class="table-inner">
             @php
-                $dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-
-                // Horario de EJEMPLO — el gimnasio abre lunes a sábado (domingo cerrado).
-                // Reemplazar por el horario real cuando esté definido.
-                $filasHorario = [
-                    '07:00 - 09:00' => ['Calistenia · Entrenador MadBarzz', 'Gimnasio libre', 'Calistenia · Entrenador MadBarzz', 'Gimnasio libre', 'Calistenia · Entrenador MadBarzz', 'Calistenia · Entrenadora MadBarzz'],
-                    '10:00 - 12:00' => ['Gimnasio libre', 'Gimnasio libre', 'Gimnasio libre', 'Gimnasio libre', 'Gimnasio libre', 'Gimnasio libre'],
-                    '16:00 - 18:00' => ['Gimnasio libre', 'Calistenia · Entrenadora MadBarzz', 'Gimnasio libre', 'Calistenia · Entrenadora MadBarzz', 'Gimnasio libre', null],
-                    '18:30 - 20:30' => ['Calistenia · Entrenador MadBarzz', 'Gimnasio libre', 'Calistenia · Entrenador MadBarzz', 'Gimnasio libre', 'Calistenia · Entrenador MadBarzz', null],
-                ];
+                // Horario REAL (Parte 2): $diasHorario, $franjasHorario y
+                // $gridHorario vienen de HorarioEntrenadorPublicoService,
+                // armados a partir de lo que el Admin cargó en el panel
+                // privado (tabla horarios_entrenadores). Sin caché: se
+                // consulta de nuevo en cada visita.
+                $horaFinDe = fn (string $hora) => sprintf('%02d:00', ((int) substr($hora, 0, 2)) + 1);
             @endphp
             <div class="table-responsive">
               <table class="mb-horario-tabla">
-                <thead>
-                  <tr>
-                    <th>Horario</th>
-                    @foreach ($dias as $dia)
-                      <th>{{ $dia }}</th>
-                    @endforeach
-                  </tr>
-                </thead>
                 <tbody>
-                  @foreach ($filasHorario as $franja => $porDia)
+                  @foreach ($diasHorario as $isoDia => $nombreDia)
                     <tr>
-                      <td>{{ $franja }}</td>
-                      @foreach ($porDia as $celda)
-                        @if (is_null($celda))
-                          <td class="mb-cerrado">Cerrado</td>
-                        @elseif ($celda === 'Gimnasio libre')
-                          <td class="mb-libre">{{ $celda }}</td>
-                        @else
-                          <td>{{ $celda }}</td>
-                        @endif
+                      <td class="mb-horario-day">{{ $nombreDia }}</td>
+                      @foreach ($franjasHorario as $hora)
+                        @php $nombreEntrenador = $gridHorario[$hora][$isoDia] ?? null; @endphp
+                        <td>
+                          <div class="mb-horario-box {{ $nombreEntrenador ? '' : 'mb-horario-box--cerrado' }}">
+                            <div class="mb-horario-box-inner">
+                              @if ($nombreEntrenador)
+                                <div class="mb-horario-actividad">Calistenia</div>
+                                <span class="mb-horario-detalle">{{ $nombreEntrenador }}<br>{{ $hora }} - {{ $horaFinDe($hora) }}</span>
+                              @else
+                                <div class="mb-horario-actividad">Cerrado</div>
+                                <span class="mb-horario-detalle">{{ $hora }} - {{ $horaFinDe($hora) }}</span>
+                              @endif
+                            </div>
+                          </div>
+                        </td>
                       @endforeach
                     </tr>
                   @endforeach
@@ -363,7 +553,7 @@
               </table>
             </div>
             <p class="text-center mt-3 mb-0" style="font-size:.75rem;opacity:.6;">
-              Domingo cerrado. Horario de ejemplo — se ajusta con el horario real.
+              Domingo cerrado. Horario sujeto a cambios según disponibilidad de entrenadores.
             </p>
           </div>
         </div>
@@ -397,22 +587,41 @@
         </div>
       </div>
     </div>
-    <div class="marquee_text">
-      @for ($i = 0; $i < 6; $i++)
-        <div class="team-style-2">
-          <figure><img src="https://via.placeholder.com/240x290" alt="Entrenador MadBarzz"></figure>
-          <span>{{ $i % 2 === 0 ? 'Entrenador certificado' : 'Entrenadora certificada' }}</span>
-          <h5>MadBarzz</h5>
-        </div>
-      @endfor
-    </div>
+    {{-- Entrenadores ACTIVOS reales (EntrenadorPublicoService), no
+         placeholders fijos: agregar/editar/desactivar un entrenador o
+         cambiarle la foto se refleja acá solo, sin tocar código. Sin foto
+         cargada, se muestra un avatar con su inicial (mismo patrón
+         ".mb-avatar" del panel privado) en vez de un placeholder gris. Sin
+         ningún entrenador activo, se oculta el marquee entero (no queda un
+         bloque vacío). --}}
+    @if (count($entrenadoresPublicos) > 0)
+      <div class="marquee_text">
+        @foreach ($entrenadoresPublicos as $entrenador)
+          <div class="team-style-2">
+            <figure>
+              @if ($entrenador['foto'])
+                <img src="{{ $entrenador['foto'] }}" alt="{{ $entrenador['nombre'] }}">
+              @else
+                <div class="mb-marquee-avatar">{{ mb_strtoupper(mb_substr($entrenador['nombre'], 0, 1)) }}</div>
+              @endif
+            </figure>
+            <span>{{ $entrenador['etiqueta'] }}</span>
+            <h5>{{ $entrenador['nombre'] }}</h5>
+          </div>
+        @endforeach
+      </div>
+    @endif
   </section>
 
   {{-- ================= MEMBRESÍAS ================= --}}
   <a id="membresias"></a>
-  <section class="gap payment-product" style="background-image:url(https://via.placeholder.com/1920x846);">
+  <section class="gap payment-product" style="background-image:url({{ $imagenesHome->url('home_membresias_fondo', 'https://via.placeholder.com/1920x846') }}); background-position: {{ $imagenesHome->posicionCssPara('home_membresias_fondo') }};">
     <div class="heading">
-      <figure><img src="{{ asset('assets_gymon/images/heading-icon-orange.png') }}" alt="icono"></figure>
+      <figure>
+        <span class="mb-heading-wordmark-halo">
+          <img src="{{ asset('assets/images/log_text_mad.png') }}" alt="MadBarzz" class="mb-heading-wordmark-img">
+        </span>
+      </figure>
       <span>PLANES</span>
       <h2>Elegí tu Membresía</h2>
     </div>
@@ -518,7 +727,7 @@
   </section>
 
   {{-- ================= FOOTER ================= --}}
-  <footer id="contacto" class="footer-style-one" style="background-image: url(https://via.placeholder.com/1920x732);">
+  <footer id="contacto" class="footer-style-one" style="background-image: url({{ $imagenesHome->url('home_footer_fondo', 'https://via.placeholder.com/1920x732') }}); background-position: {{ $imagenesHome->posicionCssPara('home_footer_fondo') }};">
     <div class="container">
       <div class="footer-p-4">
         <div class="footer-p-4-left">
@@ -594,7 +803,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body">
-          <img src="https://via.placeholder.com/420x591" alt="MadBarzz">
+          <img src="{{ $imagenesHome->url('home_modal_unete', 'https://via.placeholder.com/420x591') }}" alt="MadBarzz">
           <div class="contact-form-one popup">
             <div class="c-form-2">
               <h3>Únete hoy</h3>
@@ -622,5 +831,46 @@
   <script src="{{ asset('assets_gymon/js/owl.carousel.min.js') }}"></script>
   <script src="{{ asset('assets_gymon/js/marquee.js') }}"></script>
   <script src="{{ asset('assets_gymon/js/custom.js') }}"></script>
+
+  {{-- ===== Efecto "encendido/apagado" del brillo en el CONTORNO de las
+       letras del wordmark MADBARZZ de sección (Horarios / Elegí tu
+       Membresía — SOLO esos dos, no el logo del header ni el del menú
+       desplegable, que no llevan la clase ".mb-heading-wordmark-halo"): el
+       brillo (drop-shadow apilado, seteado en ".mb-heading-wordmark-img",
+       ver el <style>) arranca en alpha 0 y se enciende con una transición
+       suave (.8s) cada vez que la sección entra en pantalla, y se apaga de
+       nuevo cuando sale — repite cada vez que se cruza esa sección, subiendo
+       o bajando (no una sola vez). Funciona igual en mobile que en desktop:
+       se dispara por scroll real (IntersectionObserver), no por hover. Con
+       "prefers-reduced-motion" ni siquiera hace falta este script — el CSS
+       ya deja el brillo fijo encendido sin animación (ver el @media en el
+       <style>); igual se lo respeta acá para no pelear con eso. Sin soporte
+       de IntersectionObserver (navegador muy viejo), se enciende todo de una
+       para que las letras nunca queden invisibles. ===== --}}
+  <script>
+  (function () {
+    var halos = document.querySelectorAll('.mb-heading-wordmark-halo');
+    if (!halos.length) return;
+
+    if (!('IntersectionObserver' in window)) {
+      halos.forEach(function (el) { el.classList.add('mb-halo-lit'); });
+      return;
+    }
+
+    var prefiereMenosMovimiento = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefiereMenosMovimiento) {
+      halos.forEach(function (el) { el.classList.add('mb-halo-lit'); });
+      return;
+    }
+
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        entry.target.classList.toggle('mb-halo-lit', entry.isIntersecting);
+      });
+    }, { threshold: 0.4 });
+
+    halos.forEach(function (el) { observer.observe(el); });
+  })();
+  </script>
 </body>
 </html>

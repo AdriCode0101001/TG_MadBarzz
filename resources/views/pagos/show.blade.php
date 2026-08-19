@@ -14,6 +14,7 @@
             <div class="card h-100">
                 <div class="card-header"><h5 class="mb-0"><i class="fa-solid fa-receipt me-2"></i>Datos del pago</h5></div>
                 <div class="card-body p-0">
+                    <div class="table-responsive" style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
                     <table class="table align-middle mb-0">
                         <tbody>
                             <tr>
@@ -42,8 +43,24 @@
                                 <td class="text-muted">Observaciones</td>
                                 <td>{{ $pago->observaciones ?: 'Sin observaciones' }}</td>
                             </tr>
+                            {{-- Pago en 2 Cuotas (Etapa 6): solo aparece si la membresía que
+                                 este pago activó todavía tiene saldo pendiente. --}}
+                            @if($pago->membresiaCliente && $pago->membresiaCliente->tieneSaldoPendiente())
+                                <tr>
+                                    <td class="text-muted">Saldo pendiente</td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark">
+                                            Bs {{ number_format($pago->membresiaCliente->saldo_pendiente, 2) }}
+                                        </span>
+                                        <span class="text-muted" style="font-size:.82rem;">
+                                            vence {{ $pago->membresiaCliente->fecha_limite_saldo?->format('d/m/Y') }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            @endif
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
         </div>

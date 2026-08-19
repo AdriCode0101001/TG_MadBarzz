@@ -13,27 +13,17 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
     // ───────────────────────────────────────────────────────────────────
-    // BLOQUEO TEMPORAL (Etapa 0 del auto-registro, ver plan): el registro
-    // público de Breeze crea SOLO un User (sin Persona ni Cliente) —
-    // cuentas incompletas e irrecuperables hasta que se reescriba en las
-    // Etapas 1-2. Se bloquea la entrada acá; RegisteredUserController NO
-    // se toca.
-    //
-    // Para reactivar cuando el flujo nuevo esté listo: borrar estas 2
-    // rutas y descomentar las 2 originales (dejadas debajo, intactas).
+    // Registro público REACTIVADO: el bloqueo temporal (Etapa 0) ya cumplió
+    // su función mientras se reescribía el flujo completo en las Etapas
+    // 1-4 (Persona + User + Cliente, verificación de email, rate limiting
+    // y validación reforzada — ver RegisteredUserController y
+    // AltaClienteService). La vista es la combinada login/registro con
+    // pestañas (auth.login-register), diseño GymOn dark.
     // ───────────────────────────────────────────────────────────────────
-    Route::get('register', function () {
-        return view('auth.registro-proximamente');
-    })->name('register');
-
-    Route::post('register', function () {
-        return redirect()->route('register');
-    });
-
-    // Route::get('register', [RegisteredUserController::class, 'create'])
-    //     ->name('register');
-    // Route::post('register', [RegisteredUserController::class, 'store'])
-    //     ->middleware('throttle:register');
+    Route::get('register', [RegisteredUserController::class, 'create'])
+        ->name('register');
+    Route::post('register', [RegisteredUserController::class, 'store'])
+        ->middleware('throttle:register');
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');

@@ -44,28 +44,28 @@
                     </div>
 
                     <div class="card-body text-center pt-2">
-                        <h6 class="fw-bold mb-0" style="color:#e2e8f0;">{{ $nombre ?: '—' }}</h6>
+                        <h6 class="fw-bold mb-0" style="color:var(--mbf-text,#e2e8f0);">{{ $nombre ?: '—' }}</h6>
                         <small class="text-muted">{{ optional($r->user)->email ?? '' }}</small>
 
-                        <hr style="border-color:rgba(255,255,255,.07);margin:.75rem 0;">
+                        <hr style="border-color:var(--mbf-border,rgba(255,255,255,.07));margin:.75rem 0;">
 
                         <div class="d-flex flex-column gap-2 text-start">
                             <div class="d-flex align-items-center gap-2">
                                 <i class="fa-solid fa-id-card" style="color:#6366f1;font-size:.8rem;width:16px;"></i>
-                                <span style="font-size:.82rem;color:#e2e8f0;">{{ $r->persona->ci ?? '—' }}</span>
+                                <span style="font-size:.82rem;color:var(--mbf-text,#e2e8f0);">{{ $r->persona->ci ?? '—' }}</span>
                             </div>
                             <div class="d-flex align-items-center gap-2">
                                 <i class="fa-solid fa-phone" style="color:#10b981;font-size:.8rem;width:16px;"></i>
-                                <span style="font-size:.82rem;color:#e2e8f0;">{{ $r->persona->telefono ?? '—' }}</span>
+                                <span style="font-size:.82rem;color:var(--mbf-text,#e2e8f0);">{{ $r->persona->telefono ?? '—' }}</span>
                             </div>
                             <div class="d-flex align-items-center gap-2">
                                 <i class="fa-solid fa-clock" style="color:#f59e0b;font-size:.8rem;width:16px;"></i>
-                                <span style="font-size:.82rem;color:#e2e8f0;">Turno: {{ ucfirst($r->turno ?? '—') }}</span>
+                                <span style="font-size:.82rem;color:var(--mbf-text,#e2e8f0);">Turno: {{ ucfirst($r->turno ?? '—') }}</span>
                             </div>
                             @if($r->punto_atencion)
                             <div class="d-flex align-items-center gap-2">
                                 <i class="fa-solid fa-location-dot" style="color:#f5365c;font-size:.8rem;width:16px;"></i>
-                                <span style="font-size:.82rem;color:#e2e8f0;">{{ $r->punto_atencion }}</span>
+                                <span style="font-size:.82rem;color:var(--mbf-text,#e2e8f0);">{{ $r->punto_atencion }}</span>
                             </div>
                             @endif
                         </div>
