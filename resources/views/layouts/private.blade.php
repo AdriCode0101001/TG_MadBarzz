@@ -657,6 +657,7 @@
                                 request()->routeIs('promociones.*')                  => ['fa-solid fa-tags',              'Promociones'],
                                 request()->routeIs('descuentos.*')                   => ['fa-solid fa-tags',              'Descuentos'],
                                 request()->routeIs('qr_pago.edit')                   => ['fa-solid fa-qrcode',            'QR de Pago'],
+                                request()->routeIs('bitacora.*')                     => ['fa-solid fa-clock-rotate-left',  'Bitácora de Auditoría'],
                                 request()->routeIs('configuracion.imagenes_home.*')  => ['fa-solid fa-images',            'Imágenes de la Home'],
                                 request()->routeIs('portal.membresia')               => ['fa-solid fa-id-badge',          'Mi Membresía'],
                                 request()->routeIs('portal.rutina')                  => ['fa-solid fa-dumbbell',          'Mi Rutina'],
@@ -846,6 +847,7 @@
                                 <li><a href="{{ route('roles.index') }}"><i class="fa-solid fa-shield-alt me-2"></i>Roles</a></li>
                                 <li><a href="{{ route('users.index') }}"><i class="fa-solid fa-users-gear me-2"></i>Usuarios del Sistema</a></li>
                                 <li><a href="{{ route('personas.index') }}"><i class="fa-solid fa-address-card me-2"></i>Personas</a></li>
+                                <li><a href="{{ route('bitacora.index') }}"><i class="fa-solid fa-clock-rotate-left me-2"></i>Bitácora de Auditoría</a></li>
                             </ul>
                         </li>
                     @endif

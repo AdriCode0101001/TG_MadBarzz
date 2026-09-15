@@ -30,6 +30,7 @@ use App\Http\Controllers\QrPagoController;
 use App\Http\Controllers\HorarioEntrenadorController;
 use App\Http\Controllers\ImagenHomeController;
 use App\Http\Controllers\AvisoController;
+use App\Http\Controllers\BitacoraController;
 
 // -----------------------------------------------------------------------
 // Página de inicio pública: home real en diseño GymOn dark. La home vieja
@@ -181,6 +182,11 @@ Route::middleware(['auth', 'role:Administrador'])->group(function () {
     // placeholders de siempre (ver ImagenHomeService).
     Route::get('configuracion/imagenes-home',        [ImagenHomeController::class, 'index']) ->name('configuracion.imagenes_home.index');
     Route::post('configuracion/imagenes-home/{clave}', [ImagenHomeController::class, 'update'])->name('configuracion.imagenes_home.update');
+
+    // Bitácora de Auditoría (Etapa 3): historial de activity_log, solo lectura,
+    // exclusivo del Administrador — la protección real es este middleware de
+    // ruta, el ítem del menú (oculto para otros roles) es solo cosmético.
+    Route::get('bitacora', [BitacoraController::class, 'index'])->name('bitacora.index');
 });
 
 // -----------------------------------------------------------------------
