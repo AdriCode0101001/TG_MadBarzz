@@ -25,7 +25,7 @@ class LimpiarCamposSensiblesBitacoraCommand extends Command
         \App\Models\Cliente::class => ['huella_digital', 'qr_token'],
     ];
 
-    private const MARCA_REDACTADO = '[dato sensible removido — Bitácora Etapa 1]';
+    private const MARCA_REDACTADO = '[dato sensible redactado — Bitácora Etapa 1]';
 
     protected $signature = 'bitacora:limpiar-campos-sensibles
                             {--dry-run : Solo mostrar cuántas filas se modificarían, sin escribir nada}';

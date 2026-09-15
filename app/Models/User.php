@@ -36,6 +36,9 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return LogOptions::defaults()
             ->logOnly(['name', 'email', 'rol_id', 'id_sede'])
             ->logOnlyDirty()
+            // Igual que en Cliente: evita una fila vacía cuando lo único que
+            // cambió fue un campo fuera de logOnly (ej. solo password).
+            ->dontSubmitEmptyLogs()
             ->setDescriptionForEvent(fn (string $event) => "Usuario {$event}");
     }
 

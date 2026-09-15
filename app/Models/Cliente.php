@@ -27,6 +27,9 @@ class Cliente extends Model
             // mirando el historial de cambios, aunque solo lo vea el Admin.
             ->logExcept(['huella_digital', 'qr_token'])
             ->logOnlyDirty()
+            // Sin esto, Spatie igual crea una fila vacía cuando el único
+            // campo que cambió fue uno excluido arriba (ej. solo huella_digital).
+            ->dontSubmitEmptyLogs()
             ->setDescriptionForEvent(fn (string $event) => "Cliente {$event}");
     }
 
