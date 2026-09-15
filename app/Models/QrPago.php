@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * QR de pago bancario único del gimnasio, configurado por el Administrador.
@@ -14,7 +16,22 @@ use Illuminate\Support\Carbon;
  */
 class QrPago extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, LogsActivity;
+
+    /**
+     * "imagen" es solo la RUTA de archivo del QR bancario (no un token ni un
+     * secreto: ese QR se muestra a todos los clientes para que paguen), así
+     * que sí tiene sentido auditarla — a diferencia de qr_token en Cliente,
+     * que sí es un identificador secreto y se excluye desde la Etapa 1.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['imagen', 'fecha_vencimiento', 'id_usuario'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $event) => "QrPago {$event}");
+    }
 
     protected $table = 'qr_pagos';
 

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * Rutina de UN entrenador/admin para UN día (fecha), con el grupo muscular
@@ -16,7 +18,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Rutina extends Model
 {
-    use SoftDeletes, BelongsToSede;
+    use SoftDeletes, BelongsToSede, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['fecha', 'id_grupo_muscular', 'id_usuario', 'id_sede'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $event) => "Rutina {$event}");
+    }
 
     protected $table = 'rutinas';
 

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * Aviso enviado por Administrador/Recepcionista a TODOS los clientes (portal
@@ -13,7 +15,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Aviso extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['titulo', 'texto', 'imagen', 'id_usuario'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $event) => "Aviso {$event}");
+    }
 
     protected $table = 'avisos';
 

@@ -6,6 +6,8 @@ use App\Models\Concerns\BelongsToSede;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * Horario BASE semanal de entrenadores (Parte 1: gestión del Administrador).
@@ -15,7 +17,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class HorarioEntrenador extends Model
 {
-    use SoftDeletes, BelongsToSede;
+    use SoftDeletes, BelongsToSede, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['dia_semana', 'hora_inicio', 'hora_fin', 'id_entrenador', 'id_sede'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $event) => "HorarioEntrenador {$event}");
+    }
 
     protected $table = 'horarios_entrenadores';
 

@@ -4,13 +4,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes; 
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Administrador extends Model
 {
-    use HasFactory, SoftDeletes; 
+    use HasFactory, SoftDeletes, LogsActivity;
 
-    protected $table = 'administradores'; 
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['id_persona', 'id_usuario', 'nivel_acceso', 'area_responsable', 'estado'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $event) => "Administrador {$event}");
+    }
+
+    protected $table = 'administradores';
     protected $primaryKey = 'id_administrador'; 
     public $timestamps = true;
 

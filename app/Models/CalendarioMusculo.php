@@ -6,6 +6,8 @@ use App\Models\Concerns\BelongsToSede;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * Una fila = "en esta fecha (de esta sede) se trabaja este grupo muscular".
@@ -13,7 +15,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class CalendarioMusculo extends Model
 {
-    use SoftDeletes, BelongsToSede;
+    use SoftDeletes, BelongsToSede, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['fecha', 'id_grupo_muscular', 'id_sede'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $event) => "CalendarioMusculo {$event}");
+    }
 
     protected $table = 'calendario_musculos';
 

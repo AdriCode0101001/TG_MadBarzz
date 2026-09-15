@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * Una imagen de contenido de la home pública, subida por el Administrador,
@@ -12,6 +14,17 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ConfiguracionImagen extends Model
 {
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['clave', 'ruta', 'posicion', 'id_usuario'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $event) => "ConfiguracionImagen {$event}");
+    }
+
     protected $table = 'configuracion_imagenes';
 
     protected $fillable = [
