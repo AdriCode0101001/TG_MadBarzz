@@ -42,9 +42,27 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->booted(function () {
-        // Rate-limit: máximo 5 intentos de login por minuto por IP
+        // Límite POR IP en /login: es un respaldo contra un diluvio de
+        // requests (o alguien probando muchos emails distintos desde la
+        // misma IP) — NO es la defensa principal contra fuerza bruta a una
+        // cuenta puntual, de eso se encarga el bloqueo progresivo por
+        // login+IP (LoginLockoutService, en LoginRequest), que escala
+        // 3->6->12->15 min.
+        //
+        // Antes este límite era 5/min, la MISMA cifra que el umbral del
+        // bloqueo progresivo. En un gimnasio, varias PCs/celulares suelen
+        // compartir la IP pública del mismo router: ese 5/min sumaba los
+        // intentos de TODO el personal (sin distinguir usuario), así que
+        // alcanzaba con que 2-3 personas fallaran una vez cada una para
+        // trabar a los demás con un 429 genérico, antes de que el bloqueo
+        // progresivo (que sí distingue por usuario) llegara a actuar.
+        // Subirlo a 30/min le da lugar de sobra a varias personas
+        // legítimas de la misma conexión sin abrir la puerta a un ataque
+        // real: un script insistiendo igual pega contra este techo, y
+        // cualquier intento dirigido a UNA cuenta puntual lo frena el
+        // bloqueo progresivo mucho antes (a los 5 intentos a esa cuenta).
         RateLimiter::for('login', function (Request $request) {
-            return Limit::perMinute(5)->by($request->ip());
+            return Limit::perMinute(30)->by($request->ip());
         });
 
         // Etapa 4 del auto-registro: máximo 5 registros por minuto por IP.

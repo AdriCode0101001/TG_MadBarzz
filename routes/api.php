@@ -6,7 +6,11 @@ use App\Http\Controllers\Api\ClienteApiController;
 use Illuminate\Support\Facades\Route;
 
 // ── Autenticación ──────────────────────────────────────────────────────────
-Route::post('/login',  [AuthApiController::class, 'login']);
+// throttle:login: mismo limiter por IP que el login web (30/min, ver
+// bootstrap/app.php) — respaldo volumétrico; la protección real contra
+// fuerza bruta a UNA cuenta es el bloqueo progresivo por login+IP dentro
+// del controlador (LoginLockoutService), compartido con LoginRequest.
+Route::post('/login',  [AuthApiController::class, 'login'])->middleware('throttle:login');
 Route::post('/logout', [AuthApiController::class, 'logout'])->middleware('auth:sanctum');
 
 // ── Agente biométrico (protegido con token de agente SHA-256) ─────────────

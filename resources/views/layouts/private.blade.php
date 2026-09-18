@@ -658,6 +658,7 @@
                                 request()->routeIs('descuentos.*')                   => ['fa-solid fa-tags',              'Descuentos'],
                                 request()->routeIs('qr_pago.edit')                   => ['fa-solid fa-qrcode',            'QR de Pago'],
                                 request()->routeIs('bitacora.*')                     => ['fa-solid fa-clock-rotate-left',  'Bitácora de Auditoría'],
+                                request()->routeIs('login_lockouts.*')               => ['fa-solid fa-user-lock',          'Bloqueos de Login'],
                                 request()->routeIs('configuracion.imagenes_home.*')  => ['fa-solid fa-images',            'Imágenes de la Home'],
                                 request()->routeIs('portal.membresia')               => ['fa-solid fa-id-badge',          'Mi Membresía'],
                                 request()->routeIs('portal.rutina')                  => ['fa-solid fa-dumbbell',          'Mi Rutina'],
@@ -848,6 +849,7 @@
                                 <li><a href="{{ route('users.index') }}"><i class="fa-solid fa-users-gear me-2"></i>Usuarios del Sistema</a></li>
                                 <li><a href="{{ route('personas.index') }}"><i class="fa-solid fa-address-card me-2"></i>Personas</a></li>
                                 <li><a href="{{ route('bitacora.index') }}"><i class="fa-solid fa-clock-rotate-left me-2"></i>Bitácora de Auditoría</a></li>
+                                <li><a href="{{ route('login_lockouts.index') }}"><i class="fa-solid fa-user-lock me-2"></i>Bloqueos de Login</a></li>
                             </ul>
                         </li>
                     @endif

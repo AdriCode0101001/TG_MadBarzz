@@ -31,6 +31,7 @@ use App\Http\Controllers\HorarioEntrenadorController;
 use App\Http\Controllers\ImagenHomeController;
 use App\Http\Controllers\AvisoController;
 use App\Http\Controllers\BitacoraController;
+use App\Http\Controllers\LoginLockoutController;
 
 // -----------------------------------------------------------------------
 // Página de inicio pública: home real en diseño GymOn dark. La home vieja
@@ -187,6 +188,12 @@ Route::middleware(['auth', 'role:Administrador'])->group(function () {
     // exclusivo del Administrador — la protección real es este middleware de
     // ruta, el ítem del menú (oculto para otros roles) es solo cosmético.
     Route::get('bitacora', [BitacoraController::class, 'index'])->name('bitacora.index');
+
+    // Bloqueos de login (bloqueo progresivo por intentos fallidos): solo
+    // ver/desbloquear, exclusivo del Administrador. El bloqueo real lo
+    // aplica LoginRequest/LoginLockoutService para CUALQUIER rol que falle
+    // el login — esto es solo la consola para liberarlo manualmente.
+    Route::resource('login_lockouts', LoginLockoutController::class)->only(['index', 'destroy']);
 });
 
 // -----------------------------------------------------------------------

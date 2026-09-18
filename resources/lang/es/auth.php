@@ -7,6 +7,6 @@ return [
 
 'password' => 'La contraseña proporcionada es incorrecta.',
 
-'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+'throttle' => 'Demasiados intentos. Esperá :minutes minuto(s) antes de volver a intentar.',
 
 ];
