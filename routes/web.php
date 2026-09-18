@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\PrivateFileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\DashboardController;
@@ -116,12 +115,18 @@ Route::middleware('auth')->group(function () {
 });
 
 // -----------------------------------------------------------------------
-// Archivos privados (QRs de pagos, fotos de perfil)
+// NOTA DE SEGURIDAD (hallazgo 4.1 de la auditoría, corregido): acá existía
+// una ruta genérica GET /archivos/privados/{path} que servía CUALQUIER
+// archivo del disco 'privado' verificando solo que el usuario estuviera
+// logueado (auth), sin chequear que el archivo le perteneciera — cualquier
+// Cliente podía potencialmente descargar comprobantes de pago o fotos de
+// perfil de OTROS si conocía/adivinaba la ruta. Se eliminó por ser código
+// muerto (no la usaba ninguna vista ni controlador) e inseguro. Las
+// descargas legítimas de archivos privados YA tienen su propia ruta con
+// verificación de propiedad: PagoController::comprobante()/miComprobante()
+// (comprobantes), QrPagoController::imagen() (QR de pago),
+// EntrenadorController/UserController (fotos de perfil).
 // -----------------------------------------------------------------------
-Route::middleware('auth')->get(
-    '/archivos/privados/{path}',
-    [PrivateFileController::class, 'serve']
-)->where('path', '.*')->name('archivos.privado');
 
 // -----------------------------------------------------------------------
 // Solo Administrador
