@@ -27,7 +27,9 @@ public function index(Request $request)
                 $q->where('email', 'LIKE', "%{$buscar}%");
             });
         })
-        ->get();
+        ->orderByDesc('id_entrenador')
+        ->paginate(20)
+        ->withQueryString();
 
     return view('entrenadores.index', compact('entrenadores'));
 }

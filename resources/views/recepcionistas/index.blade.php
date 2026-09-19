@@ -90,6 +90,12 @@
             </div>
         @endforeach
     </div>
+
+    @if (method_exists($recepcionistas, 'links'))
+        <div class="d-flex justify-content-end mt-3">
+            {{ $recepcionistas->withQueryString()->links('pagination::bootstrap-5') }}
+        </div>
+    @endif
 @else
     <div class="card custom-card">
         <div class="card-body">

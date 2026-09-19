@@ -31,7 +31,9 @@ public function index(Request $request)
                 $q->where('email', 'LIKE', "%{$buscar}%");
             });
         })
-        ->get();
+        ->orderByDesc('id_cliente')
+        ->paginate(20)
+        ->withQueryString();
 
     return view('clientes.index', compact('clientes'));
 }

@@ -28,7 +28,9 @@ class MembresiaClienteController extends Controller
                     $q->where('tipo_membresia', 'LIKE', "%{$buscar}%");
                 });
             })
-            ->get();
+            ->orderByDesc('id')
+            ->paginate(20)
+            ->withQueryString();
 
         return view('membresia_cliente.index', compact('membresiasClientes'));
     }

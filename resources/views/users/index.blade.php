@@ -67,5 +67,11 @@
             </tbody>
         </table>
     </div>
+
+    @if (method_exists($usuarios, 'links'))
+        <div class="d-flex justify-content-end mt-3">
+            {{ $usuarios->withQueryString()->links('pagination::bootstrap-5') }}
+        </div>
+    @endif
 </div>
 @endsection

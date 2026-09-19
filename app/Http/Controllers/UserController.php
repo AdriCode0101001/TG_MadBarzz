@@ -24,7 +24,8 @@ public function index(Request $request)
                   ->orWhere('email', 'like', "%{$buscar}%");
         })
         ->orderBy('id', 'desc')
-        ->get();
+        ->paginate(20)
+        ->withQueryString();
 
     return view('users.index', compact('usuarios'));
 }

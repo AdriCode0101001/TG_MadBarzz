@@ -26,7 +26,9 @@ public function index(Request $request)
                 $q->where('email', 'LIKE', "%{$buscar}%");
             });
         })
-        ->get();
+        ->orderByDesc('id_administrador')
+        ->paginate(20)
+        ->withQueryString();
 
     return view('administradores.index', compact('administradores'));
 }

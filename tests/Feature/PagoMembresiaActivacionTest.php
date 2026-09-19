@@ -280,6 +280,14 @@ class PagoMembresiaActivacionTest extends TestCase
 
         DB::table('membresia_cliente')->where('id_cliente', $cliente->id_cliente)->delete();
 
+        // El índice (fecha_fin, estado) — revisión de rendimiento — incluye
+        // la columna 'estado', así que hay que sacarlo antes de poder
+        // dropearla (SQLite no deja dropear una columna que integra un
+        // índice) y devolverlo después, para no dejar la base sin él.
+        \Illuminate\Support\Facades\Schema::table('membresia_cliente', function ($table) {
+            $table->dropIndex('membresia_cliente_fecha_fin_estado_index');
+        });
+
         DB::statement('ALTER TABLE membresia_cliente DROP COLUMN estado');
 
         $idPreexistente = DB::table('membresia_cliente')->insertGetId([
@@ -295,6 +303,10 @@ class PagoMembresiaActivacionTest extends TestCase
 
         $migracion = require database_path('migrations/2026_07_07_100000_add_estado_to_membresia_cliente_table.php');
         $migracion->up();
+
+        \Illuminate\Support\Facades\Schema::table('membresia_cliente', function ($table) {
+            $table->index(['fecha_fin', 'estado'], 'membresia_cliente_fecha_fin_estado_index');
+        });
 
         $this->assertDatabaseHas('membresia_cliente', [
             'id'     => $idPreexistente,

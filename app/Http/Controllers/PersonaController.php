@@ -22,7 +22,9 @@ public function index(Request $request)
                   ->orWhere('ci', 'LIKE', "%{$buscar}%");
             });
         })
-        ->get(); // SoftDeletes ya filtra los eliminados si está habilitado
+        ->orderByDesc('id_persona') // SoftDeletes ya filtra los eliminados si está habilitado
+        ->paginate(20)
+        ->withQueryString();
 
     return view('personas.index', compact('personas'));
 }

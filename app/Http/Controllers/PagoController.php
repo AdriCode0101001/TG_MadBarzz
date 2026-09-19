@@ -38,27 +38,50 @@ public function index(Request $request)
 
             // Buscar por fechas flexibles
             if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $buscar, $matches)) {
-                // Formato dd/mm/yyyy
+                // Formato dd/mm/yyyy: fecha_pago es DATE (no datetime), así
+                // que esta comparación ya es un "=" directo sobre la
+                // columna — sargable, usa el índice tal cual.
                 $fecha = "{$matches[3]}-{$matches[2]}-{$matches[1]}";
                 $query->orWhereDate('fecha_pago', $fecha);
             } elseif (preg_match('/^(\d{2})\/(\d{2})$/', $buscar, $matches)) {
-                // Formato dd/mm (ignora año)
+                // Formato dd/mm (ignora año, matchea ese día en CUALQUIER
+                // año): no se puede expresar como un rango único, así que
+                // sigue necesitando DAY()/MONTH() — impide usar el índice,
+                // pero no hay forma simple de reescribirlo sin cambiar el
+                // comportamiento (buscar "25/12" debe encontrar todos los
+                // 25 de diciembre, de cualquier año).
                 $dia = $matches[1];
                 $mes = $matches[2];
                 $query->orWhereRaw('DAY(fecha_pago) = ? AND MONTH(fecha_pago) = ?', [$dia, $mes]);
             } elseif (preg_match('/^(\d{2})\/(\d{4})$/', $buscar, $matches)) {
-                // Formato mm/yyyy
-                $mes = $matches[1];
+                // Formato mm/yyyy: rango del mes completo en vez de
+                // MONTH()+YEAR() envolviendo la columna — mismo resultado,
+                // pero sargable (puede usar el índice de fecha_pago).
+                // Límite superior EXCLUSIVO (< primer día del mes
+                // siguiente) en vez de "<= último día": más robusto que un
+                // BETWEEN con fechas si fecha_pago alguna vez llevara hora.
+                $mes  = $matches[1];
                 $anio = $matches[2];
-                $query->orWhereRaw('MONTH(fecha_pago) = ? AND YEAR(fecha_pago) = ?', [$mes, $anio]);
+                $inicioMes    = Carbon::createFromDate((int) $anio, (int) $mes, 1)->startOfDay();
+                $inicioSigMes = $inicioMes->copy()->addMonthNoOverflow();
+                $query->orWhere(function ($qq) use ($inicioMes, $inicioSigMes) {
+                    $qq->where('fecha_pago', '>=', $inicioMes->toDateString())
+                       ->where('fecha_pago', '<', $inicioSigMes->toDateString());
+                });
             } elseif (preg_match('/^\d{4}$/', $buscar, $matches)) {
-                // Solo año
-                $anio = $buscar;
-                $query->orWhereYear('fecha_pago', $anio);
+                // Solo año: rango del año completo en vez de whereYear()
+                // (que también envuelve la columna en YEAR()) — sargable,
+                // mismo criterio de límite superior exclusivo que arriba.
+                $anio = (int) $buscar;
+                $query->orWhere(function ($qq) use ($anio) {
+                    $qq->where('fecha_pago', '>=', "{$anio}-01-01")
+                       ->where('fecha_pago', '<', ($anio + 1) . '-01-01');
+                });
             }
         })
         ->latest()
-        ->get();
+        ->paginate(20)
+        ->withQueryString();
 
     return view('pagos.index', compact('pagos', 'buscar'));
 }

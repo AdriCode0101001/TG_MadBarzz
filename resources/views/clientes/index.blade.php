@@ -112,7 +112,9 @@
 
         @if (method_exists($clientes, 'links'))
             <div class="card-footer d-flex justify-content-end">
-                {{ $clientes->withQueryString()->links() }}
+                {{-- pagination::bootstrap-5: la vista default de ->links() es
+                     Tailwind y se ve rota en este layout Bootstrap. --}}
+                {{ $clientes->withQueryString()->links('pagination::bootstrap-5') }}
             </div>
         @endif
     </div>
