@@ -32,6 +32,22 @@ Schedule::command('backup:clean')
 Schedule::command('backup:monitor')
     ->dailyAt('03:00');
 
+// 03:30 — Limpieza de la Bitácora de Auditoría (revisión de producción,
+// hallazgo del scheduler): activity_log ya tenía política de retención
+// configurada (config/activitylog.php: delete_records_older_than_days=365)
+// pero nada la ejecutaba nunca — la tabla crecía indefinido. 30 min después
+// de backup:monitor (03:00) para no competir por I/O con los respaldos.
+// --force: el comando usa ConfirmableTrait (pide confirmar en producción);
+// sin --force, si alguna vez corre en un contexto que Laravel detecte como
+// interactivo, quedaría esperando una confirmación que el cron nunca puede
+// responder.
+Schedule::command('activitylog:clean', ['--force'])
+    ->dailyAt('03:30')
+    ->withoutOverlapping()
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('activitylog:clean falló en la ejecución programada.');
+    });
+
 // ---------------------------------------------------------------------------
 // Notificaciones automáticas de vencimiento — Fase 5
 // ---------------------------------------------------------------------------

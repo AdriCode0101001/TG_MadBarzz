@@ -7,6 +7,7 @@ use App\Models\Rol;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
@@ -47,7 +48,7 @@ public function index(Request $request)
         $request->validate([
             'name'     => 'required|string|max:100',
             'email'    => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => ['required', 'string', 'confirmed', Password::defaults()],
             'rol_id'   => 'required|exists:roles,id',
             'foto'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
@@ -111,7 +112,7 @@ public function index(Request $request)
         }
 
         if ($request->filled('password')) {
-            $request->validate(['password' => 'confirmed|min:6']);
+            $request->validate(['password' => ['confirmed', Password::defaults()]]);
             $usuario->password = Hash::make($request->password);
         }
 

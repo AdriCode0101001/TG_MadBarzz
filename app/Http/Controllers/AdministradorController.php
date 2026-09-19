@@ -8,6 +8,7 @@ use App\Models\Rol;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class AdministradorController extends Controller
 {
@@ -51,7 +52,7 @@ public function index(Request $request)
             // Validación usuario
             'name'     => 'required|string|max:255|unique:users,name',
             'email'    => 'required|email|unique:users,email',
-            'password' => 'required|confirmed|min:6',
+            'password' => ['required', 'confirmed', Password::defaults()],
 
             // Validación administrador
             'nivel_acceso'    => 'required|in:superadmin,gestion,finanzas',
@@ -111,6 +112,11 @@ public function index(Request $request)
             'nivel_acceso'    => 'required|in:superadmin,gestion,finanzas',
             'area_responsable' => 'required|string|max:255',
             'estado'          => 'required|in:activo,inactivo',
+
+            // Opcional: cambiar la contraseña desde la edición. Sin
+            // 'confirmed': este formulario tiene un solo input de
+            // contraseña (ver administradores/edit.blade.php).
+            'password'        => ['nullable', 'string', Password::defaults()],
         ]);
 
         $administrador->persona->update($request->only([

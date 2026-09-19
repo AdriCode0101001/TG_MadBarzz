@@ -54,7 +54,6 @@ class RolMiddlewareTest extends TestCase
             'clientes'     => ['/clientes'],
             'pagos'        => ['/pagos'],
             'users'        => ['/users'],
-            'asistencias'  => ['/asistencias'],
             'rutinas'      => ['/rutinas'],
             'entrenadores' => ['/entrenadores'],
             'membresias'          => ['/membresias'],
@@ -82,7 +81,6 @@ class RolMiddlewareTest extends TestCase
         return [
             'clientes'          => ['/clientes'],
             'pagos'             => ['/pagos'],
-            'asistencias'       => ['/asistencias'],
             'asistencias-qr'    => ['/asistencias-qr'],
             'users'             => ['/users'],
             'roles'             => ['/roles'],
@@ -126,7 +124,6 @@ class RolMiddlewareTest extends TestCase
             'clientes-crear'     => ['/clientes/create'],
             'pagos'              => ['/pagos'],
             'pagos-crear'        => ['/pagos/create'],
-            'asistencias'        => ['/asistencias'],
             'asistencias-qr'     => ['/asistencias-qr'],
             'notificaciones'     => ['/notificaciones'],
             'membresias'         => ['/membresias'],
@@ -189,7 +186,6 @@ class RolMiddlewareTest extends TestCase
             'clientes-crear'    => ['/clientes/create'],
             'pagos'             => ['/pagos'],           // hoy fallaba: debe poder
             'pagos-crear'       => ['/pagos/create'],
-            'asistencias'       => ['/asistencias'],
             'asistencias-qr'    => ['/asistencias-qr'],
             'membresias'        => ['/membresias'],
             'descuentos'        => ['/descuentos'],

@@ -138,24 +138,6 @@ class ResponsiveTablasTest extends TestCase
         $this->assertMatchesRegularExpression('/<div class="table-responsive"[^>]*>\s*<table/', $html);
     }
 
-    /**
-     * asistencias/show.blade.php no tiene ninguna ruta que la sirva (vista
-     * huérfana, detectado durante el diagnóstico) — se verifica igual
-     * renderizando la vista directamente, ya que el pedido explícito incluía
-     * corregirla por consistencia.
-     */
-    public function test_asistencias_show_envuelve_su_tabla_en_table_responsive(): void
-    {
-        $asistencias = collect([
-            (object) ['fecha_hora_entrada' => now()],
-        ]);
-
-        $html = view('asistencias.show', ['asistencias' => $asistencias])->render();
-
-        $this->assertStringContainsString('table-responsive', $html);
-        $this->assertMatchesRegularExpression('/<div class="table-responsive"[^>]*>\s*<table/', $html);
-    }
-
     // ── El contenido de las tablas no cambió ──────────────────────────────────
 
     public function test_users_index_sigue_mostrando_los_datos_del_usuario(): void

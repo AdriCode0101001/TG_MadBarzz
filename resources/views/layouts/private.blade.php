@@ -925,7 +925,6 @@
                                     <li><a href="{{ route('portal.rutina') }}"><i class="fa-solid fa-dumbbell me-2"></i>Mi Rutina</a></li>
                                 @else
                                     <li><a href="{{ route('asistencias.qr') }}"><i class="fa-solid fa-qrcode me-2"></i>Registrar Asistencia (QR)</a></li>
-                                    <!--  <li><a href="{{ route('asistencias.index') }}">Asistencias</a></li> -->
                                     @if (in_array($userRol, ['Administrador', 'Recepcionista']))
                                         <li><a href="{{ route('notificaciones.index') }}"><i class="fa-solid fa-bell me-2"></i>Notificaciones</a></li>
                                         <li><a href="{{ route('avisos.index') }}"><i class="fa-solid fa-bullhorn me-2"></i>Avisos</a></li>

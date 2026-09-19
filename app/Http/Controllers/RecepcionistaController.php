@@ -8,6 +8,7 @@ use App\Models\Rol;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class RecepcionistaController extends Controller
 {
@@ -48,7 +49,7 @@ public function index(Request $request)
 
             'name' => 'required|string|max:255|unique:users,name',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|confirmed|min:6',
+            'password' => ['required', 'confirmed', Password::defaults()],
 
             'turno' => 'required|in:mañana,tarde,noche',
             'punto_atencion' => 'required|string|max:255',
@@ -111,7 +112,12 @@ public function index(Request $request)
 
             'turno' => 'required|in:mañana,tarde,noche',
             'punto_atencion' => 'required|string|max:255',
-            'estado' => 'required|in:activo,inactivo'
+            'estado' => 'required|in:activo,inactivo',
+
+            // Opcional: cambiar la contraseña desde la edición. Sin
+            // 'confirmed': este formulario tiene un solo input de
+            // contraseña (ver recepcionistas/edit.blade.php).
+            'password' => ['nullable', 'string', Password::defaults()],
         ], [
             'ci.unique' => 'La cédula ya está registrada.',
             'telefono.unique' => 'El teléfono ya está registrado.',

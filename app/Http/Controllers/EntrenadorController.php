@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rules\Password;
 
 class EntrenadorController extends Controller
 {
@@ -51,7 +52,7 @@ public function index(Request $request)
             // Usuario
             'name'             => 'required|string|max:100',
             'email'            => 'required|email|unique:users,email',
-            'password'         => 'required|string|min:6|confirmed',
+            'password'         => ['required', 'string', 'confirmed', Password::defaults()],
 
             // Entrenador
             'especialidad'     => 'required|array|min:1',
@@ -139,6 +140,11 @@ public function index(Request $request)
             'estado'           => 'required|in:activo,inactivo',
 
             'foto'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+
+            // Opcional: cambiar la contraseña desde la edición. Sin
+            // 'confirmed': este formulario tiene un solo input de
+            // contraseña (ver entrenadores/edit.blade.php).
+            'password'         => ['nullable', 'string', Password::defaults()],
         ]);
 
         $persona->update($request->only([

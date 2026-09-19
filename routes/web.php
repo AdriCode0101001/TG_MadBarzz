@@ -247,7 +247,19 @@ Route::middleware(['auth', 'role:Administrador,Recepcionista,Entrenador'])->grou
     // Clientes: los tres roles ven/crean/editan (borrar: Admin + Recepcionista)
     Route::resource('clientes', ClienteController::class)->except(['destroy']);
 
-    Route::resource('asistencias', AsistenciaController::class);
+    // NOTA DE SEGURIDAD (hallazgo 8.4 de la auditoría, corregido): acá
+    // existía Route::resource('asistencias', AsistenciaController::class),
+    // con un flujo de registro de asistencia por huella digital en TEXTO
+    // PLANO (Cliente::where('huella_digital', $request->huella_digital)),
+    // sin límite de intentos ni validación de formato — un resabio de ANTES
+    // del agente biométrico C# actual. Se eliminó: estaba desconectado del
+    // menú (el enlace estaba comentado en layouts/private.blade.php),
+    // ningún cliente tenía huella_digital poblado, y los flujos reales de
+    // asistencia (QR vía AsistenciaQrController, agente C# vía
+    // BiometriaController::registrarAsistencia — ambos con
+    // AsistenciaService) son totalmente independientes de este código.
+    // "Mis Asistencias" del cliente (misAsistencias, más abajo) no depende
+    // de nada de esto tampoco.
 
     // Pagos: los tres roles registran (editar/borrar: Admin + Recepcionista)
     Route::resource('pagos', PagoController::class)->only(['index', 'create', 'store', 'show']);

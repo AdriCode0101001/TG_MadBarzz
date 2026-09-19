@@ -211,4 +211,34 @@ return [
 
 'uuid' => 'El campo :attribute debe ser un UUID válido.',
 
+/*
+|--------------------------------------------------------------------------
+| Nombres de atributos personalizados
+|--------------------------------------------------------------------------
+|
+| Para que los mensajes genéricos de arriba lean con el nombre real en
+| español en vez del nombre técnico del campo (ej. "email", "rol_id").
+|
+*/
+'attributes' => [
+    'password' => 'contraseña',
+],
+
+/*
+|--------------------------------------------------------------------------
+| Mensajes personalizados por campo
+|--------------------------------------------------------------------------
+|
+| Hallazgo 6.5 de la auditoría de seguridad: mensaje explícito y claro
+| cuando la contraseña no llega al mínimo, en vez del genérico
+| "El campo contraseña debe tener al menos 8 caracteres."
+|
+*/
+'custom' => [
+    'password' => [
+        'min'         => 'La contraseña debe tener al menos :min caracteres.',
+        'min.string'  => 'La contraseña debe tener al menos :min caracteres.',
+    ],
+],
+
 ];

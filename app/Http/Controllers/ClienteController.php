@@ -13,6 +13,7 @@ use App\Services\UsernameService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class ClienteController extends Controller
 {
@@ -59,7 +60,7 @@ public function index(Request $request)
 
             // Usuario (el username NO se valida: se genera automáticamente)
             'email'              => 'required|email|unique:users,email',
-            'password'           => 'required|string|min:6|confirmed',
+            'password'           => ['required', 'string', 'confirmed', Password::defaults()],
 
             // Cliente (dias_asistidos y huella_digital ya no vienen del formulario)
             'estado'             => 'required|in:activo,inactivo',
@@ -142,6 +143,13 @@ public function index(Request $request)
 
             'dias_asistidos'     => 'required|integer|min:0',
             'estado'             => 'required|in:activo,inactivo',
+
+            // Opcional acá (cambiar contraseña de un cliente desde su
+            // edición): si se manda, respeta la misma política mínima que
+            // el resto de los formularios de contraseña. Sin 'confirmed':
+            // este formulario no tiene campo de confirmación (un solo
+            // input "Nueva contraseña", ver clientes/edit.blade.php).
+            'password'           => ['nullable', 'string', Password::defaults()],
         ]);
 
         $persona->update([

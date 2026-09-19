@@ -21,7 +21,13 @@ class PasswordResetLinkController extends Controller
     /**
      * Handle an incoming password reset link request.
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * Hallazgo 6.7 de la auditoría de seguridad: antes esta respuesta
+     * distinguía "te enviamos un enlace" de "no encontramos ese usuario"
+     * (passwords.sent vs passwords.user), lo que permitía enumerar qué
+     * emails están registrados probando uno por uno. Ahora la respuesta es
+     * SIEMPRE la misma, exista o no el usuario — Password::sendResetLink()
+     * igual solo manda el correo real si el usuario existe, esto solo
+     * cambia qué ve quien pregunta.
      */
     public function store(Request $request): RedirectResponse
     {
@@ -29,16 +35,11 @@ class PasswordResetLinkController extends Controller
             'email' => ['required', 'email'],
         ]);
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+        Password::sendResetLink($request->only('email'));
 
-        return $status == Password::RESET_LINK_SENT
-                    ? back()->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+        return back()->with(
+            'status',
+            'Si existe una cuenta con ese correo, te enviamos un enlace para restablecer la contraseña.'
+        );
     }
 }

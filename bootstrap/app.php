@@ -74,5 +74,14 @@ return Application::configure(basePath: dirname(__DIR__))
         RateLimiter::for('register', function (Request $request) {
             return Limit::perMinute(5)->by($request->ip());
         });
+
+        // Hallazgo 6.7 de la auditoría de seguridad: POST /forgot-password
+        // no tenía NINGÚN límite de ruta (a diferencia de login/register),
+        // así que alguien podía iterar muchos emails distintos sin freno
+        // (además de disparar el envío real de correos). Mismo criterio que
+        // 'register': 5/min por IP.
+        RateLimiter::for('password-email', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
+        });
     })
     ->create();

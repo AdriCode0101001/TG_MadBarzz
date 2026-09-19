@@ -9,6 +9,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,6 +32,15 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.env') === 'production') {
             URL::forceScheme('https');
         }
+
+        // Política mínima de contraseña (hallazgo 6.5 de la auditoría de
+        // seguridad): un solo lugar central para Rules\Password::defaults(),
+        // que ya usan el registro público, el reset y el cambio de
+        // contraseña del perfil. Antes dependía del default implícito de
+        // Laravel (min 8) — ahora queda explícito acá para no depender de
+        // qué haga el framework por detrás, y como único punto para subir
+        // el mínimo el día de mañana si hace falta.
+        Password::defaults(fn () => Password::min(8));
 
         // Etapa 3 del auto-registro: al registrarse (evento Registered),
         // envía el correo de verificación — en modo log por ahora
