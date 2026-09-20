@@ -1,61 +1,234 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# MadBarzz
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistema de gestión para un gimnasio de calistenia: clientes y membresías, pagos,
+control de asistencia biométrico, rutinas, portal del cliente, sitio público y
+notificaciones automáticas. Desarrollado como Trabajo de Grado (TG), pensado
+para desplegarse en Oracle Cloud tras un período de prueba.
 
-## About Laravel
+## Índice
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- [¿Qué es MadBarzz?](#qué-es-madbarzz)
+- [Stack tecnológico](#stack-tecnológico)
+- [Arquitectura general](#arquitectura-general)
+- [Roles del sistema](#roles-del-sistema)
+- [Requisitos e instalación (desarrollo local)](#requisitos-e-instalación-desarrollo-local)
+- [Comandos útiles](#comandos-útiles)
+- [Tests](#tests)
+- [Backups y restauración](#backups-y-restauración)
+- [Despliegue a producción](#despliegue-a-producción)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## ¿Qué es MadBarzz?
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+MadBarzz es una aplicación web para administrar un gimnasio de calistenia de
+principio a fin:
 
-## Learning Laravel
+- **Clientes y membresías**: alta de clientes, tipos de membresía, asignación
+  y renovación, estado de vigencia (activa/inactiva), pago en cuotas con saldo
+  pendiente.
+- **Pagos**: registro de pagos (efectivo o QR), comprobantes, reportes
+  mensuales, búsqueda por cliente/fecha.
+- **Asistencia biométrica**: un agente externo en C# con lector de huella
+  ZK9500 enrola clientes y marca asistencia contra la API del sistema; también
+  existe un registro de asistencia alternativo por QR.
+- **Rutinas**: calendario de grupos musculares y rutinas de ejercicio armadas
+  por Administrador/Entrenador, con un catálogo de ejercicios importado de un
+  dataset externo.
+- **Portal del cliente**: cada cliente ve su membresía, sus pagos, sus
+  asistencias, su rutina del día, descarga su carnet y puede vincular
+  Telegram y notificaciones push del navegador.
+- **Sitio público**: página de inicio con información del gimnasio, horarios,
+  entrenadores y membresías, y formulario de auto-registro de clientes.
+- **Avisos y notificaciones**: avisos generales a todos los clientes (con
+  campanita en el portal) y notificaciones automáticas de vencimiento de
+  membresía o saldo pendiente por email, Telegram, WhatsApp o push, según lo
+  que esté configurado.
+- **Bitácora de auditoría**: registro (vía Spatie Activitylog) de altas,
+  bajas y cambios relevantes, visible solo para el Administrador.
+- **Backups automáticos**: respaldo diario de base de datos y archivos
+  privados, con copia externa y monitoreo de fallos (ver
+  [RESTAURACION.md](RESTAURACION.md)).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Stack tecnológico
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- **Backend**: PHP 8.2+, Laravel 12.
+- **Base de datos**: MySQL/MariaDB (desarrollo y producción); SQLite en
+  memoria para los tests automatizados.
+- **Frontend**: Blade + Bootstrap 5 (panel privado) y Tailwind CSS (algunas
+  vistas/Breeze), Alpine.js para interactividad ligera, Vite como bundler.
+- **Paneles administrativos**: Filament 3 (panel de estadísticas).
+- **Autenticación/API**: Laravel Breeze (web) y Laravel Sanctum (tokens para
+  el portal del cliente vía API); el agente biométrico usa un token propio
+  (SHA-256) por sede, no Sanctum.
+- **Agente biométrico**: aplicación de escritorio en C# (repositorio aparte),
+  que habla con un lector de huellas ZK9500 y consume la API
+  `/api/agente/*` de este proyecto.
+- **Integraciones**:
+  - Web Push (VAPID, vía `minishlink/web-push`) para notificaciones al
+    navegador/celular sin instalar una app.
+  - Telegram Bot API para avisos por chat.
+  - WhatsApp Cloud API / Twilio como canales alternativos de notificación.
+  - Email (mailer configurable) para verificación de cuenta y avisos.
+  - PDF (`barryvdh/laravel-dompdf`) para reportes y carnet del cliente.
+  - Códigos QR (`endroid/qr-code`) para el pago por QR y la asistencia por QR.
+  - `spatie/laravel-backup` + `league/flysystem-aws-s3-v3` para backups
+    locales y a almacenamiento externo compatible con S3 (Backblaze B2).
+  - `spatie/laravel-activitylog` para la bitácora de auditoría.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Arquitectura general
 
-## Laravel Sponsors
+```
+                        ┌─────────────────────┐
+                        │   Navegador (web)    │
+                        │ Blade + Bootstrap +  │
+                        │      Alpine.js       │
+                        └──────────┬───────────┘
+                                   │ HTTP (sesión web)
+                                   ▼
+   ┌───────────────────────────────────────────────────────────┐
+   │                     Laravel 12 (este repo)                 │
+   │  Controllers / Services / Models / Filament (panel Admin)  │
+   │                                                             │
+   │  routes/web.php   → panel privado + portal cliente + home  │
+   │  routes/api.php   → agente biométrico + portal cliente API │
+   │  routes/console.php → tareas programadas (schedule:run)    │
+   └───────┬───────────────────┬───────────────────┬───────────┘
+           │                   │                   │
+           ▼                   ▼                   ▼
+   ┌───────────────┐   ┌───────────────┐   ┌────────────────────┐
+   │  MySQL /       │   │  Integraciones │   │  Almacenamiento    │
+   │  MariaDB       │   │  externas:     │   │  (storage/):       │
+   │  (Calistenia_M)│   │  - Email       │   │  - archivos        │
+   └───────────────┘   │  - Telegram    │   │    privados         │
+                        │  - WhatsApp/   │   │  - backups locales  │
+                        │    Twilio      │   │  - copia externa     │
+                        │  - Web Push    │   │    (S3 / Backblaze  │
+                        └───────────────┘   │    B2)               │
+                                             └────────────────────┘
+                                   ▲
+                                   │ HTTPS + token de agente (SHA-256)
+                                   │ GET/POST /api/agente/*
+                        ┌──────────┴───────────┐
+                        │  Agente biométrico    │
+                        │  (C#, escritorio,     │
+                        │  repo aparte) + lector │
+                        │  de huellas ZK9500     │
+                        └───────────────────────┘
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+El agente biométrico es un proceso externo: no vive en este repositorio. Se
+autentica contra `routes/api.php` con un token propio por sede, generado con
+`php artisan agente:token` (ver más abajo), y usa esa API para listar
+clientes, enrolar huellas y registrar asistencia.
 
-### Premium Partners
+## Roles del sistema
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+El acceso está controlado por rol (middleware `role:`, ver `routes/web.php`)
+más aislamiento por sede (todo registro pertenece a una `Sede`, y las
+consultas se filtran automáticamente por la sede del usuario logueado):
 
-## Contributing
+- **Administrador**: acceso completo. Gestiona usuarios, roles, personal,
+  catálogo de membresías/descuentos/grupos musculares/ejercicios, horarios de
+  entrenadores, promociones, imágenes de la home pública, QR de pago,
+  reportes, bitácora de auditoría y bloqueos de login. Es el único rol que
+  puede borrar personal y ver reportes.
+- **Recepcionista**: gestión del día a día del gimnasio — altas/edición de
+  clientes y personal (sin borrar personal), registro y edición de pagos,
+  envío de notificaciones y avisos, lectura de horarios.
+- **Entrenador**: registra clientes y pagos, marca asistencia (QR o vía
+  agente biométrico), arma sus propias rutinas del calendario de grupos
+  musculares.
+- **Cliente**: rol de autoservicio vía el portal — ve su membresía, su
+  historial de pagos y asistencias, su rutina del día, descarga su carnet, y
+  puede vincular Telegram o activar notificaciones push. Requiere correo
+  verificado para acceder al portal.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Requisitos e instalación (desarrollo local)
 
-## Code of Conduct
+Requisitos:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- PHP 8.2 o superior, con las extensiones habituales de Laravel.
+- Composer.
+- Node.js + npm (para compilar los assets con Vite).
+- MySQL o MariaDB.
 
-## Security Vulnerabilities
+Pasos:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+# 1. Clonar el repositorio
+git clone <url-del-repo> madbarzz
+cd madbarzz
 
-## License
+# 2. Instalar dependencias PHP y JS
+composer install
+npm install
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# 3. Configurar el entorno
+cp .env.example .env
+php artisan key:generate
+
+# 4. Editar .env: al menos DB_DATABASE, DB_USERNAME, DB_PASSWORD
+#    (y el puerto de MySQL si no es el 3306 por defecto, común en XAMPP)
+
+# 5. Crear la base de datos (vacía) y migrar
+php artisan migrate
+
+# 6. Cargar datos de DEMO para desarrollo (roles, sede, usuarios de prueba,
+#    70 clientes falsos, etc. — NUNCA usar esto en producción)
+php artisan db:seed
+
+# 7. Enlazar el storage público y compilar assets
+php artisan storage:link
+npm run dev
+```
+
+Para levantar todo el entorno de desarrollo (servidor, cola, logs y Vite) en
+un solo comando:
+
+```bash
+composer run dev
+```
+
+O por separado, solo el servidor:
+
+```bash
+php artisan serve
+```
+
+> En este proyecto, en Windows/XAMPP se usa `php artisan serve`
+> directamente (no el Apache de XAMPP) para levantar la aplicación.
+
+## Comandos útiles
+
+```bash
+# Generar el token del agente biométrico para una sede
+php artisan agente:token {sede_id} --nombre="Agente Sede Central"
+
+# Backup manual inmediato
+php artisan backup:run --disable-notifications
+
+# Enviar ahora las notificaciones de vencimiento/saldo pendiente (normalmente las dispara el scheduler)
+php artisan notificaciones:vencimientos
+php artisan notificaciones:saldo-pendiente
+```
+
+## Tests
+
+El proyecto usa PHPUnit con SQLite en memoria (no toca la base de datos de
+desarrollo):
+
+```bash
+php artisan test
+# o
+composer test
+```
+
+## Backups y restauración
+
+Los respaldos automáticos (base de datos + archivos privados), su ubicación,
+la política de retención y el procedimiento paso a paso de restauración están
+documentados en [RESTAURACION.md](RESTAURACION.md).
+
+## Despliegue a producción
+
+El checklist completo para desplegar en un servidor Linux (Oracle Cloud u
+otro) está en [DESPLIEGUE.md](DESPLIEGUE.md).
