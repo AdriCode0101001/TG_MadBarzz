@@ -165,7 +165,11 @@ class BiometriaApiTest extends TestCase
              ->assertStatus(201);
 
         $this->assertDatabaseCount('huellas', 1);
-        $this->assertDatabaseHas('huellas', ['template' => base64_encode('v2')]);
+        // No usamos assertDatabaseHas(['template' => ...]) acá: esa columna
+        // ahora está cifrada (cast 'encrypted'), así que el valor crudo en
+        // la BD nunca es igual al Base64 en claro — ver
+        // test_template_se_guarda_cifrado_en_la_bd_pero_se_lee_en_claro.
+        $this->assertSame(base64_encode('v2'), Huella::first()->template);
     }
 
     // ── 2b. Anti-duplicado: una huella no puede pertenecer a dos clientes ─────
@@ -236,6 +240,73 @@ class BiometriaApiTest extends TestCase
         ], $this->headers())->assertStatus(201);
 
         $this->assertDatabaseCount('huellas', 2);
+    }
+
+    // ── 2c. Cifrado en reposo (Grupo 2 / Etapa 1 de la auditoría) ─────────────
+
+    public function test_template_se_guarda_cifrado_en_la_bd_pero_se_lee_en_claro_via_el_modelo(): void
+    {
+        $sede    = $this->crearSede();
+        $this->crearAgentToken($sede);
+        $cliente = $this->crearCliente($sede);
+
+        $templateEnClaro = base64_encode('plantilla-biometrica-real');
+
+        $this->postJson('/api/agente/enrolar', [
+            'id_cliente' => $cliente->id_cliente,
+            'dedo'       => 'indice_derecho',
+            'template'   => $templateEnClaro,
+        ], $this->headers())->assertStatus(201);
+
+        $huella = Huella::first();
+
+        // Atributo del modelo: Eloquent descifra solo, se ve el texto plano de siempre.
+        $this->assertSame($templateEnClaro, $huella->template);
+
+        // Columna cruda en la BD: NUNCA debe ser igual al texto plano — si lo
+        // fuera, el cast 'encrypted' no estaría cifrando de verdad.
+        $crudo = DB::table('huellas')->where('id', $huella->id)->value('template');
+        $this->assertNotSame($templateEnClaro, $crudo);
+
+        // El crudo tiene forma de payload cifrado de Laravel (JSON con iv/value/mac en Base64).
+        $payload = json_decode(base64_decode($crudo), true);
+        $this->assertIsArray($payload);
+        $this->assertArrayHasKey('iv', $payload);
+        $this->assertArrayHasKey('value', $payload);
+        $this->assertArrayHasKey('mac', $payload);
+
+        // template_hash: SHA-256 determinístico del texto plano, usado por el
+        // chequeo anti-duplicado en vez de comparar la columna cifrada.
+        $this->assertSame(hash('sha256', $templateEnClaro), $huella->template_hash);
+    }
+
+    /**
+     * Test de integridad de punta a punta (lo que pidió la auditoría): enrola
+     * una huella y confirma que /api/agente/sincronizar devuelve EXACTAMENTE
+     * el mismo Base64 que se mandó — el agente C# recibe lo mismo de
+     * siempre, sin importar que el dato viaje cifrado dentro de la BD.
+     */
+    public function test_sincronizar_devuelve_el_mismo_template_que_se_enrolo(): void
+    {
+        $sede    = $this->crearSede();
+        $this->crearAgentToken($sede);
+        $cliente = $this->crearCliente($sede);
+
+        $templateEnviado = base64_encode(random_bytes(512)); // simula un template binario real
+
+        $this->postJson('/api/agente/enrolar', [
+            'id_cliente'      => $cliente->id_cliente,
+            'dedo'            => 'indice_derecho',
+            'template'        => $templateEnviado,
+            'version_formato' => 'ZKFinger_5.3.0.33',
+        ], $this->headers())->assertStatus(201);
+
+        $response = $this->getJson('/api/agente/sincronizar', $this->headers())->assertStatus(200);
+
+        $huellaSincronizada = collect($response->json('data'))
+            ->firstWhere('id_cliente', $cliente->id_cliente)['huellas'][0];
+
+        $this->assertSame($templateEnviado, $huellaSincronizada['template']);
     }
 
     // ── 3. Sincronizar respeta la política de acceso ──────────────────────────

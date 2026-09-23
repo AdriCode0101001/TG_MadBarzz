@@ -65,7 +65,13 @@ class BiometriaController extends Controller
         // pertenece a OTRO cliente, se rechaza. Esto cubre peticiones manipuladas o
         // reenviadas que copian el template de un tercero. NO detecta dos escaneos
         // distintos del mismo dedo (para eso está el chequeo biométrico del agente).
-        $perteneceAOtro = Huella::where('template', $data['template'])
+        //
+        // Se compara por `template_hash` (SHA-256 determinístico del texto plano,
+        // ver Huella::booted()) y NO por la columna `template` en sí: `template`
+        // está cifrada con el cast 'encrypted', que usa un IV aleatorio en cada
+        // cifrado — comparar el ciphertext directo con un WHERE nunca encontraría
+        // coincidencias, aunque el texto plano fuera idéntico.
+        $perteneceAOtro = Huella::where('template_hash', hash('sha256', $data['template']))
             ->where('id_cliente', '!=', $data['id_cliente'])
             ->exists();
 
