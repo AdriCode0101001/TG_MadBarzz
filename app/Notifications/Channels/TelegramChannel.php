@@ -3,6 +3,7 @@
 namespace App\Notifications\Channels;
 
 use App\Contracts\CanalNotificacion;
+use App\Support\Redactor;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -14,7 +15,7 @@ class TelegramChannel implements CanalNotificacion
      * $destino = telegram_chat_id del usuario (lo obtiene al hacer /start al bot).
      * Configura TELEGRAM_BOT_TOKEN en .env.
      */
-    public function enviar(string $destino, string $mensaje): bool
+    public function enviar(string $destino, string $mensaje, ?string $idCliente = null): bool
     {
         $token = config('services.telegram.bot_token');
 
@@ -31,13 +32,15 @@ class TelegramChannel implements CanalNotificacion
             ]);
 
             if (!$response->successful() || !$response->json('ok')) {
-                Log::warning("TelegramChannel: respuesta inesperada para chat {$destino}: " . $response->body());
+                $identificador = Redactor::identificarParaLog($idCliente, $destino);
+                Log::warning("TelegramChannel: respuesta inesperada para {$identificador}: " . $response->body());
                 return false;
             }
 
             return true;
         } catch (\Exception $e) {
-            Log::warning("TelegramChannel: excepción enviando a {$destino}: {$e->getMessage()}");
+            $identificador = Redactor::identificarParaLog($idCliente, $destino);
+            Log::warning("TelegramChannel: excepción enviando a {$identificador}: {$e->getMessage()}");
             return false;
         }
     }

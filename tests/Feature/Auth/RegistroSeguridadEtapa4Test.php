@@ -166,11 +166,19 @@ class RegistroSeguridadEtapa4Test extends TestCase
             ->assertSessionHasErrors('fecha_nacimiento');
     }
 
+    public function test_rechaza_menor_de_17_anios_el_auto_registro_es_solo_para_adultos(): void
+    {
+        // El auto-registro web es solo para adultos (18+); a los menores los
+        // inscribe el personal presencialmente.
+        $this->postearRegistro($this->payload(['fecha_nacimiento' => now()->subYears(17)->toDateString()]))
+            ->assertSessionHasErrors('fecha_nacimiento');
+    }
+
     public function test_acepta_justo_en_la_edad_minima(): void
     {
         $this->postearRegistro($this->payload([
             'email'            => 'edadminimaseg@test.com',
-            'fecha_nacimiento' => now()->subYears(14)->subDay()->toDateString(),
+            'fecha_nacimiento' => now()->subYears(18)->subDay()->toDateString(),
         ]))->assertRedirect(route('dashboard'));
 
         $this->assertDatabaseHas('users', ['email' => 'edadminimaseg@test.com']);

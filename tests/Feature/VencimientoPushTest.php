@@ -89,7 +89,7 @@ class VencimientoPushTest extends TestCase
         // para que el resto del flujo use esta versión que siempre falla.
         $this->app->bind(WebPushChannel::class, function () {
             return new class extends WebPushChannel {
-                public function enviar(string $destino, string $mensaje): bool
+                public function enviar(string $destino, string $mensaje, ?string $idCliente = null): bool
                 {
                     throw new \RuntimeException('Fallo simulado de push.');
                 }

@@ -67,13 +67,13 @@
 
                             {{-- Fechas de la membresía: SOLO informativas, las calcula el servidor --}}
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark dark-text-white">Inicio de membresía (automático)</label>
-                                <input type="text" class="form-control" value="{{ now()->format('d/m/Y') }}" readonly disabled>
+                                <label class="form-label fw-bold text-dark dark-text-white" for="fecha_inicio_info">Inicio de membresía (automático)</label>
+                                <input type="text" id="fecha_inicio_info" class="form-control" value="{{ now()->format('d/m/Y') }}" readonly disabled>
                                 <small class="text-muted">Siempre es la fecha de hoy.</small>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark dark-text-white">Fin de membresía (automático)</label>
+                                <label class="form-label fw-bold text-dark dark-text-white" for="fecha_fin_info">Fin de membresía (automático)</label>
                                 <input type="text" id="fecha_fin_info" class="form-control" value="Elija una membresía" readonly disabled>
                                 <small class="text-muted">Duración de la membresía + 1 día de regalo.</small>
                             </div>
@@ -94,7 +94,7 @@
 
                             {{-- Monto: SOLO informativo, lo calcula el servidor --}}
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark dark-text-white">Monto a pagar (Bs)</label>
+                                <label class="form-label fw-bold text-dark dark-text-white" for="monto_info">Monto a pagar (Bs)</label>
                                 <input type="text" id="monto_info" class="form-control" value="—" readonly disabled>
                                 <small class="text-muted">Precio de la membresía menos el descuento. Lo calcula el sistema.</small>
                             </div>
@@ -124,7 +124,7 @@
                                         <input type="date" name="fecha_limite_saldo" id="fecha_limite_saldo" class="form-control" disabled>
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label fw-bold text-dark dark-text-white">Saldo que quedará pendiente</label>
+                                        <label class="form-label fw-bold text-dark dark-text-white" for="saldo_info">Saldo que quedará pendiente</label>
                                         <input type="text" id="saldo_info" class="form-control" value="—" readonly disabled>
                                     </div>
                                     <div class="col-12">
@@ -144,8 +144,8 @@
 
                             {{-- Fecha de pago: SOLO informativa, siempre hoy --}}
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark dark-text-white">Fecha de pago (automática)</label>
-                                <input type="text" class="form-control" value="{{ now()->format('d/m/Y') }}" readonly disabled>
+                                <label class="form-label fw-bold text-dark dark-text-white" for="fecha_pago_info">Fecha de pago (automática)</label>
+                                <input type="text" id="fecha_pago_info" class="form-control" value="{{ now()->format('d/m/Y') }}" readonly disabled>
                                 <small class="text-muted">Siempre es la fecha de hoy, el día en que se registra.</small>
                             </div>
 

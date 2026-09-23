@@ -70,6 +70,11 @@
 
 {{-- La piel "Filament" (mb-skin) aplica a todo el sistema privado; ver mb-skin-filament.css --}}
 <body class="mb-skin @yield('body-class')">
+    {{-- "Saltar al contenido": primer elemento enfocable de la página, para no
+         obligar a navegar por teclado toda la barra/menú lateral en cada
+         pantalla. ".visually-hidden-focusable" es la utilidad de Bootstrap 5
+         (ya cargado en este layout) pensada justo para este patrón. --}}
+    <a href="#contenido-principal" class="visually-hidden-focusable">Saltar al contenido</a>
     <script>
         // Aplica el tema guardado inmediatamente (evita parpadeo y conserva la elección entre páginas)
         (function () {
@@ -976,7 +981,7 @@
         <!--**********************************
             Content body start
         ***********************************-->
-        <div class="content-body default-height">
+        <div class="content-body default-height" id="contenido-principal" tabindex="-1">
             <!-- row -->
             <div class="container-fluid">
                 <div class="row">

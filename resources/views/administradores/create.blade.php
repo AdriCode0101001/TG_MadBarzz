@@ -27,23 +27,23 @@
                         <h4 class="dark-text-white mt-3">Datos de Persona</h4>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark dark-text-white">Nombres</label>
-                                <input type="text" name="nombre_completo" class="form-control" value="" required>
+                                <label class="form-label fw-bold text-dark dark-text-white" for="nombre_completo">Nombres</label>
+                                <input type="text" name="nombre_completo" class="form-control" value="" required id="nombre_completo">
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark dark-text-white">Apellido Paterno</label>
-                                <input type="text" name="apellido_paterno" class="form-control" value="" required>
+                                <label class="form-label fw-bold text-dark dark-text-white" for="apellido_paterno">Apellido Paterno</label>
+                                <input type="text" name="apellido_paterno" class="form-control" value="" required id="apellido_paterno">
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark dark-text-white">Apellido Materno</label>
-                                <input type="text" name="apellido_materno" class="form-control" value="" required>
+                                <label class="form-label fw-bold text-dark dark-text-white" for="apellido_materno">Apellido Materno</label>
+                                <input type="text" name="apellido_materno" class="form-control" value="" required id="apellido_materno">
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark dark-text-white">Cédula de Identidad</label>
-                                <input type="text" name="ci" class="form-control" value="" required>
+                                <label class="form-label fw-bold text-dark dark-text-white" for="ci">Cédula de Identidad</label>
+                                <input type="text" name="ci" class="form-control" value="" required id="ci">
                             </div>
 
                             <div class="col-md-6">
@@ -52,8 +52,8 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark dark-text-white">Género</label>
-                                <select name="genero" class="form-control" required>
+                                <label class="form-label fw-bold text-dark dark-text-white" for="genero">Género</label>
+                                <select name="genero" class="form-control" required id="genero">
                                     <option value="">Seleccione género</option>
                                     <option value="masculino">Masculino</option>
                                     <option value="femenino">Femenino</option>
@@ -62,39 +62,39 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark dark-text-white">Fecha de Nacimiento</label>
-                                <input type="date" name="fecha_nacimiento" class="form-control" value="" required>
+                                <label class="form-label fw-bold text-dark dark-text-white" for="fecha_nacimiento">Fecha de Nacimiento</label>
+                                <input type="date" name="fecha_nacimiento" class="form-control" value="" required id="fecha_nacimiento">
                             </div>
                         </div>
 
                         <h4 class="dark-text-white mt-4">Datos de Usuario</h4>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark dark-text-white">Nombre de Usuario</label>
-                                <input type="text" name="name" class="form-control" value="" required>
+                                <label class="form-label fw-bold text-dark dark-text-white" for="name">Nombre de Usuario</label>
+                                <input type="text" name="name" class="form-control" value="" required id="name">
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark dark-text-white">Email</label>
-                                <input type="email" name="email" class="form-control" value="" required>
+                                <label class="form-label fw-bold text-dark dark-text-white" for="email">Email</label>
+                                <input type="email" name="email" class="form-control" value="" required id="email">
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark dark-text-white">Contraseña</label>
-                                <input type="password" name="password" class="form-control" required>
+                                <label class="form-label fw-bold text-dark dark-text-white" for="password">Contraseña</label>
+                                <input type="password" name="password" class="form-control" required id="password">
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark dark-text-white">Confirmar Contraseña</label>
-                                <input type="password" name="password_confirmation" class="form-control" required>
+                                <label class="form-label fw-bold text-dark dark-text-white" for="password_confirmation">Confirmar Contraseña</label>
+                                <input type="password" name="password_confirmation" class="form-control" required id="password_confirmation">
                             </div>
                         </div>
 
                         <h4 class="dark-text-white mt-4">Datos del Administrador</h4>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark dark-text-white">Nivel de Acceso</label>
-                                <select name="nivel_acceso" class="form-control" required>
+                                <label class="form-label fw-bold text-dark dark-text-white" for="nivel_acceso">Nivel de Acceso</label>
+                                <select name="nivel_acceso" class="form-control" required id="nivel_acceso">
                                     <option value="">Seleccione nivel de acceso</option>
                                     <option value="superadmin">Superadmin</option>
                                     <option value="gestion">Gestión</option>
@@ -103,13 +103,13 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark dark-text-white">Área Responsable</label>
-                                <input type="text" name="area_responsable" class="form-control" value="">
+                                <label class="form-label fw-bold text-dark dark-text-white" for="area_responsable">Área Responsable</label>
+                                <input type="text" name="area_responsable" class="form-control" value="" id="area_responsable">
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark dark-text-white">Estado</label>
-                                <select name="estado" class="form-control" required>
+                                <label class="form-label fw-bold text-dark dark-text-white" for="estado">Estado</label>
+                                <select name="estado" class="form-control" required id="estado">
                                     <option value="">Seleccione estado</option>
                                     <option value="activo">Activo</option>
                                     <option value="inactivo">Inactivo</option>

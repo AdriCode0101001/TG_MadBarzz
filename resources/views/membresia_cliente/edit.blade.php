@@ -58,14 +58,14 @@
 
                         {{-- Fechas SOLO informativas: las calcula y guarda el servidor --}}
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Fecha Inicio (automática)</label>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="fecha_inicio_info">Fecha Inicio (automática)</label>
                             <input type="text" id="fecha_inicio_info" class="form-control"
                                    value="{{ \Carbon\Carbon::parse($membresiaCliente->fecha_inicio)->format('d/m/Y') }}" readonly disabled>
                             <small class="text-muted">Se conserva la fecha original del registro.</small>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Fecha Fin (automática)</label>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="fecha_fin_info">Fecha Fin (automática)</label>
                             <input type="text" id="fecha_fin_info" class="form-control" value="Elija una membresía" readonly disabled>
                             <small class="text-muted">Duración de la membresía + 1 día de regalo, desde la fecha de inicio.</small>
                         </div>
@@ -86,7 +86,7 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Precio Final (Bs)</label>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="precio_final_info">Precio Final (Bs)</label>
                             <input type="text" id="precio_final_info" class="form-control" value="—" readonly disabled>
                             <small class="text-muted">Precio de la membresía menos el descuento. Lo calcula el sistema.</small>
                         </div>

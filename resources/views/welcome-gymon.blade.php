@@ -328,7 +328,7 @@
                 <div class="d-flex-all justify-content-between">
                   <div class="nav-bar">
                     <div class="extras">
-                      <a href="javascript:void(0)" id="mobile-menu" class="menu-start">
+                      <a href="javascript:void(0)" id="mobile-menu" class="menu-start" aria-label="Abrir menú de navegación">
                         <svg id="ham-menu" viewBox="0 0 100 100">
                           <path class="line line1" d="M 20,29.000046 H 80.000231 C 80.000231,29.000046 94.498839,28.817352 94.532987,66.711331 94.543142,77.980673 90.966081,81.670246 85.259173,81.668997 79.552261,81.667751 75.000211,74.999942 75.000211,74.999942 L 25.000021,25.000058"></path>
                           <path class="line line2" d="M 20,50 H 80"></path>
@@ -392,7 +392,7 @@
               <li><a href="{{ route('login') }}">Iniciar sesión</a></li>
             @endauth
           </ul>
-          <a href="JavaScript:void(0)" id="res-cross"></a>
+          <a href="JavaScript:void(0)" id="res-cross" aria-label="Cerrar menú de navegación"></a>
         </div>
       </div>
     </div>
@@ -401,7 +401,7 @@
   {{-- ================= HERO (owl carousel) ================= --}}
   <a id="inicio"></a>
   <section class="myslider owl-carousel owl-theme">
-    <div data-dot="<button><span>01</span> Calistenia</button>" class="item featured-section-three" style="background-image:url({{ $imagenesHome->url('home_hero_1', 'https://via.placeholder.com/1920x770') }}); background-position: {{ $imagenesHome->posicionCssPara('home_hero_1') }};">
+    <div data-dot="<button><span>01</span> Calistenia</button>" class="item featured-section-three" style="background-image:url({{ $imagenesHome->url('home_hero_1', asset('images/placeholder-home.svg')) }}); background-position: {{ $imagenesHome->posicionCssPara('home_hero_1') }};">
       <div class="container">
         <div class="featured-text-two">
           <h1>Clases de Calistenia</h1>
@@ -410,19 +410,23 @@
         </div>
       </div>
     </div>
-    <div data-dot="<button><span>02</span> Peso Corporal</button>" class="item featured-section-three" style="background-image:url({{ $imagenesHome->url('home_hero_2', 'https://via.placeholder.com/1920x770') }}); background-position: {{ $imagenesHome->posicionCssPara('home_hero_2') }};">
+    <div data-dot="<button><span>02</span> Peso Corporal</button>" class="item featured-section-three" style="background-image:url({{ $imagenesHome->url('home_hero_2', asset('images/placeholder-home.svg')) }}); background-position: {{ $imagenesHome->posicionCssPara('home_hero_2') }};">
       <div class="container">
         <div class="featured-text-two">
-          <h1>Entrena Tu Peso Corporal</h1>
+          {{-- Semánticamente h2 (solo el primer slide es el <h1> de la página), pero se deja
+               la etiqueta h1 + aria-level="2" para no romper el CSS del carrusel (varias
+               reglas de animación de la plantilla apuntan a ".featured-text-two h1"). Los
+               lectores de pantalla exponen el nivel real gracias a aria-level. --}}
+          <h1 aria-level="2">Entrena Tu Peso Corporal</h1>
           <p>Domina movimientos de fuerza y control usando tu propio cuerpo, sin máquinas ni excusas.</p>
           <a href="{{ $waLink }}" target="_blank" class="theme-btn">ÚNETE AHORA</a>
         </div>
       </div>
     </div>
-    <div data-dot="<button><span>03</span> Fuerza y Control</button>" class="item featured-section-three" style="background-image:url({{ $imagenesHome->url('home_hero_3', 'https://via.placeholder.com/1920x770') }}); background-position: {{ $imagenesHome->posicionCssPara('home_hero_3') }};">
+    <div data-dot="<button><span>03</span> Fuerza y Control</button>" class="item featured-section-three" style="background-image:url({{ $imagenesHome->url('home_hero_3', asset('images/placeholder-home.svg')) }}); background-position: {{ $imagenesHome->posicionCssPara('home_hero_3') }};">
       <div class="container">
         <div class="featured-text-two">
-          <h1>Fuerza y Control</h1>
+          <h1 aria-level="2">Fuerza y Control</h1>
           <p>Progresá de lo básico a la barra avanzada con una comunidad y entrenadores que te acompañan en cada paso.</p>
           <a href="{{ $waLink }}" target="_blank" class="theme-btn">ÚNETE AHORA</a>
         </div>
@@ -437,7 +441,7 @@
       <div class="row">
         <div class="col-lg-4 col-md-6 col-sm-12">
           <div class="history-data">
-            <figure><img class="w-100" src="{{ $imagenesHome->url('home_nosotros_calistenia', 'https://via.placeholder.com/416x584') }}" alt="Clases de Calistenia" style="object-position: {{ $imagenesHome->posicionCssPara('home_nosotros_calistenia') }};"></figure>
+            <figure><img class="w-100" src="{{ $imagenesHome->url('home_nosotros_calistenia', asset('images/placeholder-home.svg')) }}" alt="Clases de Calistenia" style="object-position: {{ $imagenesHome->posicionCssPara('home_nosotros_calistenia') }};"></figure>
             <div class="details">
               <h3>Clases de Calistenia</h3>
               <p>Programas progresivos con equipos de primer nivel y entrenadores expertos para dominar tu peso corporal.</p>
@@ -447,7 +451,7 @@
         </div>
         <div class="col-lg-4 col-md-6 col-sm-12">
           <div class="history-data">
-            <figure><img class="w-100" src="{{ $imagenesHome->url('home_nosotros_cardio', 'https://via.placeholder.com/416x584') }}" alt="Programa de Cardio" style="object-position: {{ $imagenesHome->posicionCssPara('home_nosotros_cardio') }};"></figure>
+            <figure><img class="w-100" src="{{ $imagenesHome->url('home_nosotros_cardio', asset('images/placeholder-home.svg')) }}" alt="Programa de Cardio" style="object-position: {{ $imagenesHome->posicionCssPara('home_nosotros_cardio') }};"></figure>
             <div class="details">
               <h3>Programa de Cardio</h3>
               <p>Rutinas diseñadas para mejorar tu resistencia, quemar grasa y potenciar tu fuerza funcional.</p>
@@ -457,7 +461,7 @@
         </div>
         <div class="col-lg-4 col-md-6 col-sm-12">
           <div class="history-data">
-            <figure><img class="w-100" src="{{ $imagenesHome->url('home_nosotros_fitness', 'https://via.placeholder.com/416x584') }}" alt="Estudio de Fitness" style="object-position: {{ $imagenesHome->posicionCssPara('home_nosotros_fitness') }};"></figure>
+            <figure><img class="w-100" src="{{ $imagenesHome->url('home_nosotros_fitness', asset('images/placeholder-home.svg')) }}" alt="Estudio de Fitness" style="object-position: {{ $imagenesHome->posicionCssPara('home_nosotros_fitness') }};"></figure>
             <div class="details">
               <h3>Estudio de Fitness</h3>
               <p>Espacio equipado con áreas adaptadas para todos los niveles y acompañamiento personalizado.</p>
@@ -482,7 +486,7 @@
         </div>
         <div class="col-lg-5">
           <div class="cta-data">
-            <figure><img src="{{ $imagenesHome->url('home_cta', 'https://via.placeholder.com/858x597') }}" alt="Entrena con nosotros"></figure>
+            <figure><img src="{{ $imagenesHome->url('home_cta', asset('images/placeholder-home.svg')) }}" alt="Entrena con nosotros"></figure>
           </div>
         </div>
       </div>
@@ -615,7 +619,7 @@
 
   {{-- ================= MEMBRESÍAS ================= --}}
   <a id="membresias"></a>
-  <section class="gap payment-product" style="background-image:url({{ $imagenesHome->url('home_membresias_fondo', 'https://via.placeholder.com/1920x846') }}); background-position: {{ $imagenesHome->posicionCssPara('home_membresias_fondo') }};">
+  <section class="gap payment-product" style="background-image:url({{ $imagenesHome->url('home_membresias_fondo', asset('images/placeholder-home.svg')) }}); background-position: {{ $imagenesHome->posicionCssPara('home_membresias_fondo') }};">
     <div class="heading">
       <figure>
         <span class="mb-heading-wordmark-halo">
@@ -633,7 +637,7 @@
           @endphp
           <div class="col-lg-6">
             <div class="payment-product-card">
-              <img src="https://via.placeholder.com/363x446" alt="Membresía {{ $membresia->tipo_membresia }}">
+              <img src="{{ asset('images/placeholder-home.svg') }}" alt="Membresía {{ $membresia->tipo_membresia }}">
               <h5>Membresía {{ $membresia->tipo_membresia }}</h5>
               <h2>Bs {{ number_format($membresia->precio, 0, ',', '.') }}</h2>
               <span>Acceso completo al gimnasio</span>
@@ -706,18 +710,14 @@
         </div>
         <div class="col-lg-6">
           <div class="together">
+            {{-- El countdown de "tiempo limitado" que traía la plantilla apuntaba a una
+                 fecha fija de ejemplo (un cumpleaños) que se recalculaba sola año tras
+                 año — mostraba urgencia falsa todo el tiempo. Se saca hasta que haya una
+                 fecha real de fin de promo; mientras tanto, la oferta se muestra sin
+                 fingir que vence pronto. --}}
             <h4>juntos entrenamos mejor</h4>
             <h2>2 meses a mitad de precio</h2>
             <span>+ sin costo de inscripción</span>
-            <p>promoción por tiempo limitado</p>
-            <div id="countdown">
-              <ul>
-                <li><span id="days"></span>días</li>
-                <li><span id="hours"></span>Hs</li>
-                <li><span id="minutes"></span>Min</li>
-                <li class="mb-0"><span id="seconds"></span>Seg</li>
-              </ul>
-            </div>
             <a href="{{ $waLink }}" target="_blank" class="theme-btn">comenzar</a>
             <a href="#contacto" class="theme-btn two">contactar ahora</a>
           </div>
@@ -727,7 +727,7 @@
   </section>
 
   {{-- ================= FOOTER ================= --}}
-  <footer id="contacto" class="footer-style-one" style="background-image: url({{ $imagenesHome->url('home_footer_fondo', 'https://via.placeholder.com/1920x732') }}); background-position: {{ $imagenesHome->posicionCssPara('home_footer_fondo') }};">
+  <footer id="contacto" class="footer-style-one" style="background-image: url({{ $imagenesHome->url('home_footer_fondo', asset('images/placeholder-home.svg')) }}); background-position: {{ $imagenesHome->posicionCssPara('home_footer_fondo') }};">
     <div class="container">
       <div class="footer-p-4">
         <div class="footer-p-4-left">
@@ -750,9 +750,9 @@
               <h3>Información</h3>
               <p>En Calistenia MadBarzz creemos que la constancia es la clave. Entrenar regularmente mejora tu fuerza, resistencia y bienestar.</p>
               <ul class="social-media">
-                <li><a href="https://www.facebook.com/MadBarzz" target="_blank"><i class="fa-brands fa-facebook-f"></i></a></li>
-                <li><a href="{{ $waLink }}" target="_blank"><i class="fa-brands fa-whatsapp"></i></a></li>
-                <li><a href="https://www.instagram.com/calistenia_madbarzz?igsh=aW91eXl6ZnVtMGJ2" target="_blank"><i class="flaticon-instagram"></i></a></li>
+                <li><a href="https://www.facebook.com/MadBarzz" target="_blank" aria-label="Facebook de MadBarzz"><i class="fa-brands fa-facebook-f"></i></a></li>
+                <li><a href="{{ $waLink }}" target="_blank" aria-label="Escribinos por WhatsApp"><i class="fa-brands fa-whatsapp"></i></a></li>
+                <li><a href="https://www.instagram.com/calistenia_madbarzz?igsh=aW91eXl6ZnVtMGJ2" target="_blank" aria-label="Instagram de MadBarzz"><i class="flaticon-instagram"></i></a></li>
               </ul>
             </div>
           </div>
@@ -768,12 +768,9 @@
           </div>
           <div class="col-lg-4 col-md-6 col-sm-12">
             <div class="footer-col">
-              <h3>Newsletter</h3>
-              <p>Sin backend todavía — este campo es solo de vista previa.</p>
-              <form onsubmit="return false;">
-                <input type="email" name="email" placeholder="Tu correo electrónico">
-                <button type="button"><i class="fa-solid fa-arrow-up-long"></i></button>
-              </form>
+              <h3>¿Tenés dudas?</h3>
+              <p>Escribinos directo y te respondemos por WhatsApp.</p>
+              <a href="{{ $waLink }}" target="_blank" class="theme-btn">Escribir por WhatsApp</a>
             </div>
           </div>
         </div>
@@ -792,10 +789,11 @@
 
   <div id="scroll-percentage"><span id="scroll-percentage-value"></span></div>
 
-  {{-- Modal "Únete hoy": formulario visible de la plantilla, SIN backend propio todavía.
-       El botón de envío es un link directo a WhatsApp con los datos que el visitante
-       ya ve en pantalla (no procesa el formulario) — evita depender del contact.php
-       de la plantilla (era de OTRO sitio, inservible) hasta que se arme un backend real. --}}
+  {{-- Modal "Únete hoy": SIN backend propio (evita depender del contact.php de la
+       plantilla, que era de OTRO sitio e inservible). En vez de fingir que el
+       formulario se "envía", el submit arma el mensaje de WhatsApp con lo que el
+       visitante escribió acá (ver el <script> al final del archivo) — lo que
+       completa es lo que efectivamente se manda, no un campo decorativo. --}}
   <div class="modal fade popups conslt-popup" id="exampleModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -803,17 +801,17 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body">
-          <img src="{{ $imagenesHome->url('home_modal_unete', 'https://via.placeholder.com/420x591') }}" alt="MadBarzz">
+          <img src="{{ $imagenesHome->url('home_modal_unete', asset('images/placeholder-home.svg')) }}" alt="MadBarzz">
           <div class="contact-form-one popup">
             <div class="c-form-2">
               <h3>Únete hoy</h3>
               <div class="parallax" style="background-image: url({{ asset('assets_gymon/images/theme-shape.svg') }});"></div>
-              <form onsubmit="return false;">
-                <div class="row g-0"><input type="text" class="form-control" placeholder="Nombre completo"></div>
-                <div class="row g-0"><input type="email" class="form-control" placeholder="Correo electrónico"></div>
-                <div class="row g-0"><input type="text" class="form-control" placeholder="Teléfono"></div>
-                <div class="row g-0"><textarea placeholder="¿En qué te podemos ayudar?"></textarea></div>
-                <a href="{{ $waLink }}" target="_blank" class="theme-btn">Continuar por WhatsApp</a>
+              <form id="formUneteModal" data-wa-base="{{ preg_replace('/\?.*/', '', $waLink) }}">
+                <div class="row g-0"><input type="text" class="form-control" id="uneteNombre" name="nombre" placeholder="Nombre completo" required></div>
+                <div class="row g-0"><input type="email" class="form-control" id="uneteEmail" name="email" placeholder="Correo electrónico"></div>
+                <div class="row g-0"><input type="text" class="form-control" id="uneteTelefono" name="telefono" placeholder="Teléfono"></div>
+                <div class="row g-0"><textarea id="uneteMensaje" name="mensaje" placeholder="¿En qué te podemos ayudar?"></textarea></div>
+                <button type="submit" class="theme-btn">Continuar por WhatsApp</button>
               </form>
             </div>
           </div>
@@ -870,6 +868,34 @@
     }, { threshold: 0.4 });
 
     halos.forEach(function (el) { observer.observe(el); });
+  })();
+  </script>
+
+  {{-- Modal "Únete hoy": arma el mensaje de WhatsApp con lo que el visitante
+       completó en el formulario, en vez de un link fijo que ignora esos
+       datos (ver comentario junto al <form id="formUneteModal">). --}}
+  <script>
+  (function () {
+    var form = document.getElementById('formUneteModal');
+    if (!form) return;
+
+    form.addEventListener('submit', function (evento) {
+      evento.preventDefault();
+
+      var nombre    = document.getElementById('uneteNombre').value.trim();
+      var email     = document.getElementById('uneteEmail').value.trim();
+      var telefono  = document.getElementById('uneteTelefono').value.trim();
+      var mensaje   = document.getElementById('uneteMensaje').value.trim();
+
+      var lineas = ['Hola, quiero unirme a Calistenia MadBarzz.'];
+      if (nombre)   lineas.push('Nombre: ' + nombre);
+      if (telefono) lineas.push('Teléfono: ' + telefono);
+      if (email)    lineas.push('Correo: ' + email);
+      if (mensaje)  lineas.push('Mensaje: ' + mensaje);
+
+      var texto = encodeURIComponent(lineas.join('\n'));
+      window.open(form.dataset.waBase + '?text=' + texto, '_blank');
+    });
   })();
   </script>
 </body>

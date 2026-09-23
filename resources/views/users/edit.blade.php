@@ -118,7 +118,7 @@
 
                         <!-- Foto de Perfil -->
                         <div class="col-md-12">
-                            <label class="form-label fs-16 fw-bold text-dark dark-text-white">
+                            <label for="foto" class="form-label fs-16 fw-bold text-dark dark-text-white">
                                 Foto de Perfil <small class="text-muted fw-normal">(opcional)</small>
                             </label>
                             <div class="d-flex align-items-center gap-3 flex-wrap">

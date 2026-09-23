@@ -86,8 +86,13 @@
         Ya NO hay campo oculto dependiente de JavaScript: aunque el JS de la
         página falle por completo, el teléfono llega bien al servidor.
     --}}
+    {{-- aria-label en vez de depender de que la vista que usa el componente
+         asocie su <label> externo con un id que acá se genera al azar (no lo
+         puede conocer de antemano) — así cada campo es accesible por sí
+         solo sin coordinar ids entre ~15 formularios distintos. --}}
     <select id="{{ $uid }}_code"
             name="telefono_codigo"
+            aria-label="Código de país del teléfono"
             data-container="body"
             data-live-search="true"
             data-live-search-placeholder="Buscar país..."
@@ -102,6 +107,7 @@
     <input  type="tel"
             name="telefono_numero"
             id="{{ $uid }}_number"
+            aria-label="Número de teléfono"
             class="form-control{{ $hasError ? ' is-invalid' : '' }}"
             style="flex:1 1 0%;min-width:0;"
             placeholder="Ej. 71234567"

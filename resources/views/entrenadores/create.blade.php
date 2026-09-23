@@ -30,28 +30,28 @@
                     <h4 class="dark-text-white mt-3">Datos de Persona</h4>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Nombres</label>
-                            <input type="text" name="nombre_completo" class="form-control" value="{{ old('nombre_completo') }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="nombre_completo">Nombres</label>
+                            <input type="text" name="nombre_completo" class="form-control" value="{{ old('nombre_completo') }}" required id="nombre_completo">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Apellido Paterno</label>
-                            <input type="text" name="apellido_paterno" class="form-control" value="{{ old('apellido_paterno') }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="apellido_paterno">Apellido Paterno</label>
+                            <input type="text" name="apellido_paterno" class="form-control" value="{{ old('apellido_paterno') }}" required id="apellido_paterno">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Apellido Materno</label>
-                            <input type="text" name="apellido_materno" class="form-control" value="{{ old('apellido_materno') }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="apellido_materno">Apellido Materno</label>
+                            <input type="text" name="apellido_materno" class="form-control" value="{{ old('apellido_materno') }}" required id="apellido_materno">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Cédula de Identidad</label>
-                            <input type="text" name="ci" class="form-control" value="{{ old('ci') }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="ci">Cédula de Identidad</label>
+                            <input type="text" name="ci" class="form-control" value="{{ old('ci') }}" required id="ci">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white">Teléfono</label>
                             <x-phone-input :required="true" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Género</label>
-                            <select name="genero" class="form-control" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="genero">Género</label>
+                            <select name="genero" class="form-control" required id="genero">
                                 <option value="">Seleccione</option>
                                 <option value="masculino" {{ old('genero')=='masculino'?'selected':'' }}>Masculino</option>
                                 <option value="femenino" {{ old('genero')=='femenino'?'selected':'' }}>Femenino</option>
@@ -59,8 +59,8 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Fecha de Nacimiento</label>
-                            <input type="date" name="fecha_nacimiento" class="form-control" value="{{ old('fecha_nacimiento') }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="fecha_nacimiento">Fecha de Nacimiento</label>
+                            <input type="date" name="fecha_nacimiento" class="form-control" value="{{ old('fecha_nacimiento') }}" required id="fecha_nacimiento">
                         </div>
 
                         <!-- Foto (se muestra en la home pública) -->
@@ -86,27 +86,27 @@
                     <h4 class="dark-text-white mt-4">Datos de Usuario</h4>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Nombre de Usuario</label>
-                            <input type="text" name="name" class="form-control" value="{{ old('name') }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="name">Nombre de Usuario</label>
+                            <input type="text" name="name" class="form-control" value="{{ old('name') }}" required id="name">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Email</label>
-                            <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="email">Email</label>
+                            <input type="email" name="email" class="form-control" value="{{ old('email') }}" required id="email">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Contraseña</label>
-                            <input type="password" name="password" class="form-control" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="password">Contraseña</label>
+                            <input type="password" name="password" class="form-control" required id="password">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Confirmar Contraseña</label>
-                            <input type="password" name="password_confirmation" class="form-control" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="password_confirmation">Confirmar Contraseña</label>
+                            <input type="password" name="password_confirmation" class="form-control" required id="password_confirmation">
                         </div>
                     </div>
 
                     <h4 class="dark-text-white mt-4">Datos del Entrenador</h4>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Especialidad</label>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="especialidad">Especialidad</label>
                             <select name="especialidad[]" id="especialidad" class="form-control" multiple required>
                                 @php
                                     $opcionesEspecialidad = [
@@ -128,12 +128,12 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Experiencia</label>
-                            <input type="text" name="experiencia" class="form-control" value="{{ old('experiencia') }}">
+                            <label class="form-label fw-bold text-dark dark-text-white" for="experiencia">Experiencia</label>
+                            <input type="text" name="experiencia" class="form-control" value="{{ old('experiencia') }}" id="experiencia">
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Disponibilidad</label>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="disponibilidad">Disponibilidad</label>
                             <select name="disponibilidad[]" id="disponibilidad" class="form-control" multiple required>
                                 <option value="Lunes">Lunes</option>
                                 <option value="Martes">Martes</option>
@@ -145,8 +145,8 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Estado</label>
-                            <select name="estado" class="form-control" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="estado">Estado</label>
+                            <select name="estado" class="form-control" required id="estado">
                                 <option value="">Seleccione estado</option>
                                 <option value="activo" {{ old('estado')=='activo'?'selected':'' }}>Activo</option>
                                 <option value="inactivo" {{ old('estado')=='inactivo'?'selected':'' }}>Inactivo</option>

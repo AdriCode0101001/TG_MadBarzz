@@ -3,12 +3,13 @@
 namespace App\Notifications\Channels;
 
 use App\Contracts\CanalNotificacion;
+use App\Support\Redactor;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class EmailChannel implements CanalNotificacion
 {
-    public function enviar(string $destino, string $mensaje): bool
+    public function enviar(string $destino, string $mensaje, ?string $idCliente = null): bool
     {
         try {
             Mail::raw($mensaje, fn ($m) => $m
@@ -17,7 +18,8 @@ class EmailChannel implements CanalNotificacion
             );
             return true;
         } catch (\Exception $e) {
-            Log::warning("EmailChannel: fallo enviando a {$destino}: {$e->getMessage()}");
+            $identificador = Redactor::identificarParaLog($idCliente, $destino);
+            Log::warning("EmailChannel: fallo enviando a {$identificador}: {$e->getMessage()}");
             return false;
         }
     }

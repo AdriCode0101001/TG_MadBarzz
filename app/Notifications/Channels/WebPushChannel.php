@@ -28,7 +28,7 @@ class WebPushChannel implements CanalNotificacion
      */
     public function __construct(private ?WebPush $webPush = null) {}
 
-    public function enviar(string $destino, string $mensaje): bool
+    public function enviar(string $destino, string $mensaje, ?string $idCliente = null): bool
     {
         return $this->enviarPayload((int) $destino, [
             'title' => 'MadBarzz',

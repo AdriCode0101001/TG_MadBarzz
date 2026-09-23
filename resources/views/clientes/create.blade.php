@@ -19,23 +19,23 @@
                     <legend class="mb-field-legend"><i class="fa-solid fa-id-card"></i> Datos de la persona</legend>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Nombres</label>
-                            <input type="text" name="nombre_completo" class="form-control @error('nombre_completo') is-invalid @enderror" value="{{ old('nombre_completo') }}" placeholder="Ej. Juan Carlos" required>
+                            <label class="form-label" for="nombre_completo">Nombres</label>
+                            <input type="text" name="nombre_completo" class="form-control @error('nombre_completo') is-invalid @enderror" value="{{ old('nombre_completo') }}" placeholder="Ej. Juan Carlos" required id="nombre_completo">
                             @error('nombre_completo')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Apellido paterno</label>
-                            <input type="text" name="apellido_paterno" class="form-control @error('apellido_paterno') is-invalid @enderror" value="{{ old('apellido_paterno') }}" required>
+                            <label class="form-label" for="apellido_paterno">Apellido paterno</label>
+                            <input type="text" name="apellido_paterno" class="form-control @error('apellido_paterno') is-invalid @enderror" value="{{ old('apellido_paterno') }}" required id="apellido_paterno">
                             @error('apellido_paterno')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Apellido materno</label>
-                            <input type="text" name="apellido_materno" class="form-control @error('apellido_materno') is-invalid @enderror" value="{{ old('apellido_materno') }}" required>
+                            <label class="form-label" for="apellido_materno">Apellido materno</label>
+                            <input type="text" name="apellido_materno" class="form-control @error('apellido_materno') is-invalid @enderror" value="{{ old('apellido_materno') }}" required id="apellido_materno">
                             @error('apellido_materno')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Cédula de identidad</label>
-                            <input type="text" name="ci" class="form-control @error('ci') is-invalid @enderror" value="{{ old('ci') }}" required>
+                            <label class="form-label" for="ci">Cédula de identidad</label>
+                            <input type="text" name="ci" class="form-control @error('ci') is-invalid @enderror" value="{{ old('ci') }}" required id="ci">
                             @error('ci')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
@@ -43,8 +43,8 @@
                             <x-phone-input :required="true" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Género</label>
-                            <select name="genero" class=" @error('genero') is-invalid @enderror" required>
+                            <label class="form-label" for="genero">Género</label>
+                            <select name="genero" class=" @error('genero') is-invalid @enderror" required id="genero">
                                 <option value="">Seleccione…</option>
                                 <option value="masculino" @selected(old('genero')=='masculino')>Masculino</option>
                                 <option value="femenino"  @selected(old('genero')=='femenino')>Femenino</option>
@@ -53,8 +53,8 @@
                             @error('genero')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Fecha de nacimiento</label>
-                            <input type="date" name="fecha_nacimiento" class="form-control @error('fecha_nacimiento') is-invalid @enderror" value="{{ old('fecha_nacimiento') }}" required>
+                            <label class="form-label" for="fecha_nacimiento">Fecha de nacimiento</label>
+                            <input type="date" name="fecha_nacimiento" class="form-control @error('fecha_nacimiento') is-invalid @enderror" value="{{ old('fecha_nacimiento') }}" required id="fecha_nacimiento">
                             @error('fecha_nacimiento')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                     </div>
@@ -65,24 +65,24 @@
                     <legend class="mb-field-legend"><i class="fa-solid fa-circle-user"></i> Datos de acceso (usuario)</legend>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Nombre de usuario (automático)</label>
+                            <label class="form-label" for="mbUsernamePreview">Nombre de usuario (automático)</label>
                             <input type="text" id="mbUsernamePreview" class="form-control"
                                    value="Se genera solo: nombre.apellido.inicial" readonly disabled>
                             <small class="text-muted">Vista previa — si ya existe, el sistema le agrega un número. Podrá cambiarse después desde la edición.</small>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Correo electrónico</label>
-                            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" required>
+                            <label class="form-label" for="email">Correo electrónico</label>
+                            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" required id="email">
                             @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Contraseña</label>
-                            <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" required>
+                            <label class="form-label" for="password">Contraseña</label>
+                            <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" required id="password">
                             @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Confirmar contraseña</label>
-                            <input type="password" name="password_confirmation" class="form-control" required>
+                            <label class="form-label" for="password_confirmation">Confirmar contraseña</label>
+                            <input type="password" name="password_confirmation" class="form-control" required id="password_confirmation">
                         </div>
                     </div>
                 </fieldset>
@@ -94,8 +94,8 @@
                         {{-- Los días asistidos siempre inician en 0 (lo fija el servidor) y la
                              huella se registra después desde el agente biométrico, no aquí. --}}
                         <div class="col-md-4">
-                            <label class="form-label">Estado</label>
-                            <select name="estado" class="" required>
+                            <label class="form-label" for="estado">Estado</label>
+                            <select name="estado" class="" required id="estado">
                                 <option value="activo"   @selected(old('estado','activo')=='activo')>Activo</option>
                                 <option value="inactivo" @selected(old('estado')=='inactivo')>Inactivo</option>
                             </select>

@@ -31,28 +31,28 @@
                     <h4 class="dark-text-white mt-3">Datos de Persona</h4>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Nombres</label>
-                            <input type="text" name="nombre_completo" class="form-control" value="{{ old('nombre_completo', $entrenador->persona->nombre_completo) }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="nombre_completo">Nombres</label>
+                            <input type="text" name="nombre_completo" class="form-control" value="{{ old('nombre_completo', $entrenador- id="nombre_completo">persona->nombre_completo) }}" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Apellido Paterno</label>
-                            <input type="text" name="apellido_paterno" class="form-control" value="{{ old('apellido_paterno', $entrenador->persona->apellido_paterno) }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="apellido_paterno">Apellido Paterno</label>
+                            <input type="text" name="apellido_paterno" class="form-control" value="{{ old('apellido_paterno', $entrenador- id="apellido_paterno">persona->apellido_paterno) }}" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Apellido Materno</label>
-                            <input type="text" name="apellido_materno" class="form-control" value="{{ old('apellido_materno', $entrenador->persona->apellido_materno) }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="apellido_materno">Apellido Materno</label>
+                            <input type="text" name="apellido_materno" class="form-control" value="{{ old('apellido_materno', $entrenador- id="apellido_materno">persona->apellido_materno) }}" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Cédula de Identidad</label>
-                            <input type="text" name="ci" class="form-control" value="{{ old('ci', $entrenador->persona->ci) }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="ci">Cédula de Identidad</label>
+                            <input type="text" name="ci" class="form-control" value="{{ old('ci', $entrenador- id="ci">persona->ci) }}" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white">Teléfono</label>
                             <x-phone-input :value="old('telefono', $entrenador->persona->telefono)" :required="true" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Género</label>
-                            <select name="genero" class="form-control" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="genero">Género</label>
+                            <select name="genero" class="form-control" required id="genero">
                                 <option value="">Seleccione</option>
                                 <option value="masculino" {{ old('genero', $entrenador->persona->genero)=='masculino'?'selected':'' }}>Masculino</option>
                                 <option value="femenino" {{ old('genero', $entrenador->persona->genero)=='femenino'?'selected':'' }}>Femenino</option>
@@ -60,8 +60,8 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Fecha de Nacimiento</label>
-                            <input type="date" name="fecha_nacimiento" class="form-control" value="{{ old('fecha_nacimiento', $entrenador->persona->fecha_nacimiento) }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="fecha_nacimiento">Fecha de Nacimiento</label>
+                            <input type="date" name="fecha_nacimiento" class="form-control" value="{{ old('fecha_nacimiento', $entrenador- id="fecha_nacimiento">persona->fecha_nacimiento) }}" required>
                         </div>
 
                         <!-- Foto (se muestra en la home pública) -->
@@ -91,23 +91,23 @@
                     <h4 class="dark-text-white mt-4">Datos de Usuario</h4>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Nombre de Usuario</label>
-                            <input type="text" name="name" class="form-control" value="{{ old('name', $entrenador->user->name) }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="name">Nombre de Usuario</label>
+                            <input type="text" name="name" class="form-control" value="{{ old('name', $entrenador- id="name">user->name) }}" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Email</label>
-                            <input type="email" name="email" class="form-control" value="{{ old('email', $entrenador->user->email) }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="email">Email</label>
+                            <input type="email" name="email" class="form-control" value="{{ old('email', $entrenador- id="email">user->email) }}" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Contraseña (opcional)</label>
-                            <input type="password" name="password" class="form-control" placeholder="Nueva contraseña">
+                            <label class="form-label fw-bold text-dark dark-text-white" for="password">Contraseña (opcional)</label>
+                            <input type="password" name="password" class="form-control" placeholder="Nueva contraseña" id="password">
                         </div>
                     </div>
 
                     <h4 class="dark-text-white mt-4">Datos del Entrenador</h4>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Especialidad</label>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="especialidad">Especialidad</label>
                             <select name="especialidad[]" id="especialidad" class="form-control" multiple required>
                                 @php
                                     $opcionesEspecialidad = [
@@ -130,12 +130,12 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Experiencia</label>
-                            <input type="text" name="experiencia" class="form-control" value="{{ old('experiencia', $entrenador->experiencia) }}">
+                            <label class="form-label fw-bold text-dark dark-text-white" for="experiencia">Experiencia</label>
+                            <input type="text" name="experiencia" class="form-control" value="{{ old('experiencia', $entrenador- id="experiencia">experiencia) }}">
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Disponibilidad</label>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="disponibilidad">Disponibilidad</label>
                             <select name="disponibilidad[]" id="disponibilidad" class="form-control" multiple required>
                                 @php
                                     $dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -148,8 +148,8 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Estado</label>
-                            <select name="estado" class="form-control" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="estado">Estado</label>
+                            <select name="estado" class="form-control" required id="estado">
                                 <option value="">Seleccione estado</option>
                                 <option value="activo" {{ old('estado', $entrenador->estado)=='activo'?'selected':'' }}>Activo</option>
                                 <option value="inactivo" {{ old('estado', $entrenador->estado)=='inactivo'?'selected':'' }}>Inactivo</option>

@@ -57,6 +57,19 @@ pero aplicable a cualquier VPS). Marcá cada paso a medida que lo completás.
     `B2_REGION`, `B2_BUCKET`, `B2_ENDPOINT` (ver
     [RESTAURACION.md](RESTAURACION.md) § "Configurar Backblaze B2") y
     `BACKUP_MAIL_TO` con el email que debe recibir alertas de backup fallido
+  - **`BACKUP_ARCHIVE_PASSWORD` — OBLIGATORIA antes de activar los backups a
+    la nube.** El dump incluye datos personales y huellas dactilares; sin
+    esta variable, el ZIP sube a Backblaze B2 sin cifrar. Pasos:
+    1. Generar una contraseña fuerte (gestor de contraseñas o
+       `openssl rand -base64 32`).
+    2. Ponerla en `BACKUP_ARCHIVE_PASSWORD` en el `.env` del servidor.
+    3. Guardar una copia de esa contraseña **fuera del servidor** (gestor de
+       contraseñas del dueño, papel en un lugar seguro, o drive privado) — si
+       se pierde, ningún backup existente se puede volver a abrir, no hay
+       forma de recuperarlos.
+    4. El cifrado lo activa automáticamente `spatie/laravel-backup` en cuanto
+       la variable tiene un valor (ver `'password' => env('BACKUP_ARCHIVE_PASSWORD')`
+       en `config/backup.php`) — no hace falta ningún otro cambio de código.
 
 ## 4. Aplicación: clave, migraciones y datos iniciales
 

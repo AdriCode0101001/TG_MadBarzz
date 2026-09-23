@@ -60,7 +60,7 @@ class NotificacionService
             try {
                 /** @var CanalNotificacion $canal */
                 $canal = app($this->canalesMap[$nombre]);
-                if ($canal->enviar($destino, $notificacion->mensaje)) {
+                if ($canal->enviar($destino, $notificacion->mensaje, (string) $cliente->id_cliente)) {
                     $canalesUsados[] = $nombre;
                 }
             } catch (\Exception $e) {

@@ -27,32 +27,32 @@
                     <h4 class="dark-text-white mt-3">Datos de la Persona</h4>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Nombres</label>
-                            <input type="text" name="nombre_completo" class="form-control @error('nombre_completo') is-invalid @enderror" value="{{ old('nombre_completo') }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="nombre_completo">Nombres</label>
+                            <input type="text" name="nombre_completo" class="form-control @error('nombre_completo') is-invalid @enderror" value="{{ old('nombre_completo') }}" required id="nombre_completo">
                             @error('nombre_completo')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Apellido Paterno</label>
-                            <input type="text" name="apellido_paterno" class="form-control @error('apellido_paterno') is-invalid @enderror" value="{{ old('apellido_paterno') }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="apellido_paterno">Apellido Paterno</label>
+                            <input type="text" name="apellido_paterno" class="form-control @error('apellido_paterno') is-invalid @enderror" value="{{ old('apellido_paterno') }}" required id="apellido_paterno">
                             @error('apellido_paterno')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Apellido Materno</label>
-                            <input type="text" name="apellido_materno" class="form-control @error('apellido_materno') is-invalid @enderror" value="{{ old('apellido_materno') }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="apellido_materno">Apellido Materno</label>
+                            <input type="text" name="apellido_materno" class="form-control @error('apellido_materno') is-invalid @enderror" value="{{ old('apellido_materno') }}" required id="apellido_materno">
                             @error('apellido_materno')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Cédula de Identidad</label>
-                            <input type="text" name="ci" class="form-control @error('ci') is-invalid @enderror" value="{{ old('ci') }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="ci">Cédula de Identidad</label>
+                            <input type="text" name="ci" class="form-control @error('ci') is-invalid @enderror" value="{{ old('ci') }}" required id="ci">
                             @error('ci')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -65,8 +65,8 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Género</label>
-                            <select name="genero" class="form-control @error('genero') is-invalid @enderror" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="genero">Género</label>
+                            <select name="genero" class="form-control @error('genero') is-invalid @enderror" required id="genero">
                                 <option value="">-- Seleccione --</option>
                                 <option value="masculino" {{ old('genero') == 'masculino' ? 'selected' : '' }}>Masculino</option>
                                 <option value="femenino" {{ old('genero') == 'femenino' ? 'selected' : '' }}>Femenino</option>
@@ -78,8 +78,8 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Fecha de Nacimiento</label>
-                            <input type="date" name="fecha_nacimiento" class="form-control @error('fecha_nacimiento') is-invalid @enderror" value="{{ old('fecha_nacimiento') }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="fecha_nacimiento">Fecha de Nacimiento</label>
+                            <input type="date" name="fecha_nacimiento" class="form-control @error('fecha_nacimiento') is-invalid @enderror" value="{{ old('fecha_nacimiento') }}" required id="fecha_nacimiento">
                             @error('fecha_nacimiento')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -89,40 +89,40 @@
                     <h4 class="dark-text-white mt-4">Datos del Usuario</h4>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Nombre de Usuario</label>
-                            <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="name">Nombre de Usuario</label>
+                            <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" required id="name">
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Email</label>
-                            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="email">Email</label>
+                            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" required id="email">
                             @error('email')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Contraseña</label>
-                            <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="password">Contraseña</label>
+                            <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" required id="password">
                             @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Confirmar Contraseña</label>
-                            <input type="password" name="password_confirmation" class="form-control" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="password_confirmation">Confirmar Contraseña</label>
+                            <input type="password" name="password_confirmation" class="form-control" required id="password_confirmation">
                         </div>
                     </div>
 
                     <h4 class="dark-text-white mt-4">Datos del Recepcionista</h4>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Turno</label>
-                            <select name="turno" class="form-control @error('turno') is-invalid @enderror" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="turno">Turno</label>
+                            <select name="turno" class="form-control @error('turno') is-invalid @enderror" required id="turno">
                                 <option value="">-- Seleccione --</option>
                                 <option value="mañana" {{ old('turno') == 'mañana' ? 'selected' : '' }}>Mañana</option>
                                 <option value="tarde" {{ old('turno') == 'tarde' ? 'selected' : '' }}>Tarde</option>
@@ -134,16 +134,16 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Punto de Atención</label>
-                            <input type="text" name="punto_atencion" class="form-control @error('punto_atencion') is-invalid @enderror" value="{{ old('punto_atencion') }}" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="punto_atencion">Punto de Atención</label>
+                            <input type="text" name="punto_atencion" class="form-control @error('punto_atencion') is-invalid @enderror" value="{{ old('punto_atencion') }}" required id="punto_atencion">
                             @error('punto_atencion')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark dark-text-white">Estado</label>
-                            <select name="estado" class="form-control @error('estado') is-invalid @enderror" required>
+                            <label class="form-label fw-bold text-dark dark-text-white" for="estado">Estado</label>
+                            <select name="estado" class="form-control @error('estado') is-invalid @enderror" required id="estado">
                                 <option value="">-- Seleccione --</option>
                                 <option value="activo" {{ old('estado') == 'activo' ? 'selected' : '' }}>Activo</option>
                                 <option value="inactivo" {{ old('estado') == 'inactivo' ? 'selected' : '' }}>Inactivo</option>

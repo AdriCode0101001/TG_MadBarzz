@@ -16,12 +16,13 @@ use Illuminate\View\View;
 class RegisteredUserController extends Controller
 {
     /**
-     * Etapa 4: edad mínima para auto-registrarse sin intervención del
-     * personal. El alta que hace el personal (ClienteController) no tiene
-     * este piso — ahí hay un humano al lado que puede usar criterio; acá
-     * no, así que el servidor lo aplica.
+     * Edad mínima para auto-registrarse sin intervención del personal: el
+     * auto-registro web es SOLO para adultos (18+). Los menores de edad los
+     * inscribe el personal presencialmente en el gimnasio (ClienteController,
+     * que no tiene este piso — ahí hay un humano al lado y, para biometría de
+     * menores, se exige consentimiento del tutor registrado).
      */
-    private const EDAD_MINIMA = 14;
+    private const EDAD_MINIMA = 18;
 
     /**
      * Display the registration view (pantalla combinada login + registro,

@@ -21,10 +21,10 @@
                 <form action="{{ route('membresias.store') }}" method="POST">
                     @csrf
                     <div class="mb-4">
-                        <label class="form-label fw-semibold">Tipo de membresía</label>
+                        <label class="form-label fw-semibold" for="tipo_membresia">Tipo de membresía</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fa-solid fa-ticket"></i></span>
-                            <input type="text" name="tipo_membresia" class="form-control @error('tipo_membresia') is-invalid @enderror"
+                            <input type="text" name="tipo_membresia" id="tipo_membresia" class="form-control @error('tipo_membresia') is-invalid @enderror"
                                    placeholder="Ej. Mensual, Trimestral, Anual…"
                                    value="{{ old('tipo_membresia') }}" required>
                             @error('tipo_membresia')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -32,10 +32,10 @@
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label fw-semibold">Precio (Bs)</label>
+                        <label class="form-label fw-semibold" for="precio">Precio (Bs)</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fa-solid fa-bolivar-sign">Bs.</i></span>
-                            <input type="number" step="0.01" min="0" name="precio" class="form-control @error('precio') is-invalid @enderror"
+                            <input type="number" step="0.01" min="0" name="precio" id="precio" class="form-control @error('precio') is-invalid @enderror"
                                    placeholder="0.00"
                                    value="{{ old('precio') }}" required>
                             @error('precio')<div class="invalid-feedback">{{ $message }}</div>@enderror

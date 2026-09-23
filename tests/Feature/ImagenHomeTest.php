@@ -194,10 +194,12 @@ class ImagenHomeTest extends TestCase
     {
         Storage::fake('public');
 
+        // El placeholder es un SVG local (images/placeholder-home.svg) desde
+        // el arreglo de privacidad que sacó la dependencia de
+        // via.placeholder.com — ver welcome-gymon.blade.php.
         $this->get('/')
              ->assertStatus(200)
-             ->assertSee('https://via.placeholder.com/1920x770', false)
-             ->assertSee('https://via.placeholder.com/858x597', false);
+             ->assertSee('images/placeholder-home.svg', false);
     }
 
     public function test_la_home_publica_muestra_la_imagen_subida_en_vez_del_placeholder(): void
@@ -211,8 +213,7 @@ class ImagenHomeTest extends TestCase
 
         $this->get('/')
              ->assertStatus(200)
-             ->assertSee($urlEsperada, false)
-             ->assertDontSee('https://via.placeholder.com/858x597', false);
+             ->assertSee($urlEsperada, false);
     }
 
     // ── 5. Reencuadre (posición del recorte) ─────────────────────────────────

@@ -65,8 +65,8 @@
 
                             {{-- La fecha del pago no se edita: se conserva la del registro --}}
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark dark-text-white">Fecha de pago (del registro)</label>
-                                <input type="text" class="form-control" value="{{ \Carbon\Carbon::parse($pago->fecha_pago)->format('d/m/Y') }}" readonly disabled>
+                                <label class="form-label fw-bold text-dark dark-text-white" for="fecha_pago_info">Fecha de pago (del registro)</label>
+                                <input type="text" id="fecha_pago_info" class="form-control" value="{{ \Carbon\Carbon::parse($pago->fecha_pago)->format('d/m/Y') }}" readonly disabled>
                             </div>
 
                             {{-- Método de pago: solo Efectivo y QR --}}

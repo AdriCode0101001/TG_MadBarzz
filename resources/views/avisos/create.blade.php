@@ -27,16 +27,16 @@
                         @csrf
 
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Título</label>
+                            <label class="form-label fw-semibold" for="titulo">Título</label>
                             <input type="text" name="titulo" class="form-control @error('titulo') is-invalid @enderror"
-                                   value="{{ old('titulo') }}" maxlength="150" required>
+                                   value="{{ old('titulo') }}" maxlength="150" required id="titulo">
                             @error('titulo')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Texto</label>
+                            <label class="form-label fw-semibold" for="texto">Texto</label>
                             <textarea name="texto" class="form-control @error('texto') is-invalid @enderror"
-                                      rows="4" maxlength="2000" required>{{ old('texto') }}</textarea>
+                                      rows="4" maxlength="2000" required id="texto">{{ old('texto') }}</textarea>
                             @error('texto')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 

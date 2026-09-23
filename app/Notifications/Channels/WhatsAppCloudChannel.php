@@ -3,6 +3,7 @@
 namespace App\Notifications\Channels;
 
 use App\Contracts\CanalNotificacion;
+use App\Support\Redactor;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -18,7 +19,7 @@ class WhatsAppCloudChannel implements CanalNotificacion
      *   WHATSAPP_CLOUD_PHONE_ID  → Phone Number ID del panel de Meta
      *   WHATSAPP_CLOUD_TOKEN     → Access Token permanente de Meta
      */
-    public function enviar(string $destino, string $mensaje): bool
+    public function enviar(string $destino, string $mensaje, ?string $idCliente = null): bool
     {
         $phoneId = config('services.whatsapp_cloud.phone_number_id');
         $token   = config('services.whatsapp_cloud.token');
@@ -44,13 +45,15 @@ class WhatsAppCloudChannel implements CanalNotificacion
                 ]);
 
             if (!$response->successful()) {
-                Log::warning("WhatsAppCloudChannel: error para {$numero}: " . $response->body());
+                $identificador = Redactor::identificarParaLog($idCliente, $numero);
+                Log::warning("WhatsAppCloudChannel: error para {$identificador}: " . $response->body());
                 return false;
             }
 
             return true;
         } catch (\Exception $e) {
-            Log::warning("WhatsAppCloudChannel: excepción enviando a {$numero}: {$e->getMessage()}");
+            $identificador = Redactor::identificarParaLog($idCliente, $numero);
+            Log::warning("WhatsAppCloudChannel: excepción enviando a {$identificador}: {$e->getMessage()}");
             return false;
         }
     }
