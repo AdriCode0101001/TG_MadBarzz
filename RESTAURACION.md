@@ -2,6 +2,13 @@
 
 > **Prueba periódica recomendada:** este procedimiento debe ejecutarse en una máquina de prueba al menos una vez cada 3 meses para verificar que los respaldos son válidos y que el proceso funciona correctamente.
 
+> ⚠️ **Antes de tocar nada: ¿es una instalación nueva o estás recuperando un sistema existente?**
+> Si el sistema que estás restaurando llegó a tener datos cifrados con la `APP_KEY` (a partir del
+> cifrado de huellas dactilares del Grupo 2 de la auditoría — mientras tanto, hoy nada usa cifrado
+> reversible todavía), **generar una `APP_KEY` nueva vuelve esos datos ilegibles para siempre, sin
+> forma de recuperarlos**. La sección 5 más abajo separa los dos casos (instalación realmente nueva
+> vs. recuperar uno existente) — leela ANTES de correr `php artisan key:generate`.
+
 ---
 
 ## 1. Ubicación de los respaldos
@@ -32,6 +39,26 @@ php artisan backup:list
 - MySQL/MariaDB accesible
 - `unzip` (Linux) o cualquier descompresor ZIP (Windows)
 - Credenciales de la base de datos
+- Si el ZIP del backup está cifrado: la contraseña `BACKUP_ARCHIVE_PASSWORD` (ver sección 3a)
+- **Si estás recuperando un sistema que ya existía** (no una instalación nueva desde cero): la
+  `APP_KEY` ORIGINAL de ese sistema, guardada aparte del backup (ver § "Secretos críticos" abajo y
+  sección 5b). Sin ella, no hace falta para leer la base de datos en sí, pero sí para cualquier dato
+  que se haya cifrado con el cast `encrypted` de Laravel (a futuro, la plantilla de huella dactilar).
+
+### Secretos críticos que hay que tener a mano ANTES de restaurar
+
+Dos valores, si no los tenés guardados aparte del backup, pueden hacer que la restauración sea
+inútil o que se pierdan datos que no se pueden recuperar de ninguna otra forma:
+
+- **`BACKUP_ARCHIVE_PASSWORD`** — sin ella no podés abrir el ZIP del backup si está cifrado.
+- **`APP_KEY`** — la clave original con la que Laravel cifró los datos sensibles de esa instalación
+  (a futuro: huellas dactilares). Restaurar la base de datos con una `APP_KEY` distinta a la que
+  cifró esos datos los deja ilegibles para siempre — no es un problema que se resuelva reintentando
+  ni con soporte técnico.
+
+Ambos deberían estar guardados por el dueño del gimnasio en un lugar seguro y separado del propio
+backup (gestor de contraseñas, papel, drive privado) — ver también
+[DESPLIEGUE.md](DESPLIEGUE.md) § "Secretos críticos que el dueño debe custodiar".
 
 ---
 
@@ -109,7 +136,39 @@ chown -R www-data:www-data storage/app/private/
 
 ---
 
-## 5. Restaurar en un servidor nuevo (instalación fresca)
+## 5. Restaurar en un servidor nuevo
+
+Hay DOS escenarios distintos acá, y confundirlos es el error más caro de todo este documento:
+
+- **5a — Instalación realmente nueva**: un gimnasio/instancia que arranca de cero, sin backup previo
+  que restaurar (no aplica esta sección "5" en general, pero se incluye la generación de `APP_KEY`
+  para dejarlo explícito).
+- **5b — Recuperar un sistema EXISTENTE** en un servidor nuevo (el caso real de esta guía: el
+  servidor viejo se rompió, se migra de proveedor, etc.) — hay un backup de por medio y por lo tanto
+  hay que preservar la `APP_KEY` original, NO generar una nueva.
+
+### 5a. Instalación nueva, sin datos que restaurar
+
+Solo si es la primera vez que este sistema corre en cualquier lado (no hay backup, no hay clientes
+cargados todavía):
+
+```bash
+git clone <repo-url> madbarzz
+cd madbarzz
+composer install --no-dev --optimize-autoloader
+npm install && npm run build
+cp .env.example .env
+php artisan key:generate
+# Edita .env con las credenciales de DB, mail, S3, etc.
+php artisan migrate --force
+```
+
+Acá `key:generate` es correcto: todavía no existe ningún dato cifrado con ninguna clave, así que no
+hay nada que se vuelva ilegible.
+
+### 5b. Recuperar un sistema existente (el caso de un backup real)
+
+Este es el procedimiento cuando SÍ hay un backup de por medio — el escenario típico de esta guía.
 
 1. Clona el repositorio:
    ```bash
@@ -126,9 +185,14 @@ chown -R www-data:www-data storage/app/private/
 3. Configura el entorno:
    ```bash
    cp .env.example .env
-   php artisan key:generate
    # Edita .env con las credenciales de DB, mail, S3, etc.
    ```
+   ⚠️ **NO corras `php artisan key:generate` acá.** En vez de generar una clave nueva, pegá la
+   `APP_KEY` ORIGINAL de la instancia que estás recuperando (la que guardaste aparte del backup, ver
+   § "Secretos críticos" en la sección 2) directamente en la línea `APP_KEY=` del `.env` nuevo.
+   Generar una clave nueva sobre datos que ya existían con la clave vieja vuelve ilegible para
+   siempre cualquier dato cifrado con el cast `encrypted` de Laravel (a futuro: la plantilla de
+   huella dactilar del cliente) — no es reversible ni con soporte técnico ni con más backups.
 
 4. Crea la base de datos vacía e importa el backup (ver sección 3).
 
@@ -191,6 +255,10 @@ En una máquina de prueba separada, verificar:
 - [ ] Extraer y verificar que el SQL no está vacío (`wc -l` o tamaño > 0)
 - [ ] Importar la BD en un servidor de prueba y verificar tablas
 - [ ] Restaurar `storage/app/private/` y verificar que las imágenes cargan
+- [ ] Usar la `APP_KEY` ORIGINAL de producción en el `.env` de prueba (sección 5b) — **no generar una
+  nueva con `key:generate`**, ni siquiera en esta máquina de prueba: si algún dato ya está cifrado con
+  el cast `encrypted` (a futuro, huellas dactilares), esta es la forma de confirmar que el
+  procedimiento de restauración realmente lo deja legible, no solo que la BD importó.
 - [ ] Ejecutar `php artisan migrate:status` — no debe haber migraciones pendientes desconocidas
 - [ ] Navegar la app y confirmar que el login, dashboard y datos funcionan
 - [ ] Documentar la fecha de la prueba y quién la realizó

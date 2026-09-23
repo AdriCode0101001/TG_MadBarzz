@@ -39,7 +39,11 @@ pero aplicable a cualquier VPS). Marcá cada paso a medida que lo completás.
   - `APP_DEBUG=false` (el `.env.example` ya trae este valor por defecto — no
     tocarlo)
   - `APP_URL=https://tudominio.com` (dominio real, con https)
-  - `APP_KEY` — generar con `php artisan key:generate` (paso 4)
+  - `APP_KEY` — **⚠️ leé primero la sección "Secretos críticos" más abajo antes de tocar esto.**
+    Se genera con `php artisan key:generate` (paso 4) SOLO si este servidor es una instalación nueva
+    sin datos que restaurar. Si estás migrando o recuperando un sistema que ya existía, hay que
+    restaurar la `APP_KEY` ORIGINAL en vez de generar una — ver
+    [RESTAURACION.md](RESTAURACION.md) § 5b.
   - `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` reales
   - `MAIL_MAILER` y credenciales reales (no `log`) — necesario para
     verificación de email y avisos
@@ -71,12 +75,46 @@ pero aplicable a cualquier VPS). Marcá cada paso a medida que lo completás.
        la variable tiene un valor (ver `'password' => env('BACKUP_ARCHIVE_PASSWORD')`
        en `config/backup.php`) — no hace falta ningún otro cambio de código.
 
+### Secretos críticos que el dueño debe custodiar
+
+Dos valores del `.env` de producción, si se pierden o se cambian sin querer, causan una pérdida de
+datos **irreversible** — no hay forma de recuperarlos después, ni con soporte técnico ni con más
+backups. El dueño del gimnasio (no solo quien administra el servidor) debería tener una copia de
+ambos en un lugar seguro y **separado** de donde se guardan los backups de la base de datos —
+guardar una clave junto con lo que esa clave protege anula la protección.
+
+- **`APP_KEY`** — la clave con la que Laravel cifra los datos sensibles reversibles en la base de
+  datos (a futuro: la plantilla de huella dactilar, una vez aplicado el cifrado planeado en el
+  Grupo 2 de la auditoría — hoy todavía no hay ningún dato usando el cast `encrypted`). Si `APP_KEY`
+  cambia después de que haya datos cifrados con la clave anterior, esos datos quedan **ilegibles
+  para siempre**: no es "la perdí y genero otra", es criptográficamente irrecuperable. Una vez en
+  producción con datos cifrados:
+  - **Nunca correr `php artisan key:generate` de nuevo** sobre esa instalación.
+  - Guardar una copia de la línea completa `APP_KEY=...` del `.env` en un gestor de contraseñas, en
+    papel en un lugar seguro, o en un drive privado del dueño — nunca solo en el servidor ni dentro
+    de un backup de la base de datos.
+  - Si alguna vez hay que recuperar el sistema en otro servidor, hay que restaurar esa misma
+    `APP_KEY`, no generar una nueva — ver [RESTAURACION.md](RESTAURACION.md) § 5b.
+- **`BACKUP_ARCHIVE_PASSWORD`** — la contraseña que cifra el ZIP de cada backup antes de subirlo a
+  Backblaze B2 (ver arriba). Si se pierde, ningún backup existente se puede volver a abrir. Mismo
+  criterio de resguardo que `APP_KEY`: copia aparte, fuera del servidor.
+
+Ninguno de estos dos valores debería vivir solo en el `.env` del servidor: si el servidor se pierde
+(falla de hardware, ransomware, error humano), se pierde también la única copia, y con ella el
+acceso a los datos que protegen.
+
 ## 4. Aplicación: clave, migraciones y datos iniciales
 
-- [ ] Generar la clave de la aplicación:
+- [ ] Generar la clave de la aplicación — **SOLO si este es un servidor nuevo sin datos previos que
+  restaurar**:
   ```bash
   php artisan key:generate
   ```
+  ⚠️ Si en cambio estás migrando o recuperando un sistema que ya existía (hay un backup de por
+  medio), **NO corras este comando** — restaurá la `APP_KEY` original en el `.env` en su lugar (ver
+  la sección "Secretos críticos" arriba y [RESTAURACION.md](RESTAURACION.md) § 5b). Generar una
+  clave nueva sobre datos que ya tenían algo cifrado con la clave vieja los vuelve ilegibles para
+  siempre.
 - [ ] Migrar la base de datos (**nunca con `--seed`** — cargaría datos falsos
   y contraseñas fijas de demo en producción):
   ```bash
