@@ -114,7 +114,9 @@ public function index(Request $request)
     // EDIT
     public function edit($id)
     {
-        $cliente = Cliente::with(['persona', 'user'])->findOrFail($id);
+        // 'huellas' cargada para la sección de biometría (borrado, Admin
+        // únicamente) — ver clientes/edit.blade.php y HuellaController.
+        $cliente = Cliente::with(['persona', 'user', 'huellas'])->findOrFail($id);
 
         if (!$cliente->persona || !$cliente->user) {
             return redirect()->route('clientes.index')->with('error', 'Este cliente no tiene relaciones completas.');

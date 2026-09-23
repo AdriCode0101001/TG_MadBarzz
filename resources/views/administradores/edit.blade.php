@@ -31,19 +31,19 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="nombre_completo">Nombres</label>
-                            <input type="text" name="nombre_completo" class="form-control" value="{{ old('nombre_completo', $administrador- id="nombre_completo">persona->nombre_completo) }}" required>
+                            <input type="text" name="nombre_completo" id="nombre_completo" class="form-control" value="{{ old('nombre_completo', $administrador->persona->nombre_completo) }}" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="apellido_paterno">Apellido Paterno</label>
-                            <input type="text" name="apellido_paterno" class="form-control" value="{{ old('apellido_paterno', $administrador- id="apellido_paterno">persona->apellido_paterno) }}" required>
+                            <input type="text" name="apellido_paterno" id="apellido_paterno" class="form-control" value="{{ old('apellido_paterno', $administrador->persona->apellido_paterno) }}" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="apellido_materno">Apellido Materno</label>
-                            <input type="text" name="apellido_materno" class="form-control" value="{{ old('apellido_materno', $administrador- id="apellido_materno">persona->apellido_materno) }}" required>
+                            <input type="text" name="apellido_materno" id="apellido_materno" class="form-control" value="{{ old('apellido_materno', $administrador->persona->apellido_materno) }}" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="ci">Cédula de Identidad</label>
-                            <input type="text" name="ci" class="form-control" value="{{ old('ci', $administrador- id="ci">persona->ci) }}" required>
+                            <input type="text" name="ci" id="ci" class="form-control" value="{{ old('ci', $administrador->persona->ci) }}" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white">Teléfono</label>
@@ -60,7 +60,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="fecha_nacimiento">Fecha de Nacimiento</label>
-                            <input type="date" name="fecha_nacimiento" class="form-control" value="{{ old('fecha_nacimiento', $administrador- id="fecha_nacimiento">persona->fecha_nacimiento) }}" required>
+                            <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" class="form-control" value="{{ old('fecha_nacimiento', $administrador->persona->fecha_nacimiento) }}" required>
                         </div>
                     </div>
 
@@ -68,11 +68,11 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="name">Nombre de Usuario</label>
-                            <input type="text" name="name" class="form-control" value="{{ old('name', $administrador- id="name">user->name) }}" required>
+                            <input type="text" name="name" id="name" class="form-control" value="{{ old('name', $administrador->user->name) }}" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="email">Email</label>
-                            <input type="email" name="email" class="form-control" value="{{ old('email', $administrador- id="email">user->email) }}" required>
+                            <input type="email" name="email" id="email" class="form-control" value="{{ old('email', $administrador->user->email) }}" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="password">Contraseña (opcional)</label>
@@ -92,7 +92,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="area_responsable">Área Responsable</label>
-                            <input type="text" name="area_responsable" class="form-control" value="{{ old('area_responsable', $administrador- id="area_responsable">area_responsable) }}">
+                            <input type="text" name="area_responsable" id="area_responsable" class="form-control" value="{{ old('area_responsable', $administrador->area_responsable) }}">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="estado">Estado</label>

@@ -10,6 +10,7 @@ use App\Models\ConfiguracionImagen;
 use App\Models\Descuento;
 use App\Models\Entrenador;
 use App\Models\HorarioEntrenador;
+use App\Models\Huella;
 use App\Models\Membresia;
 use App\Models\MembresiaCliente;
 use App\Models\Pago;
@@ -64,6 +65,10 @@ class BitacoraService
         Aviso::class               => ['el', 'aviso'],
         QrPago::class              => ['el', 'QR de pago'],
         ConfiguracionImagen::class => ['la', 'imagen de la home'],
+        // Borrado registrado a mano en HuellaController (forceDelete() no
+        // dispara el 'deleted' automático de LogsActivity) — nunca incluye
+        // el template en sí, solo dedo/id_cliente/version_formato.
+        Huella::class              => ['la', 'huella dactilar'],
     ];
 
     /** Nombre técnico de campo => etiqueta legible en español. */
@@ -134,6 +139,7 @@ class BitacoraService
         'metodo_pago'         => 'Método de pago',
         'observaciones'       => 'Observaciones',
         'imagen_qr'           => 'Comprobante (imagen)',
+        'version_formato'     => 'Versión del formato (huella)',
     ];
 
     /** Tablas de personal a revisar, en orden, para resolver el nombre real de un User (igual criterio que User::nombreCompletoConApellido()). */

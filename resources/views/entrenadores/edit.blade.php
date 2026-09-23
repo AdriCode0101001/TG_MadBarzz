@@ -32,19 +32,19 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="nombre_completo">Nombres</label>
-                            <input type="text" name="nombre_completo" class="form-control" value="{{ old('nombre_completo', $entrenador- id="nombre_completo">persona->nombre_completo) }}" required>
+                            <input type="text" name="nombre_completo" id="nombre_completo" class="form-control" value="{{ old('nombre_completo', $entrenador->persona->nombre_completo) }}" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="apellido_paterno">Apellido Paterno</label>
-                            <input type="text" name="apellido_paterno" class="form-control" value="{{ old('apellido_paterno', $entrenador- id="apellido_paterno">persona->apellido_paterno) }}" required>
+                            <input type="text" name="apellido_paterno" id="apellido_paterno" class="form-control" value="{{ old('apellido_paterno', $entrenador->persona->apellido_paterno) }}" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="apellido_materno">Apellido Materno</label>
-                            <input type="text" name="apellido_materno" class="form-control" value="{{ old('apellido_materno', $entrenador- id="apellido_materno">persona->apellido_materno) }}" required>
+                            <input type="text" name="apellido_materno" id="apellido_materno" class="form-control" value="{{ old('apellido_materno', $entrenador->persona->apellido_materno) }}" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="ci">Cédula de Identidad</label>
-                            <input type="text" name="ci" class="form-control" value="{{ old('ci', $entrenador- id="ci">persona->ci) }}" required>
+                            <input type="text" name="ci" id="ci" class="form-control" value="{{ old('ci', $entrenador->persona->ci) }}" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white">Teléfono</label>
@@ -61,7 +61,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="fecha_nacimiento">Fecha de Nacimiento</label>
-                            <input type="date" name="fecha_nacimiento" class="form-control" value="{{ old('fecha_nacimiento', $entrenador- id="fecha_nacimiento">persona->fecha_nacimiento) }}" required>
+                            <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" class="form-control" value="{{ old('fecha_nacimiento', $entrenador->persona->fecha_nacimiento) }}" required>
                         </div>
 
                         <!-- Foto (se muestra en la home pública) -->
@@ -92,11 +92,11 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="name">Nombre de Usuario</label>
-                            <input type="text" name="name" class="form-control" value="{{ old('name', $entrenador- id="name">user->name) }}" required>
+                            <input type="text" name="name" id="name" class="form-control" value="{{ old('name', $entrenador->user->name) }}" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="email">Email</label>
-                            <input type="email" name="email" class="form-control" value="{{ old('email', $entrenador- id="email">user->email) }}" required>
+                            <input type="email" name="email" id="email" class="form-control" value="{{ old('email', $entrenador->user->email) }}" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="password">Contraseña (opcional)</label>
@@ -131,7 +131,7 @@
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="experiencia">Experiencia</label>
-                            <input type="text" name="experiencia" class="form-control" value="{{ old('experiencia', $entrenador- id="experiencia">experiencia) }}">
+                            <input type="text" name="experiencia" id="experiencia" class="form-control" value="{{ old('experiencia', $entrenador->experiencia) }}">
                         </div>
 
                         <div class="col-md-6">

@@ -29,22 +29,22 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="nombre_completo">Nombres</label>
-                            <input type="text" name="nombre_completo" class="form-control" value="{{ old('nombre_completo', $recepcionista- id="nombre_completo">persona->nombre_completo) }}" required>
+                            <input type="text" name="nombre_completo" id="nombre_completo" class="form-control" value="{{ old('nombre_completo', $recepcionista->persona->nombre_completo) }}" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="apellido_paterno">Apellido Paterno</label>
-                            <input type="text" name="apellido_paterno" class="form-control" value="{{ old('apellido_paterno', $recepcionista- id="apellido_paterno">persona->apellido_paterno) }}" required>
+                            <input type="text" name="apellido_paterno" id="apellido_paterno" class="form-control" value="{{ old('apellido_paterno', $recepcionista->persona->apellido_paterno) }}" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="apellido_materno">Apellido Materno</label>
-                            <input type="text" name="apellido_materno" class="form-control" value="{{ old('apellido_materno', $recepcionista- id="apellido_materno">persona->apellido_materno) }}" required>
+                            <input type="text" name="apellido_materno" id="apellido_materno" class="form-control" value="{{ old('apellido_materno', $recepcionista->persona->apellido_materno) }}" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="ci">Cédula de Identidad</label>
-                            <input type="text" name="ci" class="form-control" value="{{ old('ci', $recepcionista- id="ci">persona->ci) }}" required>
+                            <input type="text" name="ci" id="ci" class="form-control" value="{{ old('ci', $recepcionista->persona->ci) }}" required>
                         </div>
 
                         <div class="col-md-6">
@@ -63,7 +63,7 @@
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="fecha_nacimiento">Fecha de Nacimiento</label>
-                            <input type="date" name="fecha_nacimiento" class="form-control" value="{{ old('fecha_nacimiento', $recepcionista- id="fecha_nacimiento">persona->fecha_nacimiento) }}" required>
+                            <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" class="form-control" value="{{ old('fecha_nacimiento', $recepcionista->persona->fecha_nacimiento) }}" required>
                         </div>
                     </div>
 
@@ -71,12 +71,12 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="name">Nombre de Usuario</label>
-                            <input type="text" name="name" class="form-control" value="{{ old('name', $recepcionista- id="name">user->name) }}" required>
+                            <input type="text" name="name" id="name" class="form-control" value="{{ old('name', $recepcionista->user->name) }}" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="email">Email</label>
-                            <input type="email" name="email" class="form-control" value="{{ old('email', $recepcionista- id="email">user->email) }}" required>
+                            <input type="email" name="email" id="email" class="form-control" value="{{ old('email', $recepcionista->user->email) }}" required>
                         </div>
 
                         <div class="col-md-6">
@@ -98,7 +98,7 @@
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="punto_atencion">Punto de Atención</label>
-                            <input type="text" name="punto_atencion" class="form-control" value="{{ old('punto_atencion', $recepcionista- id="punto_atencion">punto_atencion) }}" required>
+                            <input type="text" name="punto_atencion" id="punto_atencion" class="form-control" value="{{ old('punto_atencion', $recepcionista->punto_atencion) }}" required>
                         </div>
 
                         <div class="col-md-6">

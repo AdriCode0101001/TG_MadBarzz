@@ -31,6 +31,7 @@ use App\Http\Controllers\ImagenHomeController;
 use App\Http\Controllers\AvisoController;
 use App\Http\Controllers\BitacoraController;
 use App\Http\Controllers\LoginLockoutController;
+use App\Http\Controllers\HuellaController;
 
 // -----------------------------------------------------------------------
 // Página de inicio pública: home real en diseño GymOn dark. La home vieja
@@ -176,6 +177,13 @@ Route::middleware(['auth', 'role:Administrador'])->group(function () {
     // Borrar personal: solo Admin (Recepcionista solo ve/crea/edita)
     Route::delete('entrenadores/{id}',   [EntrenadorController::class,    'destroy'])->name('entrenadores.destroy');
     Route::delete('recepcionistas/{id}', [RecepcionistaController::class, 'destroy'])->name('recepcionistas.destroy');
+
+    // Borrado de huellas dactilares (Grupo 2 / Etapa 3 de la auditoría de
+    // privacidad): dato biométrico, derecho al olvido — solo Admin, y la
+    // protección real es este middleware de ruta, no el botón oculto en la
+    // vista. Ver HuellaController (borrado REAL con forceDelete()).
+    Route::delete('clientes/{cliente}/huellas/{huella}', [HuellaController::class, 'destroy'])->name('clientes.huellas.destroy');
+    Route::delete('clientes/{cliente}/huellas', [HuellaController::class, 'destroyTodas'])->name('clientes.huellas.destroy_todas');
 
     // QR de pago único del gimnasio: solo el Administrador lo configura/reemplaza
     Route::get('configuracion/qr-pago',  [QrPagoController::class, 'edit'])  ->name('qr_pago.edit');
