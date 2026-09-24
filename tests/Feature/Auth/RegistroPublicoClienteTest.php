@@ -69,6 +69,7 @@ class RegistroPublicoClienteTest extends TestCase
             'email'                 => "registro{$s}@test.com",
             'password'              => 'Contrasena123',
             'password_confirmation' => 'Contrasena123',
+            'acepto_terminos'       => '1',
         ], $extra);
     }
 
@@ -255,6 +256,7 @@ class RegistroPublicoClienteTest extends TestCase
         $respuesta->assertSee('name="email"', false);
         $respuesta->assertSee('name="password"', false);
         $respuesta->assertSee('name="password_confirmation"', false);
+        $respuesta->assertSee('name="acepto_terminos"', false);
     }
 
     public function test_la_vista_de_registro_solo_lista_sedes_activas(): void

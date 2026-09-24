@@ -82,6 +82,9 @@
                     </div>
                 </fieldset>
 
+                {{-- ---------- Consentimiento de huella (Grupo 3 legal, parte 2) ---------- --}}
+                <x-consentimiento-huella :cliente="$cliente" />
+
                 {{-- ---------- Datos del cliente ---------- --}}
                 <fieldset class="mb-field-group">
                     <legend class="mb-field-legend"><i class="fa-solid fa-dumbbell"></i> Datos del cliente</legend>
@@ -90,7 +93,8 @@
                             <label class="form-label" for="dias_asistidos">Días asistidos</label>
                             <input type="number" name="dias_asistidos" id="dias_asistidos" class="form-control" value="{{ old('dias_asistidos', $cliente->dias_asistidos ?? 0) }}" min="0" required>
                         </div>
-                        {{-- La huella se registra desde el agente biométrico con el lector, no desde la web --}}
+                        {{-- La plantilla de huella en sí se enrola desde el agente biométrico con el
+                             lector, no desde la web — acá solo el consentimiento (arriba). --}}
                         <div class="col-md-4">
                             <label class="form-label" for="estado">Estado</label>
                             <select name="estado" class="" required id="estado">

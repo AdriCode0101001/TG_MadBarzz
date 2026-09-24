@@ -3,11 +3,11 @@
 > **Prueba periódica recomendada:** este procedimiento debe ejecutarse en una máquina de prueba al menos una vez cada 3 meses para verificar que los respaldos son válidos y que el proceso funciona correctamente.
 
 > ⚠️ **Antes de tocar nada: ¿es una instalación nueva o estás recuperando un sistema existente?**
-> Si el sistema que estás restaurando llegó a tener datos cifrados con la `APP_KEY` (a partir del
-> cifrado de huellas dactilares del Grupo 2 de la auditoría — mientras tanto, hoy nada usa cifrado
-> reversible todavía), **generar una `APP_KEY` nueva vuelve esos datos ilegibles para siempre, sin
-> forma de recuperarlos**. La sección 5 más abajo separa los dos casos (instalación realmente nueva
-> vs. recuperar uno existente) — leela ANTES de correr `php artisan key:generate`.
+> Las plantillas de huella dactilar (`huellas.template`) se guardan cifradas con la `APP_KEY`
+> (cast `encrypted` de Laravel, desde el Grupo 2 de la auditoría). Si el sistema que estás
+> restaurando ya tiene huellas enroladas, **generar una `APP_KEY` nueva vuelve esos datos ilegibles
+> para siempre, sin forma de recuperarlos**. La sección 5 más abajo separa los dos casos (instalación
+> realmente nueva vs. recuperar uno existente) — leela ANTES de correr `php artisan key:generate`.
 
 ---
 
@@ -42,8 +42,8 @@ php artisan backup:list
 - Si el ZIP del backup está cifrado: la contraseña `BACKUP_ARCHIVE_PASSWORD` (ver sección 3a)
 - **Si estás recuperando un sistema que ya existía** (no una instalación nueva desde cero): la
   `APP_KEY` ORIGINAL de ese sistema, guardada aparte del backup (ver § "Secretos críticos" abajo y
-  sección 5b). Sin ella, no hace falta para leer la base de datos en sí, pero sí para cualquier dato
-  que se haya cifrado con el cast `encrypted` de Laravel (a futuro, la plantilla de huella dactilar).
+  sección 5b). Sin ella, no hace falta para leer la base de datos en sí, pero sí para las plantillas
+  de huella dactilar, que se guardan cifradas con el cast `encrypted` de Laravel.
 
 ### Secretos críticos que hay que tener a mano ANTES de restaurar
 
@@ -52,7 +52,7 @@ inútil o que se pierdan datos que no se pueden recuperar de ninguna otra forma:
 
 - **`BACKUP_ARCHIVE_PASSWORD`** — sin ella no podés abrir el ZIP del backup si está cifrado.
 - **`APP_KEY`** — la clave original con la que Laravel cifró los datos sensibles de esa instalación
-  (a futuro: huellas dactilares). Restaurar la base de datos con una `APP_KEY` distinta a la que
+  (las plantillas de huella dactilar). Restaurar la base de datos con una `APP_KEY` distinta a la que
   cifró esos datos los deja ilegibles para siempre — no es un problema que se resuelva reintentando
   ni con soporte técnico.
 
@@ -191,8 +191,8 @@ Este es el procedimiento cuando SÍ hay un backup de por medio — el escenario 
    `APP_KEY` ORIGINAL de la instancia que estás recuperando (la que guardaste aparte del backup, ver
    § "Secretos críticos" en la sección 2) directamente en la línea `APP_KEY=` del `.env` nuevo.
    Generar una clave nueva sobre datos que ya existían con la clave vieja vuelve ilegible para
-   siempre cualquier dato cifrado con el cast `encrypted` de Laravel (a futuro: la plantilla de
-   huella dactilar del cliente) — no es reversible ni con soporte técnico ni con más backups.
+   siempre cualquier dato cifrado con el cast `encrypted` de Laravel (la plantilla de huella
+   dactilar del cliente) — no es reversible ni con soporte técnico ni con más backups.
 
 4. Crea la base de datos vacía e importa el backup (ver sección 3).
 
@@ -256,9 +256,9 @@ En una máquina de prueba separada, verificar:
 - [ ] Importar la BD en un servidor de prueba y verificar tablas
 - [ ] Restaurar `storage/app/private/` y verificar que las imágenes cargan
 - [ ] Usar la `APP_KEY` ORIGINAL de producción en el `.env` de prueba (sección 5b) — **no generar una
-  nueva con `key:generate`**, ni siquiera en esta máquina de prueba: si algún dato ya está cifrado con
-  el cast `encrypted` (a futuro, huellas dactilares), esta es la forma de confirmar que el
-  procedimiento de restauración realmente lo deja legible, no solo que la BD importó.
+  nueva con `key:generate`**, ni siquiera en esta máquina de prueba: como las huellas dactilares están
+  cifradas con el cast `encrypted`, esta es la forma de confirmar que el procedimiento de restauración
+  realmente las deja legibles, no solo que la BD importó.
 - [ ] Ejecutar `php artisan migrate:status` — no debe haber migraciones pendientes desconocidas
 - [ ] Navegar la app y confirmar que el login, dashboard y datos funcionan
 - [ ] Documentar la fecha de la prueba y quién la realizó

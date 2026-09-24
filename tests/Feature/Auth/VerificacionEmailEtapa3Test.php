@@ -60,6 +60,7 @@ class VerificacionEmailEtapa3Test extends TestCase
             'email'                 => "verif{$s}@test.com",
             'password'              => 'Contrasena123',
             'password_confirmation' => 'Contrasena123',
+            'acepto_terminos'       => '1',
         ], $extra);
     }
 

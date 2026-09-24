@@ -80,6 +80,11 @@ class AltaClienteService
                 'dias_asistidos' => 0,
                 'estado'         => 'activo',
                 'id_sede'        => $datos['id_sede'],
+                // Constancia de que aceptó Términos y Privacidad: llegar
+                // hasta acá ya implica que RegisteredUserController::store()
+                // validó el checkbox obligatorio (regla 'accepted'), así que
+                // "ahora" es el momento real de la aceptación.
+                'terminos_aceptados_en' => now(),
                 // qr_token se autogenera solo (hook creating() del modelo).
             ]);
 

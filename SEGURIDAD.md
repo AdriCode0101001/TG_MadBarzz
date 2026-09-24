@@ -49,9 +49,27 @@ sección de seguridad de la tesis); no reemplaza el detalle de cada hallazgo.
 
 ## Datos biométricos
 
-- Las plantillas de huella (`huellas.template`) solo se leen/escriben a
-  través de la API del agente, protegida por el token de sede — no hay
-  ninguna ruta pública que las exponga.
+- **Plantillas cifradas en reposo**: `huellas.template` usa el cast
+  `encrypted` de Laravel (cifradas con `APP_KEY`) — quien acceda a la base de
+  datos directamente (dump, backup sin cifrar, acceso no autorizado al motor)
+  no puede leer las plantillas sin la clave de la aplicación. Ver
+  "Secretos críticos" en [DESPLIEGUE.md](DESPLIEGUE.md) y
+  [RESTAURACION.md](RESTAURACION.md) para el manejo de `APP_KEY`.
+- **Anti-duplicado sin descifrar**: `huellas.template_hash` (SHA-256 del
+  template) permite detectar plantillas repetidas sin tener que descifrar y
+  comparar el contenido real.
+- Las plantillas solo se leen/escriben a través de la API del agente,
+  protegida por el token de sede — no hay ninguna ruta pública que las
+  exponga.
+- **Consentimiento previo al enrolamiento**: un cliente (o su tutor, si es
+  menor de edad) debe tener el consentimiento de huella registrado
+  (`consentimiento_huella_en` / `consentimiento_tutor_en`) antes de poder
+  enrolar una huella nueva (`Cliente::puedeEnrolarHuella()`); los clientes
+  con huella capturada antes de exigir este dato se migraron con el comando
+  `clientes:marcar-consentimiento-huellas-existentes`.
+- **Borrado real ("derecho al olvido")**: eliminar la huella de un cliente
+  borra el registro de la tabla `huellas` (no un soft-delete ni un flag),
+  para poder cumplir un pedido de borrado de datos biométricos.
 - Se eliminó un flujo legado de registro de asistencia por
   `huella_digital` en **texto plano** sin límite de intentos (hallazgo de
   auditoría), que había quedado desconectado del menú desde antes del agente
@@ -104,6 +122,14 @@ sección de seguridad de la tesis); no reemplaza el detalle de cada hallazgo.
   para que el sistema siga respondiendo con normalidad a medida que
   crece el volumen de datos con los años.
 
+## Páginas legales
+
+- `/privacidad` y `/terminos` (`LegalController`) publican la política de
+  privacidad y los términos de uso, renderizados desde
+  `docs/BORRADOR_politica_privacidad.md` / `docs/BORRADOR_terminos.md` con un
+  aviso visible de que son **borradores pendientes de revisión legal
+  profesional** — ver "Pendientes conocidos" abajo.
+
 ## Pendientes conocidos (ver [DESPLIEGUE.md](DESPLIEGUE.md) § 9-10)
 
 - `SESSION_SECURE_COOKIE=true` en producción (no viene seteada por defecto).
@@ -113,3 +139,5 @@ sección de seguridad de la tesis); no reemplaza el detalle de cada hallazgo.
 - CAPTCHA en el registro público de clientes.
 - Confirmar licencia comercial del dataset de ejercicios (Gym Visual) antes
   de un lanzamiento con clientes reales.
+- Revisión por un abogado de la política de privacidad y los términos de uso
+  (hoy son borrador, marcados como tal en `/privacidad` y `/terminos`).

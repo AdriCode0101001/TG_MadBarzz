@@ -43,6 +43,7 @@ class RegistrationTest extends TestCase
             'email'                 => 'nuevocliente@example.com',
             'password'              => 'Contrasena123',
             'password_confirmation' => 'Contrasena123',
+            'acepto_terminos'       => '1',
         ]);
 
         $this->assertAuthenticated();
@@ -52,5 +53,9 @@ class RegistrationTest extends TestCase
         $this->assertTrue($usuario->hasRole('Cliente'));
         $this->assertNull($usuario->email_verified_at); // sin verificar hasta que confirme el correo
         $this->assertDatabaseHas('clientes', ['id_usuario' => $usuario->id]);
+
+        // Grupo 3 legal: constancia de que aceptó Términos/Privacidad al registrarse.
+        $cliente = \App\Models\Cliente::where('id_usuario', $usuario->id)->firstOrFail();
+        $this->assertNotNull($cliente->terminos_aceptados_en);
     }
 }

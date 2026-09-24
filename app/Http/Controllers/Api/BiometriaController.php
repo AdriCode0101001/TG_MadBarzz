@@ -57,6 +57,27 @@ class BiometriaController extends Controller
             'version_formato' => ['nullable', 'string', 'max:50'],
         ]);
 
+        // ── Consentimiento de huella (Grupo 3 legal, parte 2) — LA protección
+        // real: el checkbox en el alta/edición del cliente (ClienteController)
+        // es solo el dato, esto es lo que de verdad impide enrolar sin
+        // consentimiento. Adultos: consentimiento_huella_en propio. Menores
+        // (por fecha_nacimiento): ADEMÁS consentimiento_tutor_en — ver
+        // Cliente::puedeEnrolarHuella(). Mensaje distinto para cada caso, para
+        // que quien opera el agente sepa exactamente qué falta cargar.
+        $cliente = Cliente::with('persona')->findOrFail($data['id_cliente']);
+
+        if (!$cliente->consentimiento_huella_en) {
+            return response()->json([
+                'message' => 'El cliente no tiene consentimiento de huella registrado. Cargalo desde su ficha en el panel antes de enrolar.',
+            ], 403);
+        }
+
+        if ($cliente->esMenorDeEdad() && !$cliente->consentimiento_tutor_en) {
+            return response()->json([
+                'message' => 'El cliente es menor de edad y no tiene consentimiento del tutor registrado. Cargá los datos del tutor y su autorización desde la ficha del cliente en el panel antes de enrolar.',
+            ], 403);
+        }
+
         // ── Anti-duplicado (defensa en profundidad) ───────────────────────────
         // El matching biométrico difuso (dos capturas del mismo dedo NUNCA son
         // idénticas byte a byte) solo puede hacerlo el agente con el SDK ZKFinger,

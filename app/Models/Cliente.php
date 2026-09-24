@@ -33,6 +33,9 @@ class Cliente extends Model
             ->setDescriptionForEvent(fn (string $event) => "Cliente {$event}");
     }
 
+    /** Misma edad mínima que RegisteredUserController::EDAD_MINIMA (auto-registro). */
+    public const EDAD_MINIMA_ADULTO = 18;
+
     protected $table = 'clientes';
     protected $primaryKey = 'id_cliente';
 
@@ -43,7 +46,18 @@ class Cliente extends Model
         'huella_digital',
         'estado',
         'id_sede',
+        'terminos_aceptados_en',
+        'consentimiento_huella_en',
+        'tutor_nombre',
+        'tutor_ci',
+        'consentimiento_tutor_en',
         'qr_token',
+    ];
+
+    protected $casts = [
+        'terminos_aceptados_en'    => 'datetime',
+        'consentimiento_huella_en' => 'datetime',
+        'consentimiento_tutor_en'  => 'datetime',
     ];
 
     protected static function booted(): void
@@ -125,6 +139,45 @@ public function membresiasClientes() {
 public function huellas()
 {
     return $this->hasMany(Huella::class, 'id_cliente', 'id_cliente');
+}
+
+/**
+ * Grupo 3 legal, parte 2: true si, por su fecha de nacimiento, el cliente
+ * es menor de {@see EDAD_MINIMA_ADULTO} años. Requiere $this->persona
+ * cargada (o la carga sola, lazy) — si no hay persona o fecha de
+ * nacimiento, se asume NO menor (falla cerrado del lado "pide más
+ * requisitos", no del lado "deja pasar sin consentimiento").
+ */
+public function esMenorDeEdad(): bool
+{
+    $fechaNacimiento = $this->persona?->fecha_nacimiento;
+
+    if (!$fechaNacimiento) {
+        return false;
+    }
+
+    return Carbon::parse($fechaNacimiento)->age < self::EDAD_MINIMA_ADULTO;
+}
+
+/**
+ * La comprobación real de si HOY se puede enrolar una huella para este
+ * cliente — usada por BiometriaController::enrolar() como la protección
+ * de verdad (el resto es UI/validación en el alta). Adultos: alcanza con
+ * consentimiento_huella_en. Menores: hace falta ADEMÁS
+ * consentimiento_tutor_en (que, en el alta, solo se guarda junto con los
+ * datos del tutor — ver ClienteController).
+ */
+public function puedeEnrolarHuella(): bool
+{
+    if (!$this->consentimiento_huella_en) {
+        return false;
+    }
+
+    if ($this->esMenorDeEdad() && !$this->consentimiento_tutor_en) {
+        return false;
+    }
+
+    return true;
 }
 
 public function sedes()

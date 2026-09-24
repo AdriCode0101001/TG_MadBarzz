@@ -36,7 +36,48 @@ class BiometriaApiTest extends TestCase
         ]);
     }
 
+    /**
+     * Cliente ADULTO con consentimiento de huella ya registrado — el caso
+     * "normal" que usa la mayoría de estos tests (enrolar/sincronizar), que
+     * no tienen que ver con el Grupo 3 (consentimiento) en sí. Los tests
+     * específicos de consentimiento usan crearClienteSinConsentimiento()
+     * y crearClienteMenor() más abajo.
+     */
     private function crearCliente(Sede $sede, string $estado = 'activo'): Cliente
+    {
+        return $this->crearClientePersonalizado($sede, $estado, '1990-01-01', now());
+    }
+
+    private function crearClienteSinConsentimiento(Sede $sede): Cliente
+    {
+        return $this->crearClientePersonalizado($sede, 'activo', '1990-01-01', null);
+    }
+
+    /**
+     * Cliente menor de edad (16 años). $consentimientoTutor: null = sin
+     * consentimiento del tutor cargado; una fecha = consentimiento del
+     * tutor Y de huella otorgados juntos (mismo criterio que
+     * ClienteController::datosConsentimientoHuella()).
+     */
+    private function crearClienteMenor(Sede $sede, ?\Illuminate\Support\Carbon $consentimientoTutor): Cliente
+    {
+        $fechaNacimientoMenor = now()->subYears(16)->toDateString();
+
+        $cliente = $this->crearClientePersonalizado($sede, 'activo', $fechaNacimientoMenor, null);
+
+        if ($consentimientoTutor) {
+            $cliente->update([
+                'tutor_nombre'             => 'Tutor de Prueba',
+                'tutor_ci'                 => 'TUTORCI1',
+                'consentimiento_tutor_en'  => $consentimientoTutor,
+                'consentimiento_huella_en' => $consentimientoTutor,
+            ]);
+        }
+
+        return $cliente;
+    }
+
+    private function crearClientePersonalizado(Sede $sede, string $estado, string $fechaNacimiento, ?\Illuminate\Support\Carbon $consentimientoHuella): Cliente
     {
         self::$seq++;
         $s = self::$seq;
@@ -51,17 +92,18 @@ class BiometriaApiTest extends TestCase
             'ci'               => "CI{$s}",
             'telefono'         => "+5917000000{$s}",
             'genero'           => 'M',
-            'fecha_nacimiento' => '1990-01-01',
+            'fecha_nacimiento' => $fechaNacimiento,
             'created_at'       => now(),
             'updated_at'       => now(),
         ]);
 
         return Cliente::create([
-            'id_persona'     => $personaId,
-            'id_usuario'     => $user->id,
-            'estado'         => $estado,
-            'dias_asistidos' => 0,
-            'id_sede'        => $sede->id_sede,
+            'id_persona'               => $personaId,
+            'id_usuario'               => $user->id,
+            'estado'                   => $estado,
+            'dias_asistidos'           => 0,
+            'id_sede'                  => $sede->id_sede,
+            'consentimiento_huella_en' => $consentimientoHuella,
         ]);
     }
 
@@ -307,6 +349,95 @@ class BiometriaApiTest extends TestCase
             ->firstWhere('id_cliente', $cliente->id_cliente)['huellas'][0];
 
         $this->assertSame($templateEnviado, $huellaSincronizada['template']);
+    }
+
+    // ── 2d. Consentimiento de huella (Grupo 3 legal, parte 2) ─────────────────
+
+    public function test_enrolar_rechaza_a_un_adulto_sin_consentimiento_de_huella(): void
+    {
+        $sede    = $this->crearSede();
+        $this->crearAgentToken($sede);
+        $cliente = $this->crearClienteSinConsentimiento($sede);
+
+        $this->postJson('/api/agente/enrolar', [
+            'id_cliente' => $cliente->id_cliente,
+            'dedo'       => 'indice_derecho',
+            'template'   => base64_encode('sin-consentimiento'),
+        ], $this->headers())
+             ->assertStatus(403)
+             ->assertJsonFragment(['message' => 'El cliente no tiene consentimiento de huella registrado. Cargalo desde su ficha en el panel antes de enrolar.']);
+
+        $this->assertDatabaseCount('huellas', 0);
+    }
+
+    public function test_enrolar_permite_a_un_adulto_con_consentimiento_de_huella(): void
+    {
+        // Caso base (crearCliente() ya otorga consentimiento) — el
+        // enrolamiento legítimo sigue funcionando igual que siempre.
+        $sede    = $this->crearSede();
+        $this->crearAgentToken($sede);
+        $cliente = $this->crearCliente($sede);
+
+        $this->postJson('/api/agente/enrolar', [
+            'id_cliente' => $cliente->id_cliente,
+            'dedo'       => 'indice_derecho',
+            'template'   => base64_encode('con-consentimiento'),
+        ], $this->headers())->assertStatus(201);
+
+        $this->assertDatabaseCount('huellas', 1);
+    }
+
+    public function test_enrolar_rechaza_a_un_menor_sin_consentimiento_del_tutor(): void
+    {
+        $sede    = $this->crearSede();
+        $this->crearAgentToken($sede);
+        $cliente = $this->crearClienteMenor($sede, consentimientoTutor: null);
+
+        $this->postJson('/api/agente/enrolar', [
+            'id_cliente' => $cliente->id_cliente,
+            'dedo'       => 'indice_derecho',
+            'template'   => base64_encode('menor-sin-tutor'),
+        ], $this->headers())
+             ->assertStatus(403)
+             ->assertJsonFragment(['message' => 'El cliente no tiene consentimiento de huella registrado. Cargalo desde su ficha en el panel antes de enrolar.']);
+
+        $this->assertDatabaseCount('huellas', 0);
+    }
+
+    public function test_enrolar_rechaza_a_un_menor_con_consentimiento_de_huella_pero_sin_tutor(): void
+    {
+        // Caso "a medio cargar": alguien marcó consentimiento_huella_en a
+        // mano (o quedó de un estado viejo) pero el menor NO tiene
+        // consentimiento del tutor — igual se rechaza, el de huella solo no alcanza.
+        $sede    = $this->crearSede();
+        $this->crearAgentToken($sede);
+        $cliente = $this->crearClienteMenor($sede, consentimientoTutor: null);
+        $cliente->update(['consentimiento_huella_en' => now()]);
+
+        $this->postJson('/api/agente/enrolar', [
+            'id_cliente' => $cliente->id_cliente,
+            'dedo'       => 'indice_derecho',
+            'template'   => base64_encode('menor-a-medias'),
+        ], $this->headers())
+             ->assertStatus(403)
+             ->assertJsonFragment(['message' => 'El cliente es menor de edad y no tiene consentimiento del tutor registrado. Cargá los datos del tutor y su autorización desde la ficha del cliente en el panel antes de enrolar.']);
+
+        $this->assertDatabaseCount('huellas', 0);
+    }
+
+    public function test_enrolar_permite_a_un_menor_con_consentimiento_del_tutor(): void
+    {
+        $sede    = $this->crearSede();
+        $this->crearAgentToken($sede);
+        $cliente = $this->crearClienteMenor($sede, consentimientoTutor: now());
+
+        $this->postJson('/api/agente/enrolar', [
+            'id_cliente' => $cliente->id_cliente,
+            'dedo'       => 'indice_derecho',
+            'template'   => base64_encode('menor-con-tutor'),
+        ], $this->headers())->assertStatus(201);
+
+        $this->assertDatabaseCount('huellas', 1);
     }
 
     // ── 3. Sincronizar respeta la política de acceso ──────────────────────────

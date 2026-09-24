@@ -98,9 +98,14 @@ public function index(Request $request)
         Entrenador::create([
             'id_persona'     => $persona->id_persona,
             'id_usuario'     => $usuario->id,
-            'especialidad'   => implode(', ', $request->especialidad),
+            // Arrays tal cual, SIN implode/json_encode: el modelo ya castea
+            // 'especialidad'/'disponibilidad' como 'array' (json_encode al
+            // guardar, json_decode al leer) — codificar acá encima produce
+            // JSON dentro de JSON, y edit()/update() vuelven a romperse al
+            // decodificar un valor que Eloquent ya decodificó solo.
+            'especialidad'   => $request->especialidad,
             'experiencia'    => $request->experiencia,
-            'disponibilidad' => json_encode($request->disponibilidad),
+            'disponibilidad' => $request->disponibilidad,
             'estado'         => $request->estado,
         ]);
 
@@ -109,11 +114,13 @@ public function index(Request $request)
 
     public function edit($id)
     {
+        // Sin reprocesar especialidad/disponibilidad: el cast 'array' del
+        // modelo ya las entrega como arrays listas para los <select multiple>
+        // (ver entrenadores/edit.blade.php). Decodificarlas de nuevo acá
+        // rompía en cuanto el dato estaba limpio (json_decode() sobre un
+        // array ya es un TypeError) — ver `entrenadores:limpiar-especialidad`
+        // para los registros viejos que quedaron con el formato anterior.
         $entrenador = Entrenador::with(['persona', 'user'])->findOrFail($id);
-
-        // Pasar arrays para los selects múltiples
-        $entrenador->disponibilidad = json_decode($entrenador->disponibilidad, true);
-        $entrenador->especialidad = explode(', ', $entrenador->especialidad ?? '');
 
         return view('entrenadores.edit', compact('entrenador'));
     }
@@ -173,9 +180,11 @@ public function index(Request $request)
         $usuario->update($usuarioData);
 
         $entrenador->update([
-            'especialidad'   => implode(', ', $request->especialidad),
+            // Ver el mismo comentario en store(): arrays tal cual, el cast
+            // del modelo se encarga de codificarlos.
+            'especialidad'   => $request->especialidad,
             'experiencia'    => $request->experiencia,
-            'disponibilidad' => json_encode($request->disponibilidad),
+            'disponibilidad' => $request->disponibilidad,
             'estado'         => $request->estado,
         ]);
 

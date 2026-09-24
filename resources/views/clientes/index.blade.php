@@ -57,8 +57,15 @@
                                 <td>{{ optional($cliente->user)->name ?? '—' }}</td>
                                 <td class="text-center">{{ $cliente->dias_asistidos }}</td>
                                 <td class="text-center">
-                                    @if ($cliente->huella_digital)
-                                        <span class="badge bg-success"><i class="fa-solid fa-fingerprint me-1"></i>Sí</span>
+                                    {{-- $cliente->huella_digital es la columna LEGACY de antes del
+                                         agente biométrico C# (nunca se puebla desde que existe la
+                                         tabla `huellas` real) — en desuso, no se toca acá. La fuente
+                                         de verdad es huellas_count (withCount en ClienteController).
+                                         Nunca se muestra el template en sí, solo si tiene y cuántas. --}}
+                                    @if ($cliente->huellas_count > 0)
+                                        <span class="badge bg-success" title="{{ $cliente->huellas_count }} dedo(s) enrolado(s)">
+                                            <i class="fa-solid fa-fingerprint me-1"></i>Sí ({{ $cliente->huellas_count }})
+                                        </span>
                                     @else
                                         <span class="badge bg-secondary">No</span>
                                     @endif

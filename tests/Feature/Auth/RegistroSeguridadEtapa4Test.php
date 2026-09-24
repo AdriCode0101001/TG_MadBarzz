@@ -62,6 +62,7 @@ class RegistroSeguridadEtapa4Test extends TestCase
             'email'                 => "seguridad{$s}@test.com",
             'password'              => 'Contrasena123',
             'password_confirmation' => 'Contrasena123',
+            'acepto_terminos'       => '1',
         ], $extra);
     }
 

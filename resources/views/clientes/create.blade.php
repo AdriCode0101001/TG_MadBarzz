@@ -87,12 +87,17 @@
                     </div>
                 </fieldset>
 
+                {{-- ---------- Consentimiento de huella (Grupo 3 legal, parte 2) ---------- --}}
+                <x-consentimiento-huella />
+
                 {{-- ---------- Datos del cliente ---------- --}}
                 <fieldset class="mb-field-group">
                     <legend class="mb-field-legend"><i class="fa-solid fa-dumbbell"></i> Datos del cliente</legend>
                     <div class="row g-3">
-                        {{-- Los días asistidos siempre inician en 0 (lo fija el servidor) y la
-                             huella se registra después desde el agente biométrico, no aquí. --}}
+                        {{-- Los días asistidos siempre inician en 0 (lo fija el servidor). La
+                             plantilla de huella en sí se enrola después desde el agente
+                             biométrico, no aquí — acá solo se registra el CONSENTIMIENTO (arriba),
+                             que el agente exige antes de dejar enrolarla. --}}
                         <div class="col-md-4">
                             <label class="form-label" for="estado">Estado</label>
                             <select name="estado" class="" required id="estado">

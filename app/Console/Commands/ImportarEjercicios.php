@@ -22,8 +22,11 @@ use Illuminate\Support\Facades\Storage;
  */
 class ImportarEjercicios extends Command
 {
+    // Sin default: un path fijo de una máquina de desarrollo puntual no
+    // tiene sentido en ningún otro entorno (ni otro dev, ni el servidor).
+    // Sin --ruta=, handle() ya muestra un error claro pidiéndolo.
     protected $signature = 'ejercicios:importar
-                            {--ruta=C:\Users\Asus - Laptop\Downloads\exercises-dataset-main\exercises-dataset-main : Carpeta raíz del dataset (contiene data/, images/, videos/)}';
+                            {--ruta= : Carpeta raíz del dataset (contiene data/, images/, videos/)}';
 
     protected $description = 'Importa el catálogo de ejercicios del dataset externo (texto + imagen + gif), mapeando al grupo muscular de MadBarzz.';
 

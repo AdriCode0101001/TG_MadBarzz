@@ -84,11 +84,10 @@ ambos en un lugar seguro y **separado** de donde se guardan los backups de la ba
 guardar una clave junto con lo que esa clave protege anula la protección.
 
 - **`APP_KEY`** — la clave con la que Laravel cifra los datos sensibles reversibles en la base de
-  datos (a futuro: la plantilla de huella dactilar, una vez aplicado el cifrado planeado en el
-  Grupo 2 de la auditoría — hoy todavía no hay ningún dato usando el cast `encrypted`). Si `APP_KEY`
-  cambia después de que haya datos cifrados con la clave anterior, esos datos quedan **ilegibles
-  para siempre**: no es "la perdí y genero otra", es criptográficamente irrecuperable. Una vez en
-  producción con datos cifrados:
+  datos: hoy, la plantilla de huella dactilar (`huellas.template`, cast `encrypted`, Grupo 2 de la
+  auditoría). Si `APP_KEY` cambia después de que haya datos cifrados con la clave anterior, esos datos
+  quedan **ilegibles para siempre**: no es "la perdí y genero otra", es criptográficamente
+  irrecuperable. Una vez en producción con datos cifrados:
   - **Nunca correr `php artisan key:generate` de nuevo** sobre esa instalación.
   - Guardar una copia de la línea completa `APP_KEY=...` del `.env` en un gestor de contraseñas, en
     papel en un lugar seguro, o en un drive privado del dueño — nunca solo en el servidor ni dentro

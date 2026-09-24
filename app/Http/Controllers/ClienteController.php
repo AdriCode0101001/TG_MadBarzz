@@ -11,6 +11,7 @@ use App\Models\Asistencia;
 use App\Models\Pago;
 use App\Services\UsernameService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
@@ -22,7 +23,13 @@ public function index(Request $request)
 {
     $buscar = $request->input('buscar');
 
+    // withCount('huellas'): la columna "Huella" del listado necesita saber
+    // si el cliente tiene alguna enrolada (y cuántas) — con withCount es UNA
+    // sola consulta agregada para las 20 filas de la página, en vez de una
+    // consulta por cliente (N+1) si cada fila preguntara $cliente->huellas
+    // por su cuenta.
     $clientes = Cliente::with(['persona', 'user'])
+        ->withCount('huellas')
         ->when($buscar, function($query, $buscar) {
             $query->whereHas('persona', function($q) use ($buscar) {
                 $q->whereRaw("CONCAT(nombre_completo, ' ', apellido_paterno, ' ', apellido_materno) LIKE ?", ["%{$buscar}%"])
@@ -66,6 +73,20 @@ public function index(Request $request)
 
             // Cliente (dias_asistidos y huella_digital ya no vienen del formulario)
             'estado'             => 'required|in:activo,inactivo',
+
+            // Grupo 3 legal, parte 2: consentimiento de huella (adulto) o del
+            // tutor (menor) — ver aplicarConsentimientoHuella(). Ninguno de
+            // los dos checkboxes es obligatorio en sí (el cliente se puede
+            // crear sin huella habilitada), pero SI se tilda "el tutor
+            // autoriza", los datos del tutor pasan a ser obligatorios.
+            'consentimiento_huella' => ['nullable', 'boolean'],
+            'consentimiento_tutor'  => ['nullable', 'boolean'],
+            'tutor_nombre'          => ['nullable', 'string', 'max:255', 'required_if:consentimiento_tutor,1'],
+            'tutor_ci'              => ['nullable', 'regex:/^[A-Za-z0-9\-]{5,15}$/', 'required_if:consentimiento_tutor,1'],
+        ], [
+            'tutor_nombre.required_if' => 'El nombre del tutor es obligatorio para autorizar la huella de un menor.',
+            'tutor_ci.required_if'     => 'La CI del tutor es obligatoria para autorizar la huella de un menor.',
+            'tutor_ci.regex'           => 'La cédula de identidad del tutor no tiene un formato válido.',
         ]);
 
         $persona = Persona::create([
@@ -105,6 +126,7 @@ public function index(Request $request)
             'dias_asistidos' => 0, // siempre 0 al crear: el cliente recién empieza
             'estado'         => $request->estado,
             'id_usuario'     => $usuario->id,
+            ...$this->datosConsentimientoHuella($request, new Cliente(), $request->fecha_nacimiento),
         ]);
 
         return redirect()->route('clientes.index')->with('success', 'Cliente, persona y usuario registrados correctamente.');
@@ -154,6 +176,16 @@ public function index(Request $request)
             // este formulario no tiene campo de confirmación (un solo
             // input "Nueva contraseña", ver clientes/edit.blade.php).
             'password'           => ['nullable', 'string', Password::defaults()],
+
+            // Grupo 3 legal, parte 2 — ver el mismo bloque en store().
+            'consentimiento_huella' => ['nullable', 'boolean'],
+            'consentimiento_tutor'  => ['nullable', 'boolean'],
+            'tutor_nombre'          => ['nullable', 'string', 'max:255', 'required_if:consentimiento_tutor,1'],
+            'tutor_ci'              => ['nullable', 'regex:/^[A-Za-z0-9\-]{5,15}$/', 'required_if:consentimiento_tutor,1'],
+        ], [
+            'tutor_nombre.required_if' => 'El nombre del tutor es obligatorio para autorizar la huella de un menor.',
+            'tutor_ci.required_if'     => 'La CI del tutor es obligatoria para autorizar la huella de un menor.',
+            'tutor_ci.regex'           => 'La cédula de identidad del tutor no tiene un formato válido.',
         ]);
 
         $persona->update([
@@ -180,9 +212,54 @@ public function index(Request $request)
         $cliente->update([
             'dias_asistidos' => $request->dias_asistidos,
             'estado'         => $request->estado,
+            ...$this->datosConsentimientoHuella($request, $cliente, $request->fecha_nacimiento),
         ]);
 
         return redirect()->route('clientes.index')->with('success', 'Cliente actualizado correctamente.');
+    }
+
+    /**
+     * Grupo 3 legal, parte 2: arma los 4 campos de consentimiento de huella
+     * a partir del formulario, según el cliente sea adulto o menor (por
+     * $fechaNacimiento, el valor que se está guardando AHORA — no el que
+     * ya tenía la persona en la BD, para que un cambio de fecha de
+     * nacimiento en el mismo submit ya se tenga en cuenta).
+     *
+     * - Adulto: usa el checkbox "consentimiento_huella" del cliente mismo.
+     * - Menor: usa el checkbox "consentimiento_tutor" — un menor no puede
+     *   autorizar por sí mismo, así que NO se le pide/guarda un
+     *   "consentimiento_huella" propio; el consentimiento del tutor CUBRE
+     *   la autorización general (puedeEnrolarHuella() en el modelo exige
+     *   los dos campos igual, pero acá se setean juntos).
+     * - Si el checkbox correspondiente no viene marcado, el/los campo(s)
+     *   quedan en null — remueve el consentimiento si antes lo tenía
+     *   (revocación explícita) en vez de mantenerlo "pegado".
+     * - Si YA había un consentimiento con fecha, esa fecha se conserva
+     *   (no se pisa con "ahora" en cada edición sin cambios reales).
+     */
+    private function datosConsentimientoHuella(Request $request, Cliente $cliente, ?string $fechaNacimiento): array
+    {
+        $esMenor = $fechaNacimiento && Carbon::parse($fechaNacimiento)->age < Cliente::EDAD_MINIMA_ADULTO;
+
+        if ($esMenor) {
+            $tutorAutoriza = $request->boolean('consentimiento_tutor');
+
+            return [
+                'tutor_nombre'             => $tutorAutoriza ? $request->tutor_nombre : null,
+                'tutor_ci'                 => $tutorAutoriza ? $request->tutor_ci : null,
+                'consentimiento_tutor_en'  => $tutorAutoriza ? ($cliente->consentimiento_tutor_en ?? now()) : null,
+                'consentimiento_huella_en' => $tutorAutoriza ? ($cliente->consentimiento_huella_en ?? now()) : null,
+            ];
+        }
+
+        $clienteAutoriza = $request->boolean('consentimiento_huella');
+
+        return [
+            'tutor_nombre'             => null,
+            'tutor_ci'                 => null,
+            'consentimiento_tutor_en'  => null,
+            'consentimiento_huella_en' => $clienteAutoriza ? ($cliente->consentimiento_huella_en ?? now()) : null,
+        ];
     }
 
     // DESTROY
@@ -206,19 +283,26 @@ public function index(Request $request)
     }
 
     // ==============================
-    // SHOW (Perfil del cliente logueado)
+    // SHOW (detalle del cliente elegido en el listado, para el STAFF)
     // ==============================
 
-    public function show()
+    /**
+     * "Ver detalle" desde el listado de clientes (Admin/Recepcionista/
+     * Entrenador): muestra los datos del cliente de la URL — NO del usuario
+     * logueado. Antes hacía Cliente::where('id_usuario', Auth::id()) (un
+     * resabio de antes de que existiera el portal del cliente), así que
+     * siempre fallaba para el staff, que no tiene ficha de Cliente propia.
+     * El portal real del cliente (donde SÍ corresponde Auth::id()) es
+     * ClientePortalController — no confundir, no se toca acá.
+     *
+     * $cliente llega resuelto por route-model binding contra la PK real de
+     * Cliente (id_cliente) y ya pasa por el global scope SedeScope: un
+     * Recepcionista/Entrenador de otra sede recibe 404 acá mismo (Admin ve
+     * cualquier sede), igual que en index/edit.
+     */
+    public function show(Cliente $cliente)
     {
-        // Obtener el cliente asociado al usuario logueado
-        $cliente = Cliente::with(['persona', 'user', 'membresias'])
-                    ->where('id_usuario', Auth::id())
-                    ->first();
-
-        if (!$cliente) {
-            return redirect()->back()->with('error', 'No tienes un perfil de cliente asociado.');
-        }
+        $cliente->load(['persona', 'user', 'membresias']);
 
         // Membresía activa más reciente (vigente por fecha y con pago registrado)
         $membresia = $cliente->membresias()
@@ -228,10 +312,10 @@ public function index(Request $request)
                             ->first();
 
         // Asistencias
-        $asistencias = Asistencia::where('id_cliente', $cliente->id)->get();
+        $asistencias = Asistencia::where('id_cliente', $cliente->id_cliente)->get();
 
         // Pagos
-        $pagos = Pago::where('id_cliente', $cliente->id)->get();
+        $pagos = Pago::where('id_cliente', $cliente->id_cliente)->get();
 
         return view('clientes.show', compact('cliente', 'membresia', 'asistencias', 'pagos'));
     }

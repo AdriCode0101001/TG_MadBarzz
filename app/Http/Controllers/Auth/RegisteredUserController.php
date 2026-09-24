@@ -88,6 +88,13 @@ class RegisteredUserController extends Controller
             // que en el alta del personal)
             'email'              => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
             'password'           => ['required', 'confirmed', Rules\Password::defaults()],
+
+            // Grupo 3 legal, parte 1: sin esta casilla marcada, no hay
+            // registro — 'accepted' exige exactamente "1"/"true"/"yes"/"on",
+            // así que un checkbox SIN marcar (que no manda el campo) o
+            // manipulado a mano con otro valor cae en 'required'/'accepted'
+            // igual. Nunca viene premarcada (ver auth/login-register.blade.php).
+            'acepto_terminos'    => ['required', 'accepted'],
         ], [
             'nombre_completo.regex'  => 'El nombre solo puede contener letras.',
             'apellido_paterno.regex' => 'El apellido paterno solo puede contener letras.',
@@ -96,6 +103,8 @@ class RegisteredUserController extends Controller
             'fecha_nacimiento.before' => 'La fecha de nacimiento no puede ser futura.',
             'fecha_nacimiento.after'  => 'La fecha de nacimiento no es válida.',
             'id_sede.exists'          => 'La sede seleccionada no existe o no está activa.',
+            'acepto_terminos.required' => 'Debés aceptar los Términos y Condiciones y la Política de Privacidad para registrarte.',
+            'acepto_terminos.accepted' => 'Debés aceptar los Términos y Condiciones y la Política de Privacidad para registrarte.',
         ]);
 
         $cliente = $altaCliente->registrarDesdeFormularioPublico($datos);

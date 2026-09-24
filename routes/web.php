@@ -69,6 +69,11 @@ Route::get('/', function () {
 // EntrenadorController::fotoPublica.
 Route::get('entrenadores/{entrenador}/foto', [EntrenadorController::class, 'fotoPublica'])->name('entrenadores.foto_publica');
 
+// Páginas legales (Grupo 3, parte 1): públicas, contenido leído en vivo
+// desde docs/BORRADOR_*.md — ver LegalController.
+Route::get('/privacidad', [\App\Http\Controllers\LegalController::class, 'privacidad'])->name('legal.privacidad');
+Route::get('/terminos',   [\App\Http\Controllers\LegalController::class, 'terminos'])->name('legal.terminos');
+
 // -----------------------------------------------------------------------
 // Redirects de compatibilidad: estas URLs eran de la home vieja o de la
 // vista previa mientras el diseño GymOn dark no era la parte pública real.
@@ -133,16 +138,37 @@ Route::middleware('auth')->group(function () {
 // Solo Administrador
 // -----------------------------------------------------------------------
 Route::middleware(['auth', 'role:Administrador'])->group(function () {
-    Route::resource('roles',           RolController::class);
-    Route::resource('users',           UserController::class);
-    Route::resource('personas',        PersonaController::class);
-    Route::resource('administradores', AdministradorController::class);
-    Route::resource('promociones',     PromocionController::class);
+    // 'show' de roles: el método existe pero es un stub vacío heredado del
+    // scaffold de Laravel (nunca se implementó, sin vista, sin link a él en
+    // ningún lado) — devuelve null y no arma una respuesta válida.
+    Route::resource('roles', RolController::class)->except(['show']);
+    // 'show': ninguno de estos 4 tiene controller method ni vista propia
+    // (nunca los usó ningún link del panel — confirmado sin referencias en
+    // todo el código) — Route::resource() lo registra por defecto y, sin
+    // excluirlo, la URL quedaba viva pero tiraba 500 (BadMethodCallException)
+    // ante cualquiera que la visitara a mano. La pantalla de detalle real es
+    // "Editar" (ya cargada) o, para Clientes, clientes.show (ese sí existe).
+    Route::resource('users',           UserController::class)->except(['show']);
+    Route::resource('personas',        PersonaController::class)->except(['show']);
+    Route::resource('administradores', AdministradorController::class)->except(['show']);
+    // 'parameters': Laravel singulariza mal "promociones" (asume inglés y le
+    // queda "promocione", visible antes en `route:list`) — el método
+    // edit/update/destroy(Promocion $promocion) del controlador espera
+    // literalmente "$promocion", así que el binding implícito no encontraba
+    // coincidencia por NOMBRE y el contenedor terminaba inyectando un
+    // Promocion vacío sin persistir (nunca un 404, nunca el registro real)
+    // en vez de resolverlo — "Editar" quedaba en blanco y tiraba 500 al
+    // armar la URL de guardar, y Actualizar/Borrar operaban sobre ese
+    // modelo vacío en lugar de la promoción real. Forzar el nombre lo
+    // arregla en los tres a la vez.
+    Route::resource('promociones', PromocionController::class)
+        ->except(['show'])
+        ->parameters(['promociones' => 'promocion']);
 
     // GESTIÓN del catálogo (crear/editar/borrar tipos de membresía y
     // descuentos): SOLO Admin. El listado (index) es de solo lectura
     // para todo el personal (ver grupo de los tres roles más abajo).
-    Route::resource('membresias', MembresiaController::class)->except(['index']);
+    Route::resource('membresias', MembresiaController::class)->except(['index', 'show']);
     Route::resource('descuentos', DescuentoController::class)->except(['index', 'show']);
 
     // Catálogo de grupos musculares (base del futuro calendario de rutinas):
@@ -213,11 +239,19 @@ Route::middleware(['auth', 'role:Administrador'])->group(function () {
 // Administrador + Recepcionista
 // -----------------------------------------------------------------------
 Route::middleware(['auth', 'role:Administrador,Recepcionista'])->group(function () {
-    // Gestión de personal (ver/crear/editar); el borrado es solo del Admin
-    Route::resource('entrenadores',   EntrenadorController::class)->except(['destroy']);
-    Route::resource('recepcionistas', RecepcionistaController::class)->except(['destroy']);
+    // Gestión de personal (ver/crear/editar); el borrado es solo del Admin.
+    // 'show' excluido: sin controller method ni vista (ver nota igual en el
+    // grupo "Solo Administrador" más arriba) — tiraba 500, no lo usa nadie.
+    Route::resource('entrenadores',   EntrenadorController::class)->except(['destroy', 'show']);
+    Route::resource('recepcionistas', RecepcionistaController::class)->except(['destroy', 'show']);
 
-    Route::resource('notificaciones', NotificacionController::class);
+    // Una notificación es un envío ya hecho (registro de un WhatsApp/email
+    // mandado) — no hay "editar" un mensaje que ya se envió. 'show',
+    // 'edit', 'update' y 'destroy' se excluyen: NotificacionController
+    // nunca tuvo esos métodos (ni vistas propias) y nada los enlaza —
+    // dejarlos registrados los deja vivos como 500 en espera.
+    Route::resource('notificaciones', NotificacionController::class)
+        ->only(['index', 'create', 'store']);
     Route::get('/notificaciones/enviar',  [NotificacionController::class, 'showForm'])    ->name('notificaciones.form');
     Route::post('/notificaciones/enviar', [NotificacionController::class, 'sendWhatsapp'])->name('notificaciones.sendWhatsapp');
 

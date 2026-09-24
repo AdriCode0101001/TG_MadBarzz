@@ -264,6 +264,24 @@
               Tus datos se usan para gestionar tu acceso y tu ficha de socio en Calistenia MadBarzz.
             </p>
 
+            {{-- Grupo 3 legal, parte 1: casilla OBLIGATORIA, nunca premarcada
+                 (sin el atributo "checked" fijo — old() solo repone lo que el
+                 propio usuario ya había marcado si el formulario vuelve por
+                 otro error, no la marca por default). Validación real del
+                 lado del servidor en RegisteredUserController::store(). --}}
+            <div class="mb-field" style="margin-bottom:1.1rem;">
+              <div style="display:flex;align-items:flex-start;gap:.55rem;">
+                <input type="checkbox" name="acepto_terminos" id="acepto_terminos" value="1" required
+                       @checked(old('acepto_terminos'))
+                       style="width:18px;height:18px;min-width:18px;accent-color:var(--mb-o);cursor:pointer;margin-top:.2rem;">
+                <label for="acepto_terminos" style="margin:0;font-weight:400;">
+                  Acepto los <a href="{{ route('legal.terminos') }}" target="_blank" rel="noopener">Términos y Condiciones</a>
+                  y la <a href="{{ route('legal.privacidad') }}" target="_blank" rel="noopener">Política de Privacidad</a>.
+                </label>
+              </div>
+              @error('acepto_terminos')<div class="mb-err">{{ $message }}</div>@enderror
+            </div>
+
             <button type="submit" class="mb-submit"><i class="fa-solid fa-user-plus me-2"></i> Crear cuenta</button>
           </form>
 
