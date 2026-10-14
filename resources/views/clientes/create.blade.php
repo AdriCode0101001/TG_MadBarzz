@@ -39,7 +39,7 @@
                             @error('ci')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="">Teléfono</label>
+                            <label class="form-label">Teléfono</label>
                             <x-phone-input :required="true" />
                         </div>
                         <div class="col-md-6">

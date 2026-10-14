@@ -38,13 +38,13 @@ class PromocionController extends Controller
             'imagen' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
         ]);
 
-        // Administrador autenticado
+        // Perfil de Administrador del usuario logueado — OPCIONAL: un usuario con
+        // rol Administrador puede no tener fila en `administradores` (ej. el admin
+        // de demo). La promoción se crea igual; el autor queda en la bitácora
+        // (causer = usuario logueado) aunque id_administrador sea null.
         $admin = Administrador::where('id_usuario', Auth::id())->first();
-        if (!$admin) {
-            return redirect()->back()->with('error', 'No se encontró un administrador asociado al usuario actual.');
-        }
 
-$data = $request->only(['titulo', 'descripcion', 'fecha_inicio', 'fecha_fin', 'estado']);
+        $data = $request->only(['titulo', 'descripcion', 'fecha_inicio', 'fecha_fin', 'estado']);
 
         // Subida de imagen
         if ($request->hasFile('imagen')) {
@@ -53,7 +53,7 @@ $data = $request->only(['titulo', 'descripcion', 'fecha_inicio', 'fecha_fin', 'e
             $data['imagen'] = 'promociones/'.$filename;
         }
 
-        $data['id_administrador'] = $admin->id_administrador;
+        $data['id_administrador'] = $admin?->id_administrador;
 
         Promocion::create($data);
 

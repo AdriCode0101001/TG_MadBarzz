@@ -192,6 +192,15 @@ class PantallasPrincipalesSmokeTest extends TestCase
         $this->assertPantalla('/personas/create', $admin, 'Personas create');
         $this->assertPantalla(route('personas.edit', $this->cliente->persona->id_persona), $admin, 'Personas edit');
 
+        // Gestión de personal: solo Administrador (antes también Recepcionista).
+        $this->assertPantalla('/entrenadores', $admin, 'Entrenadores index');
+        $this->assertPantalla('/entrenadores/create', $admin, 'Entrenadores create');
+        $this->assertPantalla(route('entrenadores.edit', $this->entrenador->id_entrenador), $admin, 'Entrenadores edit');
+
+        $this->assertPantalla('/recepcionistas', $admin, 'Recepcionistas index');
+        $this->assertPantalla('/recepcionistas/create', $admin, 'Recepcionistas create');
+        $this->assertPantalla(route('recepcionistas.edit', $this->recepcionista->id_recepcionista), $admin, 'Recepcionistas edit');
+
         $this->assertPantalla('/administradores', $admin, 'Administradores index');
         $this->assertPantalla('/administradores/create', $admin, 'Administradores create');
         $this->assertPantalla(route('administradores.edit', $this->administrador->id_administrador), $admin, 'Administradores edit');
@@ -225,14 +234,6 @@ class PantallasPrincipalesSmokeTest extends TestCase
     {
         foreach ([$this->admin, $this->recepcionistaUser] as $usuario) {
             $etiqueta = $usuario->is($this->admin) ? 'Admin' : 'Recepcionista';
-
-            $this->assertPantalla('/entrenadores', $usuario, "Entrenadores index ({$etiqueta})");
-            $this->assertPantalla('/entrenadores/create', $usuario, "Entrenadores create ({$etiqueta})");
-            $this->assertPantalla(route('entrenadores.edit', $this->entrenador->id_entrenador), $usuario, "Entrenadores edit ({$etiqueta})");
-
-            $this->assertPantalla('/recepcionistas', $usuario, "Recepcionistas index ({$etiqueta})");
-            $this->assertPantalla('/recepcionistas/create', $usuario, "Recepcionistas create ({$etiqueta})");
-            $this->assertPantalla(route('recepcionistas.edit', $this->recepcionista->id_recepcionista), $usuario, "Recepcionistas edit ({$etiqueta})");
 
             $this->assertPantalla('/notificaciones', $usuario, "Notificaciones index ({$etiqueta})");
             $this->assertPantalla('/notificaciones/create', $usuario, "Notificaciones create ({$etiqueta})");

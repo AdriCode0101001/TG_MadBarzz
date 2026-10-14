@@ -63,24 +63,29 @@
 
                 var msg = form.getAttribute('data-confirm') ||
                           '¿Seguro que deseas eliminar este registro? Esta acción no se puede deshacer.';
+                // (el SweetAlert usa data-confirm-title / data-confirm-button si existen)
 
                 if (!hasSwal) {
                     if (window.confirm(msg)) { form.dataset.mbConfirmed = '1'; form.submit(); }
                     return;
                 }
 
+                // Textos/color por formulario (opcionales): permiten que acciones que no
+                // eliminan nada (ej. desbloquear un login) no hablen de "eliminar" ni se
+                // pinten en rojo. Sin data-confirm-color el botón sigue en rojo (borrado).
+                var positivo = form.getAttribute('data-confirm-color');
                 Swal.fire({
-                    title: '¿Eliminar registro?',
+                    title: form.getAttribute('data-confirm-title') || '¿Eliminar registro?',
                     text: msg,
-                    icon: 'warning',
+                    icon: form.getAttribute('data-confirm-icon') || 'warning',
                     showCancelButton: true,
-                    confirmButtonText: 'Sí, eliminar',
+                    confirmButtonText: form.getAttribute('data-confirm-button') || 'Sí, eliminar',
                     cancelButtonText: 'Cancelar',
                     reverseButtons: true,
                     focusCancel: true,
-                    customClass: { confirmButton: 'btn btn-danger', cancelButton: 'btn btn-secondary' },
+                    customClass: { confirmButton: positivo ? 'btn btn-success' : 'btn btn-danger', cancelButton: 'btn btn-secondary' },
                     buttonsStyling: true,
-                    confirmButtonColor: '#f5365c',
+                    confirmButtonColor: positivo || '#f5365c',
                     cancelButtonColor: '#6c757d'
                 }).then(function (r) {
                     if (r.isConfirmed) { form.dataset.mbConfirmed = '1'; form.submit(); }

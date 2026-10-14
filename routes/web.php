@@ -200,9 +200,13 @@ Route::middleware(['auth', 'role:Administrador'])->group(function () {
     // una etapa posterior; por ahora, solo el Administrador lo ve.
     Route::get('ejercicios', [EjercicioController::class, 'index'])->name('ejercicios.index');
 
-    // Borrar personal: solo Admin (Recepcionista solo ve/crea/edita)
-    Route::delete('entrenadores/{id}',   [EntrenadorController::class,    'destroy'])->name('entrenadores.destroy');
-    Route::delete('recepcionistas/{id}', [RecepcionistaController::class, 'destroy'])->name('recepcionistas.destroy');
+    // GESTIÓN DE PERSONAL (ver/crear/editar/borrar entrenadores y
+    // recepcionistas; administradores va más arriba): SOLO Administrador.
+    // La protección real es este middleware de ruta, no el menú. Recepcionista
+    // y Entrenador siguen gestionando CLIENTES y PAGOS (otros grupos).
+    // 'show' excluido: sin controller method ni vista (tiraba 500, no lo usa nadie).
+    Route::resource('entrenadores',   EntrenadorController::class)->except(['show']);
+    Route::resource('recepcionistas', RecepcionistaController::class)->except(['show']);
 
     // Borrado de huellas dactilares (Grupo 2 / Etapa 3 de la auditoría de
     // privacidad): dato biométrico, derecho al olvido — solo Admin, y la
@@ -239,11 +243,8 @@ Route::middleware(['auth', 'role:Administrador'])->group(function () {
 // Administrador + Recepcionista
 // -----------------------------------------------------------------------
 Route::middleware(['auth', 'role:Administrador,Recepcionista'])->group(function () {
-    // Gestión de personal (ver/crear/editar); el borrado es solo del Admin.
-    // 'show' excluido: sin controller method ni vista (ver nota igual en el
-    // grupo "Solo Administrador" más arriba) — tiraba 500, no lo usa nadie.
-    Route::resource('entrenadores',   EntrenadorController::class)->except(['destroy', 'show']);
-    Route::resource('recepcionistas', RecepcionistaController::class)->except(['destroy', 'show']);
+    // (La gestión de personal —entrenadores/recepcionistas— pasó al grupo
+    // "Solo Administrador".)
 
     // Una notificación es un envío ya hecho (registro de un WhatsApp/email
     // mandado) — no hay "editar" un mensaje que ya se envió. 'show',

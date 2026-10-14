@@ -221,7 +221,33 @@ return [
 |
 */
 'attributes' => [
-    'password' => 'contraseña',
+    'password'              => 'contraseña',
+    'password_confirmation' => 'confirmación de contraseña',
+    'ci'                    => 'cédula de identidad',
+    'telefono'              => 'teléfono',
+    'telefono_numero'       => 'teléfono',
+    'telefono_codigo'       => 'código de país',
+    'email'                 => 'correo electrónico',
+    'name'                  => 'nombre de usuario',
+    'nombre_completo'       => 'nombres',
+    'apellido_paterno'      => 'apellido paterno',
+    'apellido_materno'      => 'apellido materno',
+    'fecha_nacimiento'      => 'fecha de nacimiento',
+    'genero'                => 'género',
+    'rol_id'                => 'rol',
+    'id_sede'               => 'sede',
+    'id_cliente'            => 'cliente',
+    'id_membresia'          => 'membresía',
+    'id_descuento'          => 'descuento',
+    'metodo_pago'           => 'método de pago',
+    'fecha_inicio'          => 'fecha de inicio',
+    'fecha_fin'             => 'fecha de fin',
+    'fecha_vencimiento'     => 'fecha de vencimiento',
+    'titulo'                => 'título',
+    'descripcion'           => 'descripción',
+    'imagen'                => 'imagen',
+    'tutor_nombre'          => 'nombre del tutor',
+    'tutor_ci'              => 'cédula de identidad del tutor',
 ],
 
 /*
@@ -235,6 +261,19 @@ return [
 |
 */
 'custom' => [
+    // Duplicados: mensajes en lenguaje llano, sin el nombre técnico del campo.
+    'ci' => [
+        'unique' => 'La cédula de identidad ya está registrada.',
+    ],
+    'telefono' => [
+        'unique' => 'El teléfono ya está registrado.',
+    ],
+    'email' => [
+        'unique' => 'El correo electrónico ya está registrado.',
+    ],
+    'name' => [
+        'unique' => 'El nombre de usuario ya está en uso.',
+    ],
     'password' => [
         'min'         => 'La contraseña debe tener al menos :min caracteres.',
         'min.string'  => 'La contraseña debe tener al menos :min caracteres.',

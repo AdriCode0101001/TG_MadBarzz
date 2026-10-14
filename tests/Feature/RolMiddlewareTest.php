@@ -11,8 +11,7 @@ use Tests\TestCase;
  * Matriz de permisos por rol:
  *  - Administrador: acceso total, incluida la GESTIÓN del catálogo
  *    (crear/editar/borrar tipos de membresía y descuentos).
- *  - Recepcionista: clientes, pagos, asistencias, personal (ver/crear/
- *    editar), asignar membresías, catálogo SOLO LECTURA. NO arma rutinas.
+ *  - Recepcionista: clientes, pagos, asistencias, asignar membresías, catálogo SOLO LECTURA. NO arma rutinas.
  *  - Entrenador: clientes (sin borrar), arma SUS rutinas, asistencias,
  *    registra pagos (sin editar/borrar), asigna membresías, catálogo SOLO
  *    LECTURA. NO gestiona personal.
@@ -130,9 +129,6 @@ class RolMiddlewareTest extends TestCase
             'descuentos'         => ['/descuentos'],
             'grupos_musculares'  => ['/grupos_musculares'],
             'membresia_cliente'  => ['/membresia_cliente'],
-            'recepcionistas'     => ['/recepcionistas'],
-            'entrenadores'       => ['/entrenadores'],       // hoy fallaba: debe poder
-            'entrenadores-crear' => ['/entrenadores/create'],
         ];
     }
 
@@ -164,6 +160,11 @@ class RolMiddlewareTest extends TestCase
             'rutinas'                   => ['GET', '/rutinas'],
             'borrar-entrenador'         => ['DELETE', '/entrenadores/1'],
             'borrar-recepcionista'      => ['DELETE', '/recepcionistas/1'],
+            // Gestión de PERSONAL: solo Administrador (ver GestionPersonalSoloAdminTest)
+            'personal-entrenadores'          => ['GET', '/entrenadores'],
+            'personal-entrenadores-crear'    => ['GET', '/entrenadores/create'],
+            'personal-recepcionistas'        => ['GET', '/recepcionistas'],
+            'personal-recepcionistas-crear'  => ['GET', '/recepcionistas/create'],
         ];
     }
 

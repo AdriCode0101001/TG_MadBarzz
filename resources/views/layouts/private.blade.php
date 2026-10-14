@@ -885,8 +885,8 @@
                         </li>
                     @endif
 
-                    @if (in_array($userRol, ['Administrador', 'Recepcionista']))
-                        <!-- Personal - Solo Administrador y Recepcionista (el Entrenador no gestiona personal) -->
+                    @if ($userRol === 'Administrador')
+                        <!-- Personal - SOLO Administrador (la protección real está en las rutas) -->
                         <li class="has-arrow">
                             <a href="javascript:void()">
                                 <i class="fas fa-users"></i>
@@ -904,13 +904,11 @@
                                         <i class="fas fa-id-badge"></i> Recepcionistas
                                     </a>
                                 </li>
-                                @if ($userRol === 'Administrador')
-                                    <li>
-                                        <a href="{{ route('administradores.index') }}">
-                                            <i class="fas fa-user-shield"></i>Administradores
-                                        </a>
-                                    </li>
-                                @endif
+                                <li>
+                                    <a href="{{ route('administradores.index') }}">
+                                        <i class="fas fa-user-shield"></i>Administradores
+                                    </a>
+                                </li>
                             </ul>
                         </li>
                     @endif
@@ -938,7 +936,12 @@
                                     @if (in_array($userRol, ['Administrador', 'Entrenador']))
                                         <li><a href="{{ route('rutinas.index') }}"><i class="fa-solid fa-list-check me-2"></i>Rutinas</a></li>
                                     @endif
-                                    <li><a href="{{ route('grupos_musculares.index') }}"><i class="fa-solid fa-dumbbell me-2"></i>Grupos Musculares</a></li>
+                                    {{-- Grupos Musculares es un catálogo para armar rutinas: a la Recepcionista
+                                         no le aporta (no arma rutinas), así que no se lista en su menú. Solo
+                                         el menú: el permiso de lectura de la ruta no cambia. --}}
+                                    @if ($userRol !== 'Recepcionista')
+                                        <li><a href="{{ route('grupos_musculares.index') }}"><i class="fa-solid fa-dumbbell me-2"></i>Grupos Musculares</a></li>
+                                    @endif
                                     <li><a href="{{ route('horarios_entrenadores.index') }}"><i class="fa-solid fa-clock me-2"></i>Horario de Entrenadores</a></li>
                                     @if ($userRol === 'Administrador')
                                         <li><a href="{{ route('calendario_musculos.index') }}"><i class="fa-solid fa-calendar-days me-2"></i>Calendario de Músculos</a></li>

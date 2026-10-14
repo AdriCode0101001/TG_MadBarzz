@@ -57,11 +57,7 @@ public function index(Request $request)
             'punto_atencion' => 'required|string|max:255',
             'estado' => 'required|in:activo,inactivo'
         ], [
-            'ci.unique' => 'La cédula ya está registrada.',
-            'telefono.unique' => 'El teléfono ya está registrado.',
             'telefono.regex'  => 'El teléfono debe estar en formato internacional (ej. +59171234567).',
-            'name.unique' => 'El nombre de usuario ya está en uso.',
-            'email.unique' => 'El correo electrónico ya está registrado.',
         ]);
 
         $persona = Persona::create($request->only([
@@ -121,11 +117,7 @@ public function index(Request $request)
             // contraseña (ver recepcionistas/edit.blade.php).
             'password' => ['nullable', 'string', Password::defaults()],
         ], [
-            'ci.unique' => 'La cédula ya está registrada.',
-            'telefono.unique' => 'El teléfono ya está registrado.',
             'telefono.regex'  => 'El teléfono debe estar en formato internacional (ej. +59171234567).',
-            'name.unique' => 'El nombre de usuario ya está en uso.',
-            'email.unique' => 'El correo electrónico ya está registrado.',
         ]);
 
         // Actualiza persona

@@ -48,7 +48,11 @@
                                     @endif
                                 </td>
                                 <td class="text-end">
-                                    <form method="POST" action="{{ route('login_lockouts.destroy', $registro) }}" onsubmit="return confirm('¿Desbloquear a &quot;{{ $registro->login }}&quot; ({{ $registro->ip }}) ahora mismo?');">
+                                    <form method="POST" action="{{ route('login_lockouts.destroy', $registro) }}" data-confirm="Se liberará el bloqueo de &quot;{{ $registro->login }}&quot; ({{ $registro->ip }}) y podrá volver a intentar iniciar sesión. No se elimina ninguna cuenta."
+                                          data-confirm-title="¿Desbloquear a este usuario?"
+                                          data-confirm-button="Sí, desbloquear"
+                                          data-confirm-icon="question"
+                                          data-confirm-color="#198754">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-success">
