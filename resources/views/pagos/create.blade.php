@@ -58,7 +58,8 @@
                                     @foreach($membresias as $membresia)
                                         <option value="{{ $membresia->id_membresia }}"
                                                 data-precio="{{ $membresia->precio }}"
-                                                data-fecha-fin="{{ \Carbon\Carbon::parse($membresia->fecha_fin_prevista)->format('d/m/Y') }}">
+                                                data-fecha-fin="{{ \Carbon\Carbon::parse($membresia->fecha_fin_prevista)->format('d/m/Y') }}"
+                                                data-fecha-fin-sin-regalo="{{ \Carbon\Carbon::parse($membresia->fecha_fin_sin_regalo)->format('d/m/Y') }}">
                                             {{ $membresia->tipo_membresia }} - Bs {{ number_format($membresia->precio, 2) }}
                                         </option>
                                     @endforeach
@@ -75,7 +76,7 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-dark dark-text-white" for="fecha_fin_info">Fin de membresía (automático)</label>
                                 <input type="text" id="fecha_fin_info" class="form-control" value="Elija una membresía" readonly disabled>
-                                <small class="text-muted">Duración de la membresía + 1 día de regalo.</small>
+                                <small class="text-muted">Se calcula según el cliente: el día de regalo solo se suma en su primera inscripción.</small>
                             </div>
 
                             {{-- Descuento --}}
@@ -260,7 +261,19 @@
             return;
         }
 
-        fechaFinInfo.value = op.dataset.fechaFin;
+        // La fecha depende del cliente (mismo criterio que el servidor):
+        //  - con membresía vigente → se acumula (fin calculado por el servidor)
+        //  - ya tuvo membresía antes → renovación exacta, sin día de regalo
+        //  - primera inscripción → con día de regalo
+        var cid  = parseInt(clienteSel.value, 10);
+        var acu  = ACUMULACION[clienteSel.value];
+        if (acu && acu.nuevoFin && acu.nuevoFin[op.value]) {
+            fechaFinInfo.value = acu.nuevoFin[op.value];
+        } else if (cid && CON_HISTORIAL.indexOf(cid) !== -1) {
+            fechaFinInfo.value = op.dataset.fechaFinSinRegalo;
+        } else {
+            fechaFinInfo.value = op.dataset.fechaFin;
+        }
 
         var precio = parseFloat(op.dataset.precio) || 0;
         var od = descuentoSel.options[descuentoSel.selectedIndex];
@@ -268,8 +281,12 @@
         montoInfo.value = (precio * (1 - pct / 100)).toFixed(2);
     }
 
+    var ACUMULACION  = @json($acumulacion);
+    var CON_HISTORIAL = @json($conHistorial);
+
     membresiaSel.addEventListener('change', actualizar);
     descuentoSel.addEventListener('change', actualizar);
+    clienteSel.addEventListener('change', actualizar);
     actualizar();
 
     // ── Pago en 2 Cuotas (Etapa 6) ───────────────────────────────────────────
@@ -332,9 +349,7 @@
     // Mapa (del servidor) de clientes con membresía vigente: hasta cuándo llega
     // y qué fin tendría la nueva por tipo de membresía. Solo es un aviso: el
     // servidor recalcula y decide igual, aunque se salte este diálogo.
-    var ACUMULACION = @json($acumulacion);
-
-    var form        = document.getElementById('formPago');
+    var form       = document.getElementById('formPago');
     var modal       = document.getElementById('modalAcumular');
     var acuHasta    = document.getElementById('acuHasta');
     var acuNuevoFin = document.getElementById('acuNuevoFin');

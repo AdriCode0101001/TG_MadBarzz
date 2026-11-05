@@ -5,12 +5,15 @@ namespace App\Services;
 use App\Models\Cliente;
 use App\Models\Descuento;
 use App\Models\Membresia;
+use App\Models\MembresiaCliente;
+use App\Models\Scopes\SedeScope;
 use Illuminate\Support\Carbon;
 
 /**
  * Reglas de negocio para asignar membresías:
  *  - fecha_inicio: SIEMPRE la fecha del registro (el servidor la impone).
- *  - fecha_fin: duración según tipo_membresia + 1 DÍA DE REGALO.
+ *  - fecha_fin: duración según tipo_membresia. El 1 DÍA DE REGALO se suma
+ *    SOLO en la primera inscripción del cliente; las renovaciones son exactas.
  *  - precio_final: precio de la membresía menos el descuento elegido.
  *
  * ACUMULACIÓN: si el cliente ya tiene una membresía vigente al pagar otra, la
@@ -29,12 +32,15 @@ class MembresiaService
     /**
      * @return array{fecha_inicio: string, fecha_fin: string}
      */
-    public function calcularFechas(Membresia $membresia, ?Carbon $inicio = null): array
+    public function calcularFechas(Membresia $membresia, ?Carbon $inicio = null, bool $conRegalo = true): array
     {
         $inicio = ($inicio ?? now())->copy()->startOfDay();
 
-        $fin = $this->sumarDuracion($inicio->copy(), $membresia->tipo_membresia)
-            ->addDays(self::DIAS_REGALO);
+        $fin = $this->sumarDuracion($inicio->copy(), $membresia->tipo_membresia);
+
+        if ($conRegalo) {
+            $fin->addDays(self::DIAS_REGALO);
+        }
 
         return [
             'fecha_inicio' => $inicio->toDateString(),
@@ -80,7 +86,27 @@ class MembresiaService
             ) + ['acumulada' => true];
         }
 
-        return $this->calcularFechas($membresia) + ['acumulada' => false];
+        // El día de regalo es SOLO para la primera inscripción del cliente.
+        // Si ya tuvo alguna membresía (aunque esté vencida), renueva sin regalo.
+        return $this->calcularFechas(
+            $membresia,
+            null,
+            $this->esPrimeraMembresia((int) $cliente->id_cliente)
+        ) + ['acumulada' => false];
+    }
+
+    /**
+     * ¿El cliente nunca tuvo una membresía? (sin importar sede ni estado).
+     * $excluirId permite ignorar el propio registro al editarlo.
+     */
+    public function esPrimeraMembresia(int $idCliente, ?int $excluirId = null): bool
+    {
+        return ! MembresiaCliente::withoutGlobalScope(SedeScope::class)
+            ->where('id_cliente', $idCliente)
+            // Una pendiente de pago nunca llegó a activarse: no gasta el regalo.
+            ->where('estado', '!=', MembresiaCliente::ESTADO_PENDIENTE)
+            ->when($excluirId, fn ($q) => $q->where('id', '!=', $excluirId))
+            ->exists();
     }
 
     public function precioFinal(Membresia $membresia, ?Descuento $descuento = null): float

@@ -96,8 +96,19 @@ public function index(Request $request)
         // Cada membresía lleva su fecha de fin prevista (si se registra hoy),
         // calculada por el MISMO servicio que usará el guardado.
         $membresias = Membresia::all()->each(function ($m) use ($servicio) {
-            $m->fecha_fin_prevista = $servicio->calcularFechas($m)['fecha_fin'];
+            $m->fecha_fin_prevista     = $servicio->calcularFechas($m)['fecha_fin'];
+            // Para clientes que ya tuvieron membresía: sin día de regalo.
+            $m->fecha_fin_sin_regalo   = $servicio->calcularFechas($m, null, false)['fecha_fin'];
         });
+
+        // Clientes que ya tuvieron una membresía (pagada): su renovación NO lleva
+        // el día de regalo. Misma regla que MembresiaService::esPrimeraMembresia.
+        $conHistorial = MembresiaCliente::withoutGlobalScope(SedeScope::class)
+            ->where('estado', '!=', MembresiaCliente::ESTADO_PENDIENTE)
+            ->distinct()
+            ->pluck('id_cliente')
+            ->map(fn ($id) => (int) $id)
+            ->values();
 
         $descuentos = Descuento::activos()->orderBy('porcentaje')->get();
 
@@ -111,7 +122,7 @@ public function index(Request $request)
         // si se acumula. Es solo informativo; el servidor recalcula al guardar.
         $acumulacion = $this->infoAcumulacion($clientes, $membresias, $servicio);
 
-        return view('pagos.create', compact('clientes', 'membresias', 'descuentos', 'qrVigente', 'acumulacion'));
+        return view('pagos.create', compact('clientes', 'membresias', 'descuentos', 'qrVigente', 'acumulacion', 'conHistorial'));
     }
 
     /**

@@ -184,9 +184,9 @@ class PagoAcumulacionMembresiaTest extends TestCase
         $this->assertFalse($vinculos->contains(null));
     }
 
-    // ── 4. Membresía VENCIDA no acumula: arranca hoy con regalo ──────────────
+    // ── 4. Membresía VENCIDA no acumula: arranca hoy SIN regalo (ya no es la primera) ──
 
-    public function test_membresia_vencida_no_acumula_arranca_hoy_con_regalo(): void
+    public function test_membresia_vencida_no_acumula_arranca_hoy_sin_regalo(): void
     {
         $this->travelTo(Carbon::parse('2030-07-15 10:00:00', config('app.timezone')));
 
@@ -199,11 +199,12 @@ class PagoAcumulacionMembresiaTest extends TestCase
 
         $this->registrarPago($cliente, $mensual)->assertRedirect(route('pagos.index'));
 
-        // La nueva arranca HOY con día de regalo (no acumula sobre la vencida)
+        // La nueva arranca HOY y dura exacto 1 mes: el regalo fue solo de la
+        // primera inscripción (no acumula sobre la vencida)
         $this->assertDatabaseHas('membresia_cliente', [
             'id_cliente'   => $cliente->id_cliente,
             'fecha_inicio' => '2030-07-15',
-            'fecha_fin'    => '2030-08-16',
+            'fecha_fin'    => '2030-08-15',
         ]);
         // Y el histórico conserva la vencida
         $this->assertSame(2, MembresiaCliente::where('id_cliente', $cliente->id_cliente)->count());

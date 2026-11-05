@@ -45,8 +45,12 @@ class MembresiaClienteController extends Controller
         // membresía se calcula desde esa fecha de inicio.
         $inicioOriginal = Carbon::parse($membresiaCliente->fecha_inicio);
 
-        $membresias = Membresia::all()->each(function ($m) use ($servicio, $inicioOriginal) {
-            $m->fecha_fin_prevista = $servicio->calcularFechas($m, $inicioOriginal)['fecha_fin'];
+        $membresias = Membresia::all()->each(function ($m) use ($servicio, $inicioOriginal, $membresiaCliente) {
+            $m->fecha_fin_prevista = $servicio->calcularFechas(
+                $m,
+                $inicioOriginal,
+                $servicio->esPrimeraMembresia((int) $membresiaCliente->id_cliente, $membresiaCliente->id)
+            )['fecha_fin'];
         });
 
         $descuentos = Descuento::activos()->orderBy('porcentaje')->get();
@@ -72,7 +76,12 @@ class MembresiaClienteController extends Controller
 
         // Se conserva la fecha de inicio original del registro; la fecha fin se
         // recalcula en el servidor según el tipo de membresía elegido.
-        $fechas = $servicio->calcularFechas($membresia, Carbon::parse($membresiaCliente->fecha_inicio));
+        // El regalo solo lo lleva la primera membresía del cliente.
+        $fechas = $servicio->calcularFechas(
+            $membresia,
+            Carbon::parse($membresiaCliente->fecha_inicio),
+            $servicio->esPrimeraMembresia((int) $request->id_cliente, $membresiaCliente->id)
+        );
 
         $membresiaCliente->update([
             'id_cliente'       => $request->id_cliente,

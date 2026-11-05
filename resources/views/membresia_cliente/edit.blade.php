@@ -67,7 +67,7 @@
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark dark-text-white" for="fecha_fin_info">Fecha Fin (automática)</label>
                             <input type="text" id="fecha_fin_info" class="form-control" value="Elija una membresía" readonly disabled>
-                            <small class="text-muted">Duración de la membresía + 1 día de regalo, desde la fecha de inicio.</small>
+                            <small class="text-muted">Duración de la membresía desde la fecha de inicio (+1 día de regalo solo si es la primera del cliente).</small>
                         </div>
 
                         <div class="col-md-6">
