@@ -5,9 +5,10 @@
   <div class="mb-auth__wrap">
 
     <div class="mb-auth__visual">
-      <div class="bg" style="background-image:url('{{ asset('assets/images/login-bg.jpg') }}');"></div>
+      @php $loginBg = \App\Services\ImagenHomeService::fondoLogin(); @endphp
+      <div class="bg" style="background-image:url('{{ $loginBg['url'] }}'); background-position: {{ $loginBg['pos'] }};"></div>
       <div class="ov"></div>
-      <div class="mb-auth-logo"><img src="{{ asset('assets_private/images/log_text_mad.png') }}" alt="MadBarzz"></div>
+      <div class="mb-auth-logo"><img src="{{ \App\Services\ImagenHomeService::logoTexto() }}" alt="MadBarzz"></div>
       <div class="mb-auth-quote">
         <h2>Elegí una<br>nueva contraseña.</h2>
         <p>Ya casi está — poné tu nueva contraseña para volver a entrenar.</p>

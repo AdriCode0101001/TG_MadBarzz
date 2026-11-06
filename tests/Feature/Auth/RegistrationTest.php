@@ -2,60 +2,64 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\Sede;
+use App\Models\Persona;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * El auto-registro público está DESACTIVADO: los clientes los da de alta
+ * únicamente el personal desde el panel interno. /register (GET y POST)
+ * redirige al login y no crea ninguna cuenta.
+ */
 class RegistrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_registration_screen_can_be_rendered(): void
+    public function test_get_register_redirige_al_login(): void
     {
-        $response = $this->get('/register');
-
-        $response->assertStatus(200);
+        $this->get('/register')->assertRedirect(route('login', absolute: false));
     }
 
-    /**
-     * El registro público (Etapa 0) ya fue reactivado: RegisteredUserController
-     * crea un cliente COMPLETO (persona + user + cliente), no el User suelto
-     * de Breeze. Cobertura más a fondo (duplicados, rol forzado, validación,
-     * rate limit) vive en RegistroPublicoClienteTest, VerificacionEmailEtapa3Test
-     * y RegistroSeguridadEtapa4Test — este test confirma el camino feliz
-     * contra la ruta REAL /register (antes esos usaban una ruta de test
-     * porque /register estaba bloqueado).
-     */
-    public function test_new_users_can_register(): void
+    public function test_post_register_no_crea_cuentas_y_redirige_al_login(): void
     {
-        $sede = Sede::create(['nombre' => 'Sede Registro', 'direccion' => 'Calle 1', 'activo' => true]);
+        $personas = Persona::count();
+        $usuarios = User::count();
 
-        $response = $this->post('/register', [
+        $this->post('/register', [
             'nombre_completo'       => 'Ana',
             'apellido_paterno'      => 'Gutierrez',
             'apellido_materno'      => 'Rojas',
             'ci'                    => 'CIREGTEST1',
-            'telefono'              => '71234567',
+            'telefono'              => '+59171234567',
             'genero'                => 'femenino',
             'fecha_nacimiento'      => '1998-05-20',
-            'id_sede'               => $sede->id_sede,
             'email'                 => 'nuevocliente@example.com',
             'password'              => 'Contrasena123',
             'password_confirmation' => 'Contrasena123',
             'acepto_terminos'       => '1',
-        ]);
+        ])->assertRedirect(route('login', absolute: false));
 
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $this->assertGuest();
+        $this->assertSame($personas, Persona::count());
+        $this->assertSame($usuarios, User::count());
+        $this->assertDatabaseMissing('users', ['email' => 'nuevocliente@example.com']);
+    }
 
-        $usuario = User::where('email', 'nuevocliente@example.com')->firstOrFail();
-        $this->assertTrue($usuario->hasRole('Cliente'));
-        $this->assertNull($usuario->email_verified_at); // sin verificar hasta que confirme el correo
-        $this->assertDatabaseHas('clientes', ['id_usuario' => $usuario->id]);
+    public function test_pantalla_de_login_no_ofrece_registro(): void
+    {
+        $html = $this->get('/login')->assertOk()->getContent();
 
-        // Grupo 3 legal: constancia de que aceptó Términos/Privacidad al registrarse.
-        $cliente = \App\Models\Cliente::where('id_usuario', $usuario->id)->firstOrFail();
-        $this->assertNotNull($cliente->terminos_aceptados_en);
+        $this->assertStringNotContainsString('Crear cuenta', $html);
+        $this->assertStringNotContainsString('action="' . url('/register') . '"', $html);
+        $this->assertStringNotContainsString('data-tab="register"', $html);
+        $this->assertStringContainsString('Iniciar sesión', $html);
+    }
+
+    public function test_el_sitio_publico_no_enlaza_a_register(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('/register', $html);
     }
 }

@@ -33,7 +33,7 @@ class Cliente extends Model
             ->setDescriptionForEvent(fn (string $event) => "Cliente {$event}");
     }
 
-    /** Misma edad mínima que RegisteredUserController::EDAD_MINIMA (auto-registro). */
+    /** Edad mínima para ser considerado adulto (por debajo, se exige tutor para biometría). */
     public const EDAD_MINIMA_ADULTO = 18;
 
     protected $table = 'clientes';

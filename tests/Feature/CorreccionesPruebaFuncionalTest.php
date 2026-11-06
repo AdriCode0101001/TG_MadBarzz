@@ -161,24 +161,6 @@ class CorreccionesPruebaFuncionalTest extends TestCase
         }
     }
 
-    public function test_duplicados_muestran_mensajes_amables_en_registro_publico(): void
-    {
-        $existente = $this->persona('DUP3');
-        $sede = Sede::create(['nombre' => 'Sede T', 'direccion' => 'x', 'activo' => true]);
-
-        $this->from('/register')->post('/register', [
-            'nombre_completo' => 'Pub', 'apellido_paterno' => 'Lico', 'apellido_materno' => 'Test',
-            'ci' => $existente->ci, 'telefono_codigo' => '+591',
-            'telefono_numero' => ltrim(substr($existente->telefono, 4), '0') ?: '1',
-            'genero' => 'masculino', 'fecha_nacimiento' => '1990-01-01', 'id_sede' => $sede->id_sede,
-            'email' => 'publico@madbarzz.test', 'password' => 'password123', 'password_confirmation' => 'password123',
-            'acepto_terminos' => '1',
-        ]);
-
-        $errores = session('errors')->getBag('default');
-        $this->assertSame('La cédula de identidad ya está registrada.', $errores->first('ci'));
-    }
-
     public function test_nombres_de_campo_tecnicos_se_traducen_en_otros_mensajes(): void
     {
         $this->assertSame('cédula de identidad', __('validation.attributes.ci'));

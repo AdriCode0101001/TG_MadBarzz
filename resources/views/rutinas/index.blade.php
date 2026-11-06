@@ -172,11 +172,11 @@
     display: flex; flex-direction: column; gap: .35rem;
     text-decoration: none; color: inherit;
     border-radius: .5rem; padding: .35rem .4rem;
-    background: rgba(99,102,241,.08);
+    background: rgba(255, 107, 26,.08);
     transition: background .15s;
     flex: 1;
 }
-a.mb-rut-dia:hover { background: rgba(99,102,241,.18); color: inherit; }
+a.mb-rut-dia:hover { background: rgba(255, 107, 26,.18); color: inherit; }
 .mb-rut-dia--tengo { background: rgba(30,201,139,.12); }
 a.mb-rut-dia--tengo:hover { background: rgba(30,201,139,.22); }
 .mb-rut-dia--sinmusculo { background: transparent; cursor: not-allowed; }

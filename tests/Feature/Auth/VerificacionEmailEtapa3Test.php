@@ -2,30 +2,27 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Models\Cliente;
+use App\Models\Persona;
 use App\Models\Rol;
 use App\Models\Sede;
 use App\Models\User;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 /**
- * Etapa 3 del auto-registro: verificación de email.
+ * Verificación de email. User implementa MustVerifyEmail: un cliente con el
+ * correo sin verificar es desviado a "Verificá tu correo" antes de entrar al
+ * portal, mientras que el personal y los clientes que da de alta el personal
+ * quedan verificados desde que se crean (ver los User::create() en
+ * ClienteController/RecepcionistaController/EntrenadorController/
+ * AdministradorController/UserController).
  *
- * User implementa MustVerifyEmail, así que Registered dispara el correo de
- * verificación (en modo log, ver AppServiceProvider::boot()). Solo el
- * cliente AUTO-REGISTRADO debe empezar sin verificar: el personal y los
- * clientes que da de alta el personal quedan verificados desde que se crean
- * (ver los User::create() en ClienteController/RecepcionistaController/
- * EntrenadorController/AdministradorController/UserController).
- *
- * El registro público sigue bloqueado (Etapa 0): estos tests registran una
- * ruta propia, solo para el proceso de test, igual que
- * RegistroPublicoClienteTest.
+ * El auto-registro público está desactivado: el cliente "sin verificar" de
+ * estos tests se arma directo en la BD (p. ej. una cuenta antigua).
  */
 class VerificacionEmailEtapa3Test extends TestCase
 {
@@ -33,57 +30,38 @@ class VerificacionEmailEtapa3Test extends TestCase
 
     private static int $seq = 0;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        Route::post('/test-solo/registro-publico', [RegisteredUserController::class, 'store'])
-            ->middleware('web');
-    }
-
-    private function payload(array $extra = []): array
+    private function registrarYObtenerUsuario(): User
     {
         self::$seq++;
         $s = self::$seq;
 
         $sede = Sede::create(['nombre' => "Sede Etapa3 {$s}", 'direccion' => 'Calle 1', 'activo' => true]);
+        $persona = Persona::create([
+            'nombre_completo'  => 'Vero',
+            'apellido_paterno' => 'Sanchez',
+            'apellido_materno' => 'Diaz',
+            'ci'               => "CIVER{$s}",
+            'telefono'         => '6' . str_pad((string) $s, 7, '0', STR_PAD_LEFT),
+            'genero'           => 'femenino',
+            'fecha_nacimiento' => '1996-02-14',
+        ]);
+        $usuario = User::create([
+            'name'              => "vero.sanchez{$s}",
+            'email'             => "verif{$s}@test.com",
+            'password'          => bcrypt('Contrasena123'),
+            'rol_id'            => Rol::firstOrCreate(['nombre' => 'Cliente'])->id,
+            'id_sede'           => $sede->id_sede,
+            'email_verified_at' => null,
+        ]);
+        Cliente::create([
+            'id_persona'     => $persona->id_persona,
+            'id_usuario'     => $usuario->id,
+            'dias_asistidos' => 0,
+            'estado'         => 'activo',
+            'id_sede'        => $sede->id_sede,
+        ]);
 
-        return array_merge([
-            'nombre_completo'       => 'Vero',
-            'apellido_paterno'      => 'Sanchez',
-            'apellido_materno'      => 'Diaz',
-            'ci'                    => "CIVER{$s}",
-            'telefono'              => '6' . str_pad((string) $s, 7, '0', STR_PAD_LEFT),
-            'genero'                => 'femenino',
-            'fecha_nacimiento'      => '1996-02-14',
-            'id_sede'               => $sede->id_sede,
-            'email'                 => "verif{$s}@test.com",
-            'password'              => 'Contrasena123',
-            'password_confirmation' => 'Contrasena123',
-            'acepto_terminos'       => '1',
-        ], $extra);
-    }
-
-    private function registrarYObtenerUsuario(array $extra = []): User
-    {
-        $datos = $this->payload($extra);
-        $this->post('/test-solo/registro-publico', $datos);
-
-        return User::where('email', $datos['email'])->firstOrFail();
-    }
-
-    // ── El auto-registro dispara el correo y queda sin verificar ────────────
-
-    public function test_cliente_autoregistrado_queda_sin_verificar_y_recibe_el_correo(): void
-    {
-        Notification::fake();
-
-        $usuario = $this->registrarYObtenerUsuario();
-
-        $this->assertNull($usuario->email_verified_at);
-        $this->assertFalse($usuario->fresh()->hasVerifiedEmail());
-
-        Notification::assertSentTo($usuario, VerifyEmail::class);
+        return $usuario->fresh();
     }
 
     // ── Sin verificar: ve el aviso, no el contenido del portal ───────────────

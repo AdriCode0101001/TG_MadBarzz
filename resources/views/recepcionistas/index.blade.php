@@ -36,7 +36,7 @@
                     </div>
 
                     <div style="display:flex;justify-content:center;margin-top:-32px;position:relative;z-index:1;">
-                        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);
+                        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#ff6b1a,#ff8a3d);
                                     display:flex;align-items:center;justify-content:center;
                                     border:3px solid var(--card-bg,#1e2139);font-size:1.4rem;font-weight:700;color:#fff;">
                             {{ $inicial }}
@@ -51,7 +51,7 @@
 
                         <div class="d-flex flex-column gap-2 text-start">
                             <div class="d-flex align-items-center gap-2">
-                                <i class="fa-solid fa-id-card" style="color:#6366f1;font-size:.8rem;width:16px;"></i>
+                                <i class="fa-solid fa-id-card" style="color:#ff6b1a;font-size:.8rem;width:16px;"></i>
                                 <span style="font-size:.82rem;color:var(--mbf-text,#e2e8f0);">{{ $r->persona->ci ?? '—' }}</span>
                             </div>
                             <div class="d-flex align-items-center gap-2">

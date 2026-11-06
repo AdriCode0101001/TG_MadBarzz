@@ -83,7 +83,7 @@
 <style>
 .mb-avatar-sm {
     width:32px;height:32px;border-radius:50%;
-    background:rgba(99,102,241,.15);color:#6366f1;
+    background:rgba(255, 107, 26,.15);color:#ff6b1a;
     display:flex;align-items:center;justify-content:center;
     font-size:.8rem;flex-shrink:0;
 }

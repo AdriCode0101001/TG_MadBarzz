@@ -1,7 +1,7 @@
 /* ============================================================================
    MadBarzz · Piel "Filament" (mb-skin-filament.css)
    ----------------------------------------------------------------------------
-   Paleta unificada con el panel Filament (/estadisticas): acentos índigo/violeta
+   Paleta unificada con el panel Filament (/estadisticas): acentos naranja MadBarzz
    y superficies neutras (zinc), en modo claro y oscuro.
 
    SOLO VISUAL y SOLO se activa en las páginas cuyo <body> lleva la clase
@@ -10,18 +10,18 @@
    cambiar los tokens --mbf-* de aquí abajo.
 
    El truco central: dentro de la piel se REMAPEA la marca de app-ui.css
-   (--mb-brand naranja → índigo), así todos los componentes existentes
+   (--mb-brand → acento de esta piel, hoy naranja MadBarzz), así todos los componentes existentes
    (botones, paginación, avatares, focos, hovers) adoptan el acento nuevo
    sin duplicar reglas.
    ============================================================================ */
 
 /* ------------------------------------------------------------------ Tokens */
 body.mb-skin .content-body {
-    /* Acento (Filament indigo/violet) */
-    --mbf-primary:      #6366f1;   /* indigo-500 */
-    --mbf-primary-600:  #4f46e5;   /* indigo-600 */
-    --mbf-accent:       #8b5cf6;   /* violet-500 */
-    --mbf-primary-soft: rgba(99, 102, 241, .12);
+    /* Acento: naranja MadBarzz (antes índigo/violeta de Filament) */
+    --mbf-primary:      #ff6b1a;   /* naranja marca */
+    --mbf-primary-600:  #e85d10;   /* naranja marca (oscuro) */
+    --mbf-accent:       #ff8a3d;   /* naranja claro */
+    --mbf-primary-soft: rgba(255, 107, 26, .12);
 
     /* Superficies — MODO CLARO (Filament light) */
     --mbf-bg:         #f4f4f5;     /* zinc-100 */
@@ -100,12 +100,12 @@ body.mb-skin .content-body .mb-sticky-head th {
 /* riel de scroll superior: naranja → índigo */
 body.mb-skin .content-body .mb-top-scroll-static::-webkit-scrollbar-thumb,
 body.mb-skin .content-body .mb-top-scroll-fixed::-webkit-scrollbar-thumb {
-    background: rgba(99, 102, 241, .55);
+    background: rgba(255, 107, 26, .55);
 }
 
 /* ------------------------------------------------------------------ Botones */
 body.mb-skin .content-body .btn-primary {
-    box-shadow: 0 4px 14px rgba(99, 102, 241, .30);
+    box-shadow: 0 4px 14px rgba(255, 107, 26, .30);
 }
 body.mb-skin .content-body .btn-outline-primary {
     color: var(--mbf-primary);
@@ -140,7 +140,7 @@ body.mb-skin .content-body .form-control::placeholder { color: var(--mbf-text-mu
 /* ------------------------------------------------------------------ Paginación */
 body.mb-skin .content-body .pagination .page-link { color: var(--mbf-text); }
 body.mb-skin .content-body .pagination .page-item.active .page-link {
-    box-shadow: 0 4px 12px rgba(99, 102, 241, .30);
+    box-shadow: 0 4px 12px rgba(255, 107, 26, .30);
 }
 
 /* ------------------------------------------------------------------ Detalles varios */
@@ -183,14 +183,14 @@ body.mb-skin .content-body .mb-cli-hero__nombre { color: #fff; }
    ============================================================================ */
 body.mb-dash:not([data-theme-version="dark"]) .content-body {
     /* Tintes claros derivados del acento de marca (índigo/violeta) */
-    --mbf-dash-header-tint: rgba(99, 102, 241, .05);
+    --mbf-dash-header-tint: rgba(255, 107, 26, .05);
     --mbf-dash-card-bot:    #fbfbfe;   /* blanco con un velo índigo casi imperceptible */
     --mbf-dash-border:      #e9e8f6;   /* borde con tinte índigo, un paso sobre zinc-200 */
 
     /* Lienzo con dos orbes de marca muy suaves, en la línea del hero */
     background:
-        radial-gradient(1100px 420px at 100% -6%, rgba(99, 102, 241, .07), transparent 60%),
-        radial-gradient(880px 380px at -6% 6%,   rgba(139, 92, 246, .05), transparent 55%),
+        radial-gradient(1100px 420px at 100% -6%, rgba(255, 107, 26, .07), transparent 60%),
+        radial-gradient(880px 380px at -6% 6%,   rgba(255, 138, 61, .05), transparent 55%),
         var(--mbf-bg) !important;
 }
 

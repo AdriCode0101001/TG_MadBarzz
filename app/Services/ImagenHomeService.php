@@ -16,6 +16,10 @@ class ImagenHomeService
      * Claves válidas => [etiqueta legible, tamaño recomendado, grupo para el formulario del admin].
      */
     const CLAVES = [
+        // 4to elemento (opcional): imagen que se muestra si el admin no subió ninguna.
+        'home_logo_emblema'         => ['Emblema (cabecera, panel, acceso e ícono de pestaña)',      '664x664',  'Logo de MadBarzz', 'assets_private/images/logo_mad.png'],
+        'home_logo_texto'           => ['Logo de texto (secciones, menú, panel y acceso)',  '952x247',  'Logo de MadBarzz', 'assets/images/log_text_mad.png'],
+        'login_fondo'               => ['Imagen de Inicio de sesión',  '1100x1100', 'Inicio de sesión', 'assets/images/login-bg.jpg'],
         'home_hero_1'               => ['Hero · Slide 1',            '1920x770', 'Hero / Carrusel'],
         'home_hero_2'               => ['Hero · Slide 2',            '1920x770', 'Hero / Carrusel'],
         'home_hero_3'               => ['Hero · Slide 3',            '1920x770', 'Hero / Carrusel'],
@@ -41,6 +45,7 @@ class ImagenHomeService
      * reencuadre que no existe.
      */
     const POSICION_POR_DEFECTO = [
+        'login_fondo'              => 'centro',
         'home_hero_1'              => 'centro',
         'home_hero_2'              => 'centro',
         'home_hero_3'              => 'centro',
@@ -108,6 +113,33 @@ class ImagenHomeService
             'abajo'  => 'center bottom',
             default  => 'center center',
         };
+    }
+
+    /**
+     * Imagen de fondo de las pantallas de acceso (login, olvidé mi contraseña,
+     * restablecer, confirmar, verificar correo): la que subió el Administrador, o
+     * la de siempre. Devuelve ['url' => ..., 'pos' => valor CSS de background-position].
+     */
+    public static function fondoLogin(): array
+    {
+        $servicio = new self();
+
+        return [
+            'url' => $servicio->url('login_fondo', asset('assets/images/login-bg.jpg')),
+            'pos' => $servicio->posicionCssPara('login_fondo'),
+        ];
+    }
+
+    /** URL del emblema (logo redondo): el que subió el Administrador, o el de siempre. */
+    public static function logoEmblema(): string
+    {
+        return (new self())->url('home_logo_emblema', asset('assets_private/images/logo_mad.png'));
+    }
+
+    /** URL del logo de texto "MADBARZZ": el que subió el Administrador, o el de siempre. */
+    public static function logoTexto(): string
+    {
+        return (new self())->url('home_logo_texto', asset('assets/images/log_text_mad.png'));
     }
 
     /** Atajo para la home: valor CSS de posición ya resuelto para $clave. */

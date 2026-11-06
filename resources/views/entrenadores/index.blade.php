@@ -49,7 +49,9 @@
 
                     <div class="card-body text-center pt-2">
                         <h6 class="fw-bold mb-0" style="color:var(--mbf-text,#e2e8f0);">{{ $nombre ?: '—' }}</h6>
-                        <small class="text-muted">{{ optional($e->user)->email ?? '' }}</small>
+                        {{-- Correo en una sola línea (con "…" si no entra) en vez de partirse a mitad de palabra; el título muestra el completo. --}}
+                        <small class="text-muted d-block" title="{{ optional($e->user)->email ?? '' }}"
+                               style="font-size:.76rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">{{ optional($e->user)->email ?? '' }}</small>
 
                         {{-- Especialidades --}}
                         @if(count($esps))
@@ -62,12 +64,12 @@
 
                         <hr style="border-color:var(--mbf-border,rgba(255,255,255,.07));margin:.75rem 0;">
 
-                        <div class="d-flex justify-content-around text-center">
+                        <div class="d-flex justify-content-around align-items-start gap-3 text-center">
                             <div>
                                 <div style="font-size:.7rem;color:var(--mbf-text-muted,#94a3b8);">CI</div>
                                 <div style="font-size:.82rem;color:var(--mbf-text,#e2e8f0);font-weight:600;">{{ $e->persona->ci ?? '—' }}</div>
                             </div>
-                            <div>
+                            <div style="max-width:62%;">
                                 <div style="font-size:.7rem;color:var(--mbf-text-muted,#94a3b8);">Experiencia</div>
                                 <div style="font-size:.82rem;color:var(--mbf-text,#e2e8f0);font-weight:600;">{{ $e->experiencia ?? '—' }}</div>
                             </div>
@@ -78,7 +80,7 @@
                                 <div style="font-size:.7rem;color:var(--mbf-text-muted,#94a3b8);margin-bottom:.3rem;">Disponibilidad</div>
                                 <div class="d-flex flex-wrap justify-content-center gap-1">
                                     @foreach($disps as $d)
-                                        <span class="badge" style="background:rgba(99,102,241,.15);color:#6366f1;font-size:.68rem;">{{ $d }}</span>
+                                        <span class="badge" style="background:rgba(255, 107, 26,.15);color:#ff6b1a;font-size:.68rem;">{{ $d }}</span>
                                     @endforeach
                                 </div>
                             </div>

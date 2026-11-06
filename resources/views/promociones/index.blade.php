@@ -56,7 +56,7 @@
                             </div>
                             @if($p->administrador)
                             <div class="d-flex align-items-center gap-2">
-                                <i class="fa-solid fa-user-shield" style="color:#6366f1;font-size:.8rem;width:14px;"></i>
+                                <i class="fa-solid fa-user-shield" style="color:#ff6b1a;font-size:.8rem;width:14px;"></i>
                                 <span style="font-size:.8rem;color:var(--mbf-text-muted,#94a3b8);">{{ $p->administrador->persona->nombre_completo ?? '—' }}</span>
                             </div>
                             @endif

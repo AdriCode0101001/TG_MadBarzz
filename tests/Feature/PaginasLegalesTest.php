@@ -35,12 +35,18 @@ class PaginasLegalesTest extends TestCase
         $this->assertStringContainsString('menores de edad', $html);
     }
 
-    public function test_los_completar_pendientes_quedan_visibles_y_resaltados(): void
+    public function test_los_completar_internos_no_se_muestran_al_publico_y_queda_por_definir(): void
     {
-        $html = $this->get('/privacidad')->getContent();
+        foreach (['/privacidad', '/terminos'] as $ruta) {
+            $html = $this->get($ruta)->getContent();
 
-        $this->assertStringContainsString('mb-legal-pendiente', $html);
-        $this->assertStringContainsString('COMPLETAR', $html);
+            $this->assertStringNotContainsString('COMPLETAR', $html, $ruta);
+            $this->assertStringNotContainsString('mb-legal-pendiente">', $html, $ruta);
+            $this->assertStringContainsString('(por definir)', $html, $ruta);
+            // Se presenta como documento en revisión, no como una auditoría interna.
+            $this->assertStringContainsString('Documento en revisión', $html, $ruta);
+            $this->assertStringNotContainsString('auditoría técnica', $html, $ruta);
+        }
     }
 
     public function test_las_tablas_markdown_se_renderizan_como_tabla_html(): void
@@ -54,14 +60,6 @@ class PaginasLegalesTest extends TestCase
     public function test_el_footer_del_sitio_publico_enlaza_ambas_paginas_legales(): void
     {
         $html = $this->get('/')->assertStatus(200)->getContent();
-
-        $this->assertStringContainsString(route('legal.privacidad'), $html);
-        $this->assertStringContainsString(route('legal.terminos'), $html);
-    }
-
-    public function test_la_pantalla_de_registro_enlaza_ambas_paginas_legales(): void
-    {
-        $html = $this->get('/register')->assertStatus(200)->getContent();
 
         $this->assertStringContainsString(route('legal.privacidad'), $html);
         $this->assertStringContainsString(route('legal.terminos'), $html);

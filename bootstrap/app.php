@@ -65,21 +65,10 @@ return Application::configure(basePath: dirname(__DIR__))
             return Limit::perMinute(30)->by($request->ip());
         });
 
-        // Etapa 4 del auto-registro: máximo 5 registros por minuto por IP.
-        // El registro crea 3 filas en BD (persona+user+cliente) y dispara un
-        // correo de verificación — más costoso que un intento de login
-        // fallido, así que amerita el mismo límite (no uno más laxo) para
-        // frenar altas masivas automatizadas. Mismo valor que 'login' para
-        // no inventar un número nuevo sin motivo.
-        RateLimiter::for('register', function (Request $request) {
-            return Limit::perMinute(5)->by($request->ip());
-        });
-
         // Hallazgo 6.7 de la auditoría de seguridad: POST /forgot-password
-        // no tenía NINGÚN límite de ruta (a diferencia de login/register),
+        // no tenía NINGÚN límite de ruta (a diferencia de login),
         // así que alguien podía iterar muchos emails distintos sin freno
-        // (además de disparar el envío real de correos). Mismo criterio que
-        // 'register': 5/min por IP.
+        // (además de disparar el envío real de correos). 5/min por IP.
         RateLimiter::for('password-email', function (Request $request) {
             return Limit::perMinute(5)->by($request->ip());
         });

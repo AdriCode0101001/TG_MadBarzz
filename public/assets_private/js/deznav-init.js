@@ -72,7 +72,10 @@ function getUrlParams(dParam)
 	
 	dezSettingsOptions = {
 		typography: "poppins",
-		version: "light",
+		// Tema guardado por el usuario (claro/oscuro). Antes estaba fijo en "light": en cada carga
+		// la página pasaba un instante por modo CLARO (destello blanco) y recién después volvía al
+		// oscuro. Por defecto oscuro, igual que el resto del sistema.
+		version: (function () { try { return localStorage.getItem('theme') || 'dark'; } catch (e) { return 'dark'; } })(),
 		layout: "vertical",
 		headerBg: "color_1",
 		navheaderBg: "color_1",

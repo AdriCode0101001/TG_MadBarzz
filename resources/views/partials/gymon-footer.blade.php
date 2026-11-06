@@ -4,42 +4,38 @@
      incluye este partial no lo pasa (páginas que no vienen de la ruta "/"),
      se arma acá con el mismo número de siempre. --}}
 @php
-    $waLink = $waLink ?? 'https://wa.me/59176372337?text=Hola,%20quiero%20unirme%20a%20la%20Calistenia%20MadBarzz.';
+    $contenidoHome = $contenidoHome ?? new \App\Services\ContenidoHomeService();
+    $waLink = $waLink ?? $contenidoHome->whatsappLink();
     $imagenesHomeFooter = $imagenesHome ?? new \App\Services\ImagenHomeService();
 @endphp
 
 <style>
-  .mb-legal-links{margin-top:.4rem;font-size:.85rem;opacity:.8;}
+  /* Franja de derechos: la plantilla pone el contenido en una fila (display:flex), por eso el
+     copyright y los enlaces legales quedaban uno al lado del otro y desalineados. Se apilan y
+     se centran: copyright arriba, Política · Términos debajo. */
+  .footer-style-one .footer-p-3.rights .footer-col{flex-direction:column;align-items:center;text-align:center;gap:.4rem;padding:26px 15px;}
+  .footer-style-one .footer-p-3.rights .footer-col p{margin:0;}
+  .mb-legal-links{margin-top:0;font-size:.85rem;opacity:.8;}
   .mb-legal-links a{color:inherit;text-decoration:underline;}
   .mb-legal-links a:hover{color:var(--theme-color,#FD6A01);}
 </style>
 
 <footer id="contacto" class="footer-style-one" style="background-image: url({{ $imagenesHomeFooter->url('home_footer_fondo', asset('images/placeholder-home.svg')) }}); background-position: {{ $imagenesHomeFooter->posicionCssPara('home_footer_fondo') }};">
-  <div class="container">
-    <div class="footer-p-4">
-      <div class="footer-p-4-left">
-        <i class="flaticon-contact-form"></i>
-        <a href="{{ $waLink }}" target="_blank"><h3>únete ahora</h3></a>
-        <span>2 meses a mitad de precio + sin costo de inscripción</span>
-      </div>
-      <div class="footer-p-4-right">
-        <i class="flaticon-stopwatch-1"></i>
-        <a href="{{ $waLink }}" target="_blank"><h3>agenda una visita</h3></a>
-        <span>elegí el horario que más te convenga</span>
-      </div>
-    </div>
-  </div>
   <div class="footer-p-2">
     <div class="container">
       <div class="row">
         <div class="col-lg-4 col-md-6 col-sm-12">
           <div class="footer-col">
             <h3>Información</h3>
-            <p>En Calistenia MadBarzz creemos que la constancia es la clave. Entrenar regularmente mejora tu fuerza, resistencia y bienestar.</p>
+            <p>{{ $contenidoHome->get('info_texto') }}</p>
             <ul class="social-media">
-              <li><a href="https://www.facebook.com/MadBarzz" target="_blank" aria-label="Facebook de MadBarzz"><i class="fa-brands fa-facebook-f"></i></a></li>
-              <li><a href="{{ $waLink }}" target="_blank" aria-label="Escribinos por WhatsApp"><i class="fa-brands fa-whatsapp"></i></a></li>
-              <li><a href="https://www.instagram.com/calistenia_madbarzz?igsh=aW91eXl6ZnVtMGJ2" target="_blank" aria-label="Instagram de MadBarzz"><i class="flaticon-instagram"></i></a></li>
+              @if ($contenidoHome->get('facebook_url'))
+                <li><a href="{{ $contenidoHome->get('facebook_url') }}" target="_blank" rel="noopener" aria-label="Facebook de MadBarzz"><i class="fa-brands fa-facebook-f"></i></a></li>
+              @endif
+              <li><a href="{{ $waLink }}" target="_blank" rel="noopener" aria-label="Escribinos por WhatsApp"><i class="fa-brands fa-whatsapp"></i></a></li>
+              @if ($contenidoHome->get('instagram_url'))
+                <li><a href="{{ $contenidoHome->get('instagram_url') }}" target="_blank" rel="noopener" aria-label="Instagram de MadBarzz"><i class="flaticon-instagram"></i></a></li>
+              @endif
             </ul>
           </div>
         </div>
@@ -47,9 +43,16 @@
           <div class="footer-col">
             <h3>Contacto</h3>
             <ul>
-              <li><i class="flaticon-maps"></i><p>Av. Santos Dumont, 4to anillo, al lado de la HOT, Santa Cruz de la Sierra</p></li>
-              <li><i class="flaticon-iphone"></i><p><a href="{{ $waLink }}" target="_blank">{{ $superadmin->persona->telefono ?? 'Número no disponible' }}</a></p></li>
-              <li><i class="flaticon-mail"></i><p><a href="mailto:{{ $superadmin->user->email ?? '' }}">{{ $superadmin->user->email ?? 'Correo no disponible' }}</a></p></li>
+              <li><i class="flaticon-maps"></i><p>
+                @if ($contenidoHome->get('contacto_maps_url'))
+                  <a href="{{ $contenidoHome->get('contacto_maps_url') }}" target="_blank" rel="noopener">{{ $contenidoHome->get('contacto_direccion') }}</a>
+                @else
+                  {{ $contenidoHome->get('contacto_direccion') }}
+                @endif
+              </p></li>
+              <li><i class="flaticon-iphone"></i><p><a href="{{ $waLink }}" target="_blank" rel="noopener">{{ $contenidoHome->get('contacto_telefono') ?? $superadmin->persona->telefono ?? 'Número no disponible' }}</a></p></li>
+              @php $correoContacto = $contenidoHome->get('contacto_email') ?? $superadmin->user->email ?? null; @endphp
+              <li><i class="flaticon-mail"></i><p>@if ($correoContacto)<a href="mailto:{{ $correoContacto }}">{{ $correoContacto }}</a>@else Correo no disponible @endif</p></li>
             </ul>
           </div>
         </div>

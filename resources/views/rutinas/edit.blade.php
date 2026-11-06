@@ -281,7 +281,7 @@ function mbRutinaBuilder(disponibles, seleccionadosIniciales, esFullBody, grupos
     padding: .5rem .6rem; border-radius: .5rem; cursor: pointer;
     transition: background .12s;
 }
-.mb-rut-pick:hover { background: rgba(99,102,241,.1); }
+.mb-rut-pick:hover { background: rgba(255, 107, 26,.1); }
 .mb-rut-pick--elegido { background: rgba(30,201,139,.1); }
 .mb-rut-pick__img {
     width: 40px; height: 40px; border-radius: .4rem; overflow: hidden; flex: none;

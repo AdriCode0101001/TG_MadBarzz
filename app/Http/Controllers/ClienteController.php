@@ -110,8 +110,8 @@ public function index(Request $request)
             'password' => Hash::make($request->password),
             'rol_id'   => Rol::firstOrCreate(['nombre' => 'Cliente'])->id,
             // Verificado de entrada: lo da de alta el personal en persona, no
-            // hace falta que confirme su correo (a diferencia del
-            // auto-registro público, ver AltaClienteService).
+            // hace falta que confirme su correo (el
+            // auto-registro público está desactivado).
             'email_verified_at' => now(),
             // La tabla "users" tiene id_sede con default(1) a nivel de BD —
             // sin esto, el usuario del cliente quedaría con la sede por

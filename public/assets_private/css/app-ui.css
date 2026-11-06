@@ -518,7 +518,7 @@ li.mm-active > a .mb-menu-arr {
 /* ------------------------------------------------------------------ Header: dashboard_bar colapso */
 .dashboard_bar { display: flex; align-items: center; gap: .6rem; white-space: nowrap; overflow: hidden; }
 .dashboard_bar_icon { font-size: 1.2rem; flex: none; color: var(--mb-brand); }
-.dashboard_bar_text { overflow: hidden; text-overflow: ellipsis; transition: opacity .2s, max-width .3s; max-width: 300px; }
+.dashboard_bar_text { overflow: hidden; text-overflow: ellipsis; transition: opacity .2s, max-width .3s; max-width: min(48vw, 560px); }
 
 #main-wrapper.menu-toggle .dashboard_bar_text { opacity: 0; max-width: 0; }
 #main-wrapper.menu-toggle .dashboard_bar_icon { font-size: 1.35rem; }
@@ -565,22 +565,22 @@ html, body { overscroll-behavior-y: contain; }
     overflow: hidden;
     border-radius: var(--mb-radius);
     background: linear-gradient(135deg, #0d0e1a 0%, #141626 40%, #1a1d35 100%);
-    border: 1px solid rgba(99,102,241,.2);
+    border: 1px solid rgba(255, 107, 26,.2);
     padding: 2.2rem 2.4rem;
     box-shadow: 0 16px 48px rgba(0,0,0,.45);
 }
 .mb-hero-admin__bg {
     position: absolute; inset: 0;
-    background: radial-gradient(ellipse 70% 60% at 80% 50%, rgba(99,102,241,.12) 0%, transparent 70%);
+    background: radial-gradient(ellipse 70% 60% at 80% 50%, rgba(255, 107, 26,.12) 0%, transparent 70%);
     pointer-events: none;
 }
 .mb-hero-admin__orb {
     position: absolute; border-radius: 50%; pointer-events: none;
     animation: mbOrbFloat 8s ease-in-out infinite;
 }
-.mb-hero-admin__orb--1 { width:220px; height:220px; top:-80px; right:10%; background:radial-gradient(circle, rgba(99,102,241,.18) 0%, transparent 70%); animation-delay:0s; }
+.mb-hero-admin__orb--1 { width:220px; height:220px; top:-80px; right:10%; background:radial-gradient(circle, rgba(255, 107, 26,.18) 0%, transparent 70%); animation-delay:0s; }
 .mb-hero-admin__orb--2 { width:140px; height:140px; bottom:-40px; right:30%; background:radial-gradient(circle, rgba(30,201,139,.12) 0%, transparent 70%); animation-delay:-3s; }
-.mb-hero-admin__orb--3 { width:90px;  height:90px;  top:10%;  right:20%; background:radial-gradient(circle, rgba(139,92,246,.15) 0%, transparent 70%); animation-delay:-5s; }
+.mb-hero-admin__orb--3 { width:90px;  height:90px;  top:10%;  right:20%; background:radial-gradient(circle, rgba(255, 138, 61,.15) 0%, transparent 70%); animation-delay:-5s; }
 @keyframes mbOrbFloat {
     0%,100% { transform: translateY(0) scale(1); }
     50%      { transform: translateY(-14px) scale(1.06); }
@@ -603,12 +603,12 @@ html, body { overscroll-behavior-y: contain; }
 .mb-hero-btn {
     display: inline-flex; align-items: center; gap: .45rem;
     padding: .52rem 1.1rem; border-radius: 10px; font-size: .83rem; font-weight: 600;
-    background: linear-gradient(135deg, var(--mb-brand), #8b5cf6);
+    background: linear-gradient(135deg, var(--mb-brand), #ff8a3d);
     color: #fff; text-decoration: none;
-    box-shadow: 0 4px 16px rgba(99,102,241,.35);
+    box-shadow: 0 4px 16px rgba(255, 107, 26,.35);
     transition: transform .2s, box-shadow .2s;
 }
-.mb-hero-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(99,102,241,.45); color: #fff; }
+.mb-hero-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(255, 107, 26,.45); color: #fff; }
 .mb-hero-btn--ghost {
     background: rgba(255,255,255,.07);
     border: 1px solid rgba(255,255,255,.12);

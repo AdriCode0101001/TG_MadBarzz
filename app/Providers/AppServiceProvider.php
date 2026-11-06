@@ -5,9 +5,6 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
    use App\Services\WhatsappService;
 use App\Models\Administrador;
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rules\Password;
 
@@ -41,17 +38,6 @@ class AppServiceProvider extends ServiceProvider
         // qué haga el framework por detrás, y como único punto para subir
         // el mínimo el día de mañana si hace falta.
         Password::defaults(fn () => Password::min(8));
-
-        // Etapa 3 del auto-registro: al registrarse (evento Registered),
-        // envía el correo de verificación — en modo log por ahora
-        // (MAIL_MAILER=log), el link queda en storage/logs/laravel.log. Este
-        // proyecto no tiene EventServiceProvider (skeleton nuevo de Laravel),
-        // así que este listener por defecto de Laravel no se registra solo:
-        // hay que engancharlo acá. El listener mismo ya revisa
-        // "instanceof MustVerifyEmail && !hasVerifiedEmail()", así que no
-        // hace nada para el personal ni para clientes dados de alta por el
-        // personal (quedan verificados desde que se crean).
-        Event::listen(Registered::class, SendEmailVerificationNotification::class);
 
         // Un único view composer que comparte el superadmin a todas las vistas
         view()->composer('*', function ($view) {

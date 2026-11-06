@@ -35,7 +35,7 @@
             <p class="mb-cli-hero__sub">Aquí tienes el resumen de tu membresía y progreso en MadBarzz.</p>
         </div>
         <div class="mb-cli-hero__logo">
-            <img src="{{ asset('assets_private/images/logo_mad.png') }}" alt="MadBarzz">
+            <img src="{{ \App\Services\ImagenHomeService::logoEmblema() }}" alt="MadBarzz">
         </div>
     </div>
 
@@ -43,7 +43,7 @@
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
             <div class="mb-cli-kpi">
-                <div class="mb-cli-kpi__icon" style="background:rgba(99,102,241,.15);color:#6366f1;">
+                <div class="mb-cli-kpi__icon" style="background:rgba(255, 107, 26,.15);color:#ff6b1a;">
                     <i class="fa-solid fa-id-card"></i>
                 </div>
                 <div class="mb-cli-kpi__val">{{ $membresia ? $membresia->tipo_membresia : '—' }}</div>
@@ -190,7 +190,7 @@
                         <div class="mb-cli-carnet">
                             <div class="mb-cli-carnet__stripe"></div>
                             <div class="mb-cli-carnet__header">
-                                <img src="{{ asset('assets_private/images/logo_mad.png') }}" alt="MadBarzz">
+                                <img src="{{ \App\Services\ImagenHomeService::logoEmblema() }}" alt="MadBarzz">
                                 <div class="mb-cli-carnet__brand">MAD<span>BARZZ</span></div>
                                 <div class="mb-cli-carnet__sub">Carnet de Socio</div>
                             </div>
@@ -215,7 +215,7 @@
                             Descárgalo y guárdalo en tu teléfono o imprímelo: pronto podrás usarlo
                             para registrar tu asistencia escaneándolo al ingresar.
                         </p>
-                        <a href="{{ route('portal.carnet.descargar') }}" class="btn" style="background:#6366f1;color:#fff;border:none;font-weight:600;">
+                        <a href="{{ route('portal.carnet.descargar') }}" class="btn" style="background:#ff6b1a;color:#fff;border:none;font-weight:600;">
                             <i class="fa-solid fa-download me-2"></i> Descargar carnet
                         </a>
                     </div>
@@ -338,7 +338,7 @@
     content: '';
     position: absolute;
     width: 300px; height: 300px;
-    background: rgba(99,102,241,.15);
+    background: rgba(255, 107, 26,.15);
     border-radius: 50%;
     top: -80px; right: 120px;
     pointer-events: none;
@@ -396,7 +396,7 @@
     border-radius: 99px;
 }
 .mb-cli-plan__name  { font-size: 1.25rem; font-weight: 700; color: #e2e8f0; }
-.mb-cli-plan__price { font-size: 1.1rem; font-weight: 700; color: #6366f1; margin-left: auto; }
+.mb-cli-plan__price { font-size: 1.1rem; font-weight: 700; color: #ff6b1a; margin-left: auto; }
 .mb-cli-plan__old   { font-size: .8rem; color: #94a3b8; text-decoration: line-through; margin-left: .4rem; }
 .mb-cli-plan__disc  { font-size: .78rem; background: rgba(16,185,129,.15); color: #10b981; padding: .15rem .5rem; border-radius: 99px; margin-left: .3rem; }
 
@@ -408,7 +408,7 @@
 /* ── progress ── */
 .mb-cli-prog__label { display: flex; justify-content: space-between; font-size: .75rem; color: #94a3b8; margin-bottom: .4rem; }
 .mb-cli-prog { background: rgba(255,255,255,.08); border-radius: 99px; height: 7px; }
-.mb-cli-prog__bar { background: linear-gradient(90deg,#6366f1,#8b5cf6); border-radius: 99px; height: 100%; transition: width .6s ease; }
+.mb-cli-prog__bar { background: linear-gradient(90deg,#ff6b1a,#ff8a3d); border-radius: 99px; height: 100%; transition: width .6s ease; }
 
 /* ── discount tag ── */
 .mb-cli-disc-tag { font-size: .8rem; color: #10b981; background: rgba(16,185,129,.1); padding: .4rem .9rem; border-radius: 99px; display: inline-flex; align-items: center; }
@@ -432,18 +432,18 @@
 .mb-cli-carnet {
     width: 250px;
     background: linear-gradient(160deg, #16213e 0%, #1a1a2e 100%);
-    border: 1px solid rgba(99,102,241,.35);
+    border: 1px solid rgba(255, 107, 26,.35);
     border-radius: 1rem;
     overflow: hidden;
     text-align: center;
     box-shadow: 0 12px 40px rgba(0,0,0,.45);
 }
-.mb-cli-carnet__stripe { height: 6px; background: linear-gradient(90deg,#6366f1,#8b5cf6); }
+.mb-cli-carnet__stripe { height: 6px; background: linear-gradient(90deg,#ff6b1a,#ff8a3d); }
 .mb-cli-carnet__stripe--bottom { margin-top: 1rem; }
 .mb-cli-carnet__header { padding: 1rem 1rem .4rem; }
 .mb-cli-carnet__header img { width: 46px; }
 .mb-cli-carnet__brand { font-size: 1.15rem; font-weight: 800; color: #fff; letter-spacing: 3px; margin-top: .3rem; }
-.mb-cli-carnet__brand span { color: #6366f1; }
+.mb-cli-carnet__brand span { color: #ff6b1a; }
 .mb-cli-carnet__sub { font-size: .62rem; color: #94a3b8; letter-spacing: 2.5px; text-transform: uppercase; margin-top: .1rem; }
 .mb-cli-carnet__qr {
     width: 150px;
@@ -455,7 +455,7 @@
 .mb-cli-carnet__qr img { width: 100%; display: block; }
 .mb-cli-carnet__nombre { color: #fff; font-weight: 700; font-size: .95rem; line-height: 1.25; margin-top: .8rem; padding: 0 .8rem; overflow-wrap: break-word; }
 .mb-cli-carnet__nombre--largo { font-size: .8rem; }
-.mb-cli-carnet__nro { color: #6366f1; font-size: .68rem; letter-spacing: 1.5px; text-transform: uppercase; margin-top: .15rem; }
+.mb-cli-carnet__nro { color: #ff6b1a; font-size: .68rem; letter-spacing: 1.5px; text-transform: uppercase; margin-top: .15rem; }
 .mb-cli-carnet__detalle { color: #94a3b8; font-size: .74rem; margin-top: .45rem; padding: 0 .8rem; }
 
 /* ── empty state ── */

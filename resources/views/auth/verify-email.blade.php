@@ -5,9 +5,10 @@
   <div class="mb-auth__wrap">
 
     <div class="mb-auth__visual">
-      <div class="bg" style="background-image:url('{{ asset('assets/images/login-bg.jpg') }}');"></div>
+      @php $loginBg = \App\Services\ImagenHomeService::fondoLogin(); @endphp
+      <div class="bg" style="background-image:url('{{ $loginBg['url'] }}'); background-position: {{ $loginBg['pos'] }};"></div>
       <div class="ov"></div>
-      <div class="mb-auth-logo"><img src="{{ asset('assets_private/images/log_text_mad.png') }}" alt="MadBarzz"></div>
+      <div class="mb-auth-logo"><img src="{{ \App\Services\ImagenHomeService::logoTexto() }}" alt="MadBarzz"></div>
       <div class="mb-auth-quote">
         <h2>Ya casi<br>estás adentro.</h2>
         <p>Confirmá tu correo para empezar a usar tu cuenta de Calistenia MadBarzz.</p>

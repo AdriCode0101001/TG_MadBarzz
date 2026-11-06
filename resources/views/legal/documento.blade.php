@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ $titulo }} · Calistenia MadBarzz</title>
   <link rel="stylesheet" href="{{ asset('assets_gymon/css/bootstrap.min.css') }}">
-  <link rel="icon" type="image/png" href="{{ asset('assets_private/images/logo_mad.png') }}">
-  <link rel="shortcut icon" type="image/png" href="{{ asset('assets_private/images/logo_mad.png') }}">
+  <link rel="icon" href="{{ \App\Services\ImagenHomeService::logoEmblema() }}">
+  <link rel="shortcut icon" href="{{ \App\Services\ImagenHomeService::logoEmblema() }}">
   <link rel="stylesheet" href="{{ asset('assets_gymon/font/flaticon_mycollection.css') }}">
   <link rel="stylesheet" href="{{ asset('assets_gymon/css/fontawesome.min.css') }}">
   <link rel="stylesheet" href="{{ asset('assets_gymon/css/style.css') }}">
@@ -58,7 +58,7 @@
 
   <header class="mb-legal-header">
     <div class="container">
-      <a href="{{ route('home') }}"><img src="{{ asset('assets_private/images/logo_mad.png') }}" alt="MadBarzz"></a>
+      <a href="{{ route('home') }}"><img src="{{ \App\Services\ImagenHomeService::logoEmblema() }}" alt="MadBarzz"></a>
       <a href="{{ route('home') }}" class="volver"><i class="fa-solid fa-arrow-left me-1"></i> Volver al inicio</a>
     </div>
   </header>

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MadBarzz · Acceso</title>
   <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/bootstrap.min.css') }}">
-  <link rel="icon" type="image/png" href="{{ asset('assets_private/images/logo_mad.png') }}">
+  <link rel="icon" href="{{ \App\Services\ImagenHomeService::logoEmblema() }}">
   <link rel="stylesheet" href="{{ asset('assets/font/flaticon_mycollection.css') }}">
   <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/fontawesome.min.css') }}">
   <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/style.css') }}">

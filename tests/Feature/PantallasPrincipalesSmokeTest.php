@@ -159,7 +159,7 @@ class PantallasPrincipalesSmokeTest extends TestCase
     {
         $this->get('/')->assertStatus(200);
         $this->get('/login')->assertStatus(200);
-        $this->get('/register')->assertStatus(200);
+        $this->get('/register')->assertRedirect('/login'); // auto-registro desactivado
         $this->get('/forgot-password')->assertStatus(200);
     }
 

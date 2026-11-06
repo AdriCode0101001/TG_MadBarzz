@@ -20,11 +20,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * Implementa MustVerifyEmail (la interfaz — el trait que hace el trabajo real
  * ya viene incluido en Illuminate\Foundation\Auth\User, la clase base detrás
  * de "Authenticatable"). Esto activa la verificación de correo para
- * CUALQUIER User, pero en la práctica solo bloquea a los clientes que se
- * auto-registraron: el personal (Administrador/Recepcionista/Entrenador) y
- * los clientes dados de alta por el personal quedan con `email_verified_at`
- * puesto en el momento de crearse (ver esos controladores y
- * AltaClienteService) — para ellos `hasVerifiedEmail()` ya da true desde el
+ * CUALQUIER User. El auto-registro público está desactivado: el personal
+ * (Administrador/Recepcionista/Entrenador) y los clientes los da de alta el
+ * personal y quedan con `email_verified_at` puesto en el momento de crearse
+ * (ver esos controladores) — para ellos `hasVerifiedEmail()` ya da true desde el
  * primer segundo, así que el middleware 'verified' nunca los frena.
  */
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail

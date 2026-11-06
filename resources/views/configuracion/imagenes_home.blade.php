@@ -79,7 +79,7 @@
                         $aspectRatio = str_replace('x', ' / ', $tamanoRecomendado);
                         $urlActual = $tieneImagen
                             ? \Illuminate\Support\Facades\Storage::disk('public')->url($config->ruta)
-                            : null;
+                            : (isset($info[3]) ? asset($info[3]) : null); // logos: el actual por defecto
                     @endphp
                     <div class="col-lg-4 col-md-6 mb-3">
                         <div class="card h-100">
@@ -104,7 +104,7 @@
                                      es EXACTAMENTE el recorte real de la home, no la imagen entera. --}}
                                     <div class="mb-imagen-preview mb-2" id="preview-{{ $clave }}"
                                         style="width:100%; aspect-ratio: {{ $aspectRatio }}; border-radius:8px; overflow:hidden; border:1px solid rgba(128,128,128,.25); background:#111;">
-                                        @if ($tieneImagen)
+                                        @if ($urlActual)
                                             <img src="{{ $urlActual }}" alt="{{ $etiqueta }}"
                                                 style="width:100%;height:100%;object-fit:cover;display:block;object-position:{{ $objectPosition }};">
                                         @else
@@ -122,7 +122,7 @@
                                      acá sería mentirle al Admin sobre cómo se ve de verdad. --}}
                                     <div class="mb-imagen-preview mb-2" id="preview-{{ $clave }}"
                                         style="width:100%; min-height:140px; max-height:220px; border-radius:8px; overflow:hidden; border:1px solid rgba(128,128,128,.25); background:#111; display:flex; align-items:center; justify-content:center;">
-                                        @if ($tieneImagen)
+                                        @if ($urlActual)
                                             <img src="{{ $urlActual }}" alt="{{ $etiqueta }}"
                                                 style="max-width:100%;max-height:220px;object-fit:contain;display:block;">
                                         @else

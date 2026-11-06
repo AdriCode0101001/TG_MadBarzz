@@ -1,0 +1,89 @@
+/* ============================================================================
+   MadBarzz · Acento naranja del panel (mb-brand-orange.css)
+   ----------------------------------------------------------------------------
+   La plantilla del panel trae su azul (#1E3FB4) escrito a mano en cientos de
+   reglas, así que no se puede cambiar con una variable. Este archivo se carga
+   DESPUÉS de style.css y de la piel (mb-skin-filament.css) y sustituye ese azul
+   por el naranja de la marca SOLO en lo que se ve a diario: menú lateral,
+   encabezado, menús desplegables y pie. Para volver al azul: quitar este <link>.
+   ============================================================================ */
+
+body.mb-skin {
+    --mbo: #ff6b1a;         /* naranja marca */
+    --mbo-600: #e85d10;
+    --mbo-soft: rgba(255, 107, 26, .12);
+}
+
+/* ── Menú lateral ───────────────────────────────────────────────────────── */
+body.mb-skin .deznav .metismenu > li:hover > a,
+body.mb-skin .deznav .metismenu > li:focus > a,
+body.mb-skin .deznav .metismenu > li.mm-active > a,
+body.mb-skin .deznav .metismenu > li.mm-active > a i,
+body.mb-skin .deznav .metismenu ul a:hover,
+body.mb-skin .deznav .metismenu ul a:focus,
+body.mb-skin .deznav .metismenu ul a.mm-active,
+body.mb-skin[data-sidebar-style=full][data-layout=vertical] .deznav .metismenu > li.mm-active > a,
+body.mb-skin[data-sidebar-style=full][data-layout=vertical] .deznav .metismenu > li.mm-active > a i,
+body.mb-skin[data-sidebar-style=full][data-layout=vertical] .menu-toggle .deznav .metismenu > li.mm-active > a,
+body.mb-skin[data-sidebar-style=full][data-layout=vertical] .menu-toggle .deznav .metismenu > li:hover > a {
+    color: var(--mbo);
+}
+body.mb-skin[data-sidebar-style=full][data-layout=vertical] .deznav .metismenu > li.mm-active > a {
+    background: var(--mbo-soft);
+}
+body.mb-skin[data-sidebar-style=full][data-layout=vertical] .deznav .metismenu > li > a:before {
+    background: var(--mbo);
+}
+body.mb-skin .deznav .metismenu > li > a svg,
+body.mb-skin .deznav .metismenu > li > a g [fill],
+body.mb-skin .deznav .metismenu > li:hover > a g [fill],
+body.mb-skin .deznav .metismenu > li.mm-active > a g [fill] {
+    fill: var(--mbo);
+}
+
+/* ── Encabezado (hamburguesa, perfil, notificaciones) ───────────────────── */
+body.mb-skin .hamburger .line,
+body.mb-skin[data-headerbg=color_1] .nav-header .hamburger .line,
+body.mb-skin[data-headerbg=color_1] .nav-header .hamburger.is-active .line,
+body.mb-skin[data-sidebar-style=full][data-layout=vertical] .menu-toggle .nav-header .nav-control .hamburger .line {
+    background: var(--mbo) !important;
+}
+body.mb-skin .header-right .header-profile .profile_title {
+    background: var(--mbo);
+}
+body.mb-skin .header-right .header-profile .dropdown-menu a:hover,
+body.mb-skin .header-right .header-profile .dropdown-menu a:focus,
+body.mb-skin .header-right .header-profile .dropdown-menu a.active,
+body.mb-skin .header-profile .dropdown-menu-end .all-notification,
+body.mb-skin .header-profile .dropdown-menu-end .notification_title {
+    color: var(--mbo);
+}
+
+/* ── Pie ─────────────────────────────────────────────────────────────────── */
+body.mb-skin .footer .copyright a {
+    color: #ff9a55;           /* naranja más claro: se lee bien sobre el pie oscuro */
+}
+body.mb-skin .footer .copyright a:hover { color: #ffb27d; }
+
+/* ── Subrayado/foco de enlaces y controles del formulario ───────────────── */
+body.mb-skin .form-control:focus,
+body.mb-skin .form-select:focus {
+    border-color: var(--mbo);
+    box-shadow: 0 0 0 .2rem rgba(255, 107, 26, .18);
+}
+
+/* ── Títulos de tarjeta: mayúscula solo en la primera palabra ("Registrar asistencia por QR"),
+      igual que el resto de los títulos del panel (la plantilla ponía Cada Palabra En Mayúscula). ── */
+body.mb-skin .card-title { text-transform: none; }
+
+/* ── Tablas anchas: la columna "Acciones" queda fija a la derecha al deslizar, así los botones de
+      editar/borrar siempre se ven (la clase la agrega un script del layout a las tablas con esa columna). ── */
+body.mb-skin .table.mb-sticky-actions th:last-child,
+body.mb-skin .table.mb-sticky-actions td:last-child {
+    position: sticky;
+    right: 0;
+    z-index: 2;
+    background: var(--mbf-surface, #18181b);
+    box-shadow: -8px 0 10px -8px rgba(0, 0, 0, .55);
+}
+body.mb-skin .table.mb-sticky-actions thead th:last-child { z-index: 3; }

@@ -29,7 +29,7 @@
             @endif
         </div>
         <div class="mb-cli-hero__logo">
-            <img src="{{ asset('assets_private/images/logo_mad.png') }}" alt="MadBarzz">
+            <img src="{{ \App\Services\ImagenHomeService::logoEmblema() }}" alt="MadBarzz">
         </div>
     </div>
 
@@ -37,7 +37,7 @@
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
             <div class="mb-cli-kpi">
-                <div class="mb-cli-kpi__icon" style="background:rgba(99,102,241,.15);color:#6366f1;">
+                <div class="mb-cli-kpi__icon" style="background:rgba(255, 107, 26,.15);color:#ff6b1a;">
                     <i class="fa-solid fa-dumbbell"></i>
                 </div>
                 <div class="mb-cli-kpi__val">{{ $rutinas->count() }}</div>
@@ -89,8 +89,8 @@
                         <ul class="mb-cli-pay-list">
                             @foreach($rutinas->take(6) as $rutina)
                                 <li class="mb-cli-pay-list__item">
-                                    <div style="width:44px;height:44px;border-radius:.5rem;overflow:hidden;flex-shrink:0;background:rgba(99,102,241,.1);display:flex;align-items:center;justify-content:center;">
-                                        <i class="fa-solid fa-dumbbell" style="color:#6366f1;font-size:.9rem;"></i>
+                                    <div style="width:44px;height:44px;border-radius:.5rem;overflow:hidden;flex-shrink:0;background:rgba(255, 107, 26,.1);display:flex;align-items:center;justify-content:center;">
+                                        <i class="fa-solid fa-dumbbell" style="color:#ff6b1a;font-size:.9rem;"></i>
                                     </div>
                                     <div class="mb-cli-pay-list__info flex-grow-1">
                                         <div style="font-weight:600;color:#e2e8f0;font-size:.9rem;">{{ $rutina->fecha->translatedFormat('d \d\e F') }}</div>
@@ -135,7 +135,7 @@
                 <div class="mb-cli-card__body">
 
                     <div class="text-center mb-3">
-                        <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);
+                        <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#ff6b1a,#ff8a3d);
                                     display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
                             <i class="fa-solid fa-user-tie fa-2x text-white"></i>
                         </div>

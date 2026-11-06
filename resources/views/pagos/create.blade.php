@@ -115,7 +115,7 @@
                             </div>
 
                             <div id="seccionCuotas" class="col-12" style="display:none;">
-                                <div class="row g-3 p-3 mt-1" style="background:var(--mbf-primary-soft,rgba(99,102,241,.08));border-radius:12px;border:1px solid var(--mbf-border,rgba(128,128,128,.2));">
+                                <div class="row g-3 p-3 mt-1" style="background:var(--mbf-primary-soft,rgba(255, 107, 26,.08));border-radius:12px;border:1px solid var(--mbf-border,rgba(128,128,128,.2));">
                                     <div class="col-md-4">
                                         <label for="monto_pagado" class="form-label fw-bold text-dark dark-text-white">Monto que paga ahora (Bs)</label>
                                         <input type="number" name="monto_pagado" id="monto_pagado" class="form-control" step="0.01" min="0.01" disabled>

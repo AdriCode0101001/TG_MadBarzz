@@ -103,27 +103,6 @@ class PasswordMinimoTest extends TestCase
             ->assertSessionDoesntHaveErrors('password');
     }
 
-    // ── Registro público (RegisteredUserController — ya usaba Password::defaults()) ─
-
-    public function test_registro_publico_ya_exigia_minimo_8_via_password_defaults(): void
-    {
-        $sede = Sede::firstOrCreate(['nombre' => 'Sede Principal'], ['activo' => true]);
-
-        $this->post(route('register'), [
-            'nombre_completo'    => 'Cliente Publico',
-            'apellido_paterno'   => 'Test',
-            'apellido_materno'   => 'Registro',
-            'ci'                 => 'CIPUB1',
-            'telefono'           => '+59171000009',
-            'genero'             => 'masculino',
-            'fecha_nacimiento'   => '1995-01-01',
-            'id_sede'            => $sede->id_sede,
-            'email'              => 'registropublico@test.com',
-            'password'           => 'corta1',
-            'password_confirmation' => 'corta1',
-        ])->assertSessionHasErrors('password');
-    }
-
     // ── El mensaje de error es claro en español ─────────────────────────────
 
     public function test_el_mensaje_de_error_de_contrasena_corta_es_claro_en_espanol(): void

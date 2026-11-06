@@ -61,7 +61,7 @@ class AccesibilidadHomeTest extends TestCase
 
         $this->assertStringNotContainsString('id="countdown"', $html);
         $this->assertStringNotContainsString('promoción por tiempo limitado', $html);
-        // La oferta en sí sigue mostrándose, solo sin la cuenta regresiva.
-        $this->assertStringContainsString('2 meses a mitad de precio', $html);
+        // El bloque de la promo ahora muestra la publicación de Instagram.
+        $this->assertStringContainsString('instagram-media', $html);
     }
 }

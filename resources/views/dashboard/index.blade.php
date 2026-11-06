@@ -102,7 +102,7 @@
 {{-- ══ KPIs ══ --}}
 @php $kpiCol = $isAdmin ? 'col-xl-3 col-sm-6' : 'col-xl-6 col-sm-6'; @endphp
 <div class="{{ $kpiCol }} mb-4">
-    <div class="mb-kpi2" style="--kpi-from:#6366f1;--kpi-to:#8b5cf6;">
+    <div class="mb-kpi2" style="--kpi-from:#ff6b1a;--kpi-to:#ff8a3d;">
         <div class="mb-kpi2__icon"><i class="fa-solid fa-user-check"></i></div>
         <div class="mb-kpi2__body">
             <div class="mb-kpi2__num">{{ $cliActivos }}</div>
@@ -149,7 +149,7 @@
 <div class="{{ $chartCol }} mb-4">
     <div class="card h-100">
         <div class="card-header d-flex align-items-center gap-2">
-            <span class="mb-section-ico" style="background:rgba(99,102,241,.12);color:#6366f1">
+            <span class="mb-section-ico" style="background:rgba(255, 107, 26,.12);color:#ff6b1a">
                 <i class="fa-solid fa-venus-mars"></i>
             </span>
             <h5 class="mb-0">Distribución por género</h5>
@@ -163,7 +163,7 @@
                 </div>
             </div>
             <div class="mb-legend mt-3 w-100">
-                <div class="mb-legend-item"><span class="mb-legend-dot" style="background:#6366f1"></span><span>Masculino</span><strong>{{ $genM }}</strong></div>
+                <div class="mb-legend-item"><span class="mb-legend-dot" style="background:#ff6b1a"></span><span>Masculino</span><strong>{{ $genM }}</strong></div>
                 <div class="mb-legend-item"><span class="mb-legend-dot" style="background:#1ec98b"></span><span>Femenino</span><strong>{{ $genF }}</strong></div>
                 <div class="mb-legend-item"><span class="mb-legend-dot" style="background:#f59e0b"></span><span>Otro</span><strong>{{ $genO }}</strong></div>
             </div>
@@ -215,14 +215,14 @@
 <div class="{{ $chartCol }} mb-4">
     <div class="card h-100">
         <div class="card-header d-flex align-items-center gap-2">
-            <span class="mb-section-ico" style="background:rgba(99,102,241,.12);color:#6366f1">
+            <span class="mb-section-ico" style="background:rgba(255, 107, 26,.12);color:#ff6b1a">
                 <i class="fa-solid fa-chart-pie"></i>
             </span>
             <h5 class="mb-0">Clientes activos</h5>
         </div>
         <div class="card-body d-flex flex-column justify-content-between">
             <div class="mb-big-metric">
-                <div class="mb-big-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+                <div class="mb-big-num" style="background:linear-gradient(135deg,#ff6b1a,#ff8a3d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
                     {{ $pctActivos }}<span class="mb-big-unit">%</span>
                 </div>
                 <p class="mb-big-sub">de clientes están activos hoy</p>
@@ -233,10 +233,10 @@
                     <span>Inactivos ({{ $cliInactivos }})</span>
                 </div>
                 <div class="mb-progress-bar mb-3">
-                    <div class="mb-progress-fill" style="width:{{ $pctActivos }}%;background:linear-gradient(90deg,#6366f1,#8b5cf6)"></div>
+                    <div class="mb-progress-fill" style="width:{{ $pctActivos }}%;background:linear-gradient(90deg,#ff6b1a,#ff8a3d)"></div>
                 </div>
                 <div class="mb-mini-stats">
-                    <div class="mb-mini-stat"><i class="fa-solid fa-circle" style="color:#6366f1;font-size:.55rem"></i> Activos <b>{{ $cliActivos }}</b></div>
+                    <div class="mb-mini-stat"><i class="fa-solid fa-circle" style="color:#ff6b1a;font-size:.55rem"></i> Activos <b>{{ $cliActivos }}</b></div>
                     <div class="mb-mini-stat"><i class="fa-solid fa-circle" style="color:#f5365c;font-size:.55rem"></i> Inactivos <b>{{ $cliInactivos }}</b></div>
                     <div class="mb-mini-stat"><i class="fa-solid fa-circle" style="color:#94a3b8;font-size:.55rem"></i> Total <b>{{ $totalCli }}</b></div>
                 </div>
@@ -250,7 +250,7 @@
     <div class="card h-100">
         <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
             <div class="d-flex align-items-center gap-2">
-                <span class="mb-section-ico" style="background:rgba(99,102,241,.12);color:#6366f1">
+                <span class="mb-section-ico" style="background:rgba(255, 107, 26,.12);color:#ff6b1a">
                     <i class="fa-solid fa-users"></i>
                 </span>
                 <h5 class="mb-0">Clientes <span class="text-muted fw-normal" style="font-size:.8rem;">({{ $totalCli }})</span></h5>
@@ -400,7 +400,7 @@ document.addEventListener('DOMContentLoaded', function () {
             data: {
                 labels: ['Masculino','Femenino','Otro'],
                 datasets: [{ data: [{{ $genM }},{{ $genF }},{{ $genO }}],
-                    backgroundColor: ['#6366f1','#1ec98b','#f59e0b'],
+                    backgroundColor: ['#ff6b1a','#1ec98b','#f59e0b'],
                     borderWidth: 3, borderColor: 'transparent', hoverOffset: 10 }]
             },
             options: { cutout:'70%', plugins:{legend:{display:false}}, responsive:true, maintainAspectRatio:false }

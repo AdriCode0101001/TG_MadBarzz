@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Calistenia MadBarzz · Domina tu propio cuerpo</title>
   <link rel="stylesheet" href="{{ asset('assets_gymon/css/bootstrap.min.css') }}">
-  <link rel="icon" type="image/png" href="{{ asset('assets_private/images/logo_mad.png') }}">
-  <link rel="shortcut icon" type="image/png" href="{{ asset('assets_private/images/logo_mad.png') }}">
+  <link rel="icon" href="{{ \App\Services\ImagenHomeService::logoEmblema() }}">
+  <link rel="shortcut icon" href="{{ \App\Services\ImagenHomeService::logoEmblema() }}">
   <link rel="stylesheet" href="{{ asset('assets_gymon/css/owl.carousel.min.css') }}">
   <link rel="stylesheet" href="{{ asset('assets_gymon/font/flaticon_mycollection.css') }}">
   <link rel="stylesheet" href="{{ asset('assets_gymon/css/owl.theme.default.min.css') }}">
@@ -48,7 +48,21 @@
        quedaría gigante (~168px de alto). Se iguala por ALTO al del original
        (180px de ancho x su proporción 171/503 ≈ 61px de alto) para que
        ocupe el mismo espacio vertical en el header, sin importar el ancho. ===== */
-    .header-logo a img.mb-header-logo-img { width: auto !important; height: 96px; }
+    .header-logo a img.mb-header-logo-img { width: auto !important; height: 80px; }
+
+    /* Logo del header: 80px de alto para que quede DENTRO de la barra negra
+       (a 96px se pasaba hacia arriba y tapaba la franja naranja del top-bar).
+       Contorno circular en degradé naranja, bien tenue (se nota poco): el
+       degradé se ve en el padding de la imagen, recortado en círculo. */
+    .header-logo a img.mb-header-logo-img {
+      box-sizing: border-box;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      border-radius: 50%;
+      padding: .5px;
+      background: linear-gradient(135deg, rgba(253,106,1,.7) 0%, rgba(253,106,1,.2) 55%, rgba(253,106,1,.5) 100%);
+      box-shadow: none;
+    }
 
     /* ===== Wordmark de MadBarzz como adorno de sección (arriba de
        "Horarios" y "Elegí tu Membresía"): antes era el emblema redondo
@@ -303,6 +317,44 @@
       .team-style-2 figure, .team-style-2 figure img, .mb-marquee-avatar { width: 180px; height: 218px; }
       .mb-marquee-avatar { font-size: 3rem; }
     }
+
+    /* ===== Ajustes estéticos ===== */
+
+    /* Tarjetas de membresía: sin imagen de fondo (no hay foto por plan); borde naranja a la izquierda
+       y un poco de elevación al pasar el mouse. */
+    .payment-product-card {
+      border-left: 4px solid var(--theme-color, #FD6A01);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .payment-product-card:hover { transform: translateY(-4px); box-shadow: 0 14px 34px rgba(0,0,0,.45); }
+
+    /* Logo de texto de las secciones: el PNG trae un recuadro claro propio y se notaba el rectángulo.
+       Se desvanecen solo los bordes (sin tocar las letras) para que el brillo se funda con el fondo. */
+    .mb-gymon-page .heading img.mb-heading-wordmark-img {
+      -webkit-mask-image: linear-gradient(to right, transparent 0, #000 12%, #000 88%, transparent 100%),
+                          linear-gradient(to bottom, transparent 0, #000 22%, #000 78%, transparent 100%);
+      -webkit-mask-composite: source-in;
+              mask-image: linear-gradient(to right, transparent 0, #000 12%, #000 88%, transparent 100%),
+                          linear-gradient(to bottom, transparent 0, #000 22%, #000 78%, transparent 100%);
+              mask-composite: intersect;
+    }
+
+    /* Textos corridos en minúscula normal (la plantilla ponía Cada Palabra En Mayúscula). */
+    .footer-style-one .footer-col p,
+    .acc2 .accordion-item button { text-transform: none; }
+
+    /* Avatar de entrenador sin foto: mismo tamaño que las fotos, más sobrio (oscuro con la inicial en
+       naranja y un aro fino) para que no choque con las fotos reales de al lado. */
+    .mb-marquee-avatar {
+      background: radial-gradient(circle at 50% 35%, #2a2a30 0%, #141417 70%);
+      color: var(--theme-color, #FD6A01);
+      border: 1px solid rgba(253,106,1,.35);
+    }
+
+    /* Celular: menos aire vertical en las secciones. */
+    @media (max-width: 575.98px) {
+      .mb-gymon-page .gap, .gap { padding-top: 56px; padding-bottom: 56px; }
+    }
   </style>
 </head>
 
@@ -347,7 +399,7 @@
                   <div class="header-logo">
                     <a href="{{ route('home') }}">
                       <figure>
-                        <img src="{{ asset('assets_private/images/logo_mad.png') }}" alt="MadBarzz" class="mb-header-logo-img">
+                        <img src="{{ $imagenesHome->url('home_logo_emblema', asset('assets_private/images/logo_mad.png')) }}" alt="MadBarzz" class="mb-header-logo-img">
                       </figure>
                     </a>
                   </div>
@@ -372,7 +424,7 @@
           <div class="res-log">
             <a href="{{ route('home') }}">
               <span class="mb-mobile-brand-top">
-                <img src="{{ asset('assets/images/log_text_mad.png') }}" alt="MadBarzz" class="mb-mobile-wordmark-img">
+                <img src="{{ $imagenesHome->url('home_logo_texto', asset('assets/images/log_text_mad.png')) }}" alt="MadBarzz" class="mb-mobile-wordmark-img">
               </span>
             </a>
           </div>
@@ -383,6 +435,7 @@
             <li><a href="#membresias">Membresías</a></li>
             <li><a href="#contacto">Contacto</a></li>
             @auth
+              <li><a href="{{ route('dashboard') }}">Volver al panel</a></li>
               <li>
                 <form method="POST" action="{{ route('logout') }}">@csrf
                   <a href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();">Cerrar sesión</a>
@@ -499,7 +552,7 @@
     <div class="heading">
       <figure>
         <span class="mb-heading-wordmark-halo">
-          <img src="{{ asset('assets/images/log_text_mad.png') }}" alt="MadBarzz" class="mb-heading-wordmark-img">
+          <img src="{{ $imagenesHome->url('home_logo_texto', asset('assets/images/log_text_mad.png')) }}" alt="MadBarzz" class="mb-heading-wordmark-img">
         </span>
       </figure>
       <span>PARA TU ENTRENAMIENTO</span>
@@ -623,7 +676,7 @@
     <div class="heading">
       <figure>
         <span class="mb-heading-wordmark-halo">
-          <img src="{{ asset('assets/images/log_text_mad.png') }}" alt="MadBarzz" class="mb-heading-wordmark-img">
+          <img src="{{ $imagenesHome->url('home_logo_texto', asset('assets/images/log_text_mad.png')) }}" alt="MadBarzz" class="mb-heading-wordmark-img">
         </span>
       </figure>
       <span>PLANES</span>
@@ -637,7 +690,6 @@
           @endphp
           <div class="col-lg-6">
             <div class="payment-product-card">
-              <img src="{{ asset('images/placeholder-home.svg') }}" alt="Membresía {{ $membresia->tipo_membresia }}">
               <h5>Membresía {{ $membresia->tipo_membresia }}</h5>
               <h2>Bs {{ number_format($membresia->precio, 0, ',', '.') }}</h2>
               <span>Acceso completo al gimnasio</span>
@@ -709,17 +761,20 @@
           </div>
         </div>
         <div class="col-lg-6">
-          <div class="together">
-            {{-- El countdown de "tiempo limitado" que traía la plantilla apuntaba a una
-                 fecha fija de ejemplo (un cumpleaños) que se recalculaba sola año tras
-                 año — mostraba urgencia falsa todo el tiempo. Se saca hasta que haya una
-                 fecha real de fin de promo; mientras tanto, la oferta se muestra sin
-                 fingir que vence pronto. --}}
-            <h4>juntos entrenamos mejor</h4>
-            <h2>2 meses a mitad de precio</h2>
-            <span>+ sin costo de inscripción</span>
-            <a href="{{ $waLink }}" target="_blank" class="theme-btn">comenzar</a>
-            <a href="#contacto" class="theme-btn two">contactar ahora</a>
+          <div class="together mb-ig-embed">
+            {{-- Publicación de Instagram (reemplaza el bloque "2 meses a mitad de
+                 precio"). Embed oficial: el blockquote lo convierte en la
+                 tarjeta de Instagram el script embed.js. Para cambiar la
+                 publicación, cambiar el permalink (data-instgrm-permalink y
+                 el href del enlace) por el de otra publicación pública. --}}
+            <style>
+              .together.mb-ig-embed { padding: 24px 16px; }
+              .together.mb-ig-embed .instagram-media { margin: 0 auto !important; min-width: 0 !important; max-width: 540px !important; width: 100% !important; }
+            </style>
+            <blockquote class="instagram-media" data-instgrm-permalink="{{ $contenidoHome->get('instagram_post_url') }}" data-instgrm-version="14" style="background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin:1px; max-width:540px; min-width:326px; padding:0; width:99.375%;">
+              <a href="{{ $contenidoHome->get('instagram_post_url') }}" target="_blank" rel="noopener" style="display:block; padding:16px; color:#c9c8cd; text-align:center;">Ver esta publicación en Instagram</a>
+            </blockquote>
+            <script async src="https://www.instagram.com/embed.js"></script>
           </div>
         </div>
       </div>
@@ -727,7 +782,28 @@
   </section>
 
   {{-- ================= FOOTER ================= --}}
-  @include('partials.gymon-footer', ['waLink' => $waLink, 'imagenesHome' => $imagenesHome])
+  @include('partials.gymon-footer', ['waLink' => $waLink, 'imagenesHome' => $imagenesHome, 'contenidoHome' => $contenidoHome])
+
+  @auth
+    {{-- Volver al panel: solo para quien tiene la sesión iniciada (p. ej. entró con "Ver sitio web").
+         Flotante y siempre visible; "dashboard" lleva al panel que corresponde al rol. --}}
+    <a href="{{ route('dashboard') }}" class="mb-volver-panel" aria-label="Volver al panel de control">
+      <i class="fa-solid fa-arrow-left"></i> Volver al panel
+    </a>
+    <style>
+      .mb-volver-panel{
+        position: fixed; left: 20px; bottom: 20px; z-index: 9999;
+        display: inline-flex; align-items: center; gap: .55rem;
+        padding: .75rem 1.15rem; border-radius: 999px;
+        background: var(--theme-color, #FD6A01); color: #fff; text-decoration: none;
+        font-weight: 700; font-size: .95rem; letter-spacing: .3px;
+        box-shadow: 0 8px 24px rgba(0,0,0,.45);
+        transition: transform .15s ease, background .15s ease;
+      }
+      .mb-volver-panel:hover{ background:#ff7f26; color:#fff; transform: translateY(-2px); }
+      @media (max-width: 575.98px){ .mb-volver-panel{ left: 12px; bottom: 12px; padding: .65rem 1rem; font-size: .85rem; } }
+    </style>
+  @endauth
 
   <div id="scroll-percentage"><span id="scroll-percentage-value"></span></div>
 

@@ -318,12 +318,136 @@ class ImagenHomeTest extends TestCase
         $response = $this->actingAs($admin)->get('/configuracion/imagenes-home');
         $response->assertStatus(200);
 
-        // Un <select> de posición por cada una de las 8 claves con recorte
-        // real, y ninguno para las 2 sin recorte (home_cta, home_modal_unete).
+        // Un <select> de posición por cada una de las 9 claves con recorte
+        // real (8 de la home + el fondo del login), y ninguno para las que se
+        // muestran completas (home_cta, home_modal_unete y los 2 logos).
         // Cuenta solo el TAG <select ...name="posicion"...>, no cualquier
         // aparición del texto (el CSS de arreglo del ícono también lo
         // menciona, en el selector "select[name=\"posicion\"]").
         $cantidadSelects = preg_match_all('/<select[^>]*name="posicion"/', $response->getContent());
-        $this->assertSame(8, $cantidadSelects);
+        $this->assertSame(9, $cantidadSelects);
+    }
+
+    // ── Logos de MadBarzz (emblema y logo de texto) ──────────────────────────
+
+    public function test_la_pantalla_del_admin_tiene_el_apartado_logo_de_madbarzz(): void
+    {
+        $this->actingAs($this->usuario('Administrador'))
+            ->get(route('configuracion.imagenes_home.index'))
+            ->assertOk()
+            ->assertSee('Logo de MadBarzz')
+            ->assertSee(route('configuracion.imagenes_home.update', 'home_logo_emblema'), false)
+            ->assertSee(route('configuracion.imagenes_home.update', 'home_logo_texto'), false);
+    }
+
+    public function test_sin_subir_nada_la_home_usa_los_logos_de_siempre(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString('assets_private/images/logo_mad.png', $html);
+        $this->assertStringContainsString('assets/images/log_text_mad.png', $html);
+    }
+
+    public function test_los_logos_subidos_reemplazan_a_los_de_siempre_en_la_home(): void
+    {
+        Storage::fake('public');
+        $admin = $this->usuario('Administrador');
+
+        $this->subirImagen($admin, 'home_logo_emblema')->assertRedirect(route('configuracion.imagenes_home.index'));
+        $this->subirImagen($admin, 'home_logo_texto')->assertRedirect(route('configuracion.imagenes_home.index'));
+
+        $emblema = ConfiguracionImagen::where('clave', 'home_logo_emblema')->firstOrFail();
+        $texto   = ConfiguracionImagen::where('clave', 'home_logo_texto')->firstOrFail();
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString(Storage::disk('public')->url($emblema->ruta), $html);
+        $this->assertStringContainsString(Storage::disk('public')->url($texto->ruta), $html);
+        // El emblema del header ya no es el archivo fijo.
+        $this->assertDoesNotMatchRegularExpression('#assets_private/images/logo_mad\.png"\s+alt="MadBarzz"\s+class="mb-header-logo-img"#', $html);
+    }
+
+    public function test_solo_el_administrador_cambia_los_logos(): void
+    {
+        Storage::fake('public');
+
+        $this->subirImagen($this->usuario('Recepcionista'), 'home_logo_emblema')->assertForbidden();
+        $this->assertNull(ConfiguracionImagen::where('clave', 'home_logo_emblema')->first());
+    }
+
+    // ── Imagen de Inicio de sesión ───────────────────────────────────────────
+
+    public function test_la_pantalla_del_admin_tiene_el_apartado_inicio_de_sesion(): void
+    {
+        $this->actingAs($this->usuario('Administrador'))
+            ->get(route('configuracion.imagenes_home.index'))
+            ->assertOk()
+            ->assertSee('Inicio de sesión')
+            ->assertSee(route('configuracion.imagenes_home.update', 'login_fondo'), false);
+    }
+
+    public function test_sin_subir_nada_el_login_usa_la_imagen_de_siempre(): void
+    {
+        foreach (['/login', '/forgot-password'] as $ruta) {
+            $this->get($ruta)->assertOk()->assertSee('assets/images/login-bg.jpg', false);
+        }
+    }
+
+    public function test_la_imagen_subida_reemplaza_el_fondo_del_login_con_su_encuadre(): void
+    {
+        Storage::fake('public');
+        $admin = $this->usuario('Administrador');
+
+        $this->actingAs($admin)->post('/configuracion/imagenes-home/login_fondo', [
+            'imagen'   => UploadedFile::fake()->image('fondo.jpg'),
+            'posicion' => 'arriba',
+        ])->assertRedirect(route('configuracion.imagenes_home.index'));
+
+        $config = ConfiguracionImagen::where('clave', 'login_fondo')->firstOrFail();
+        $url = Storage::disk('public')->url($config->ruta);
+
+        auth()->logout();
+
+        foreach (['/login', '/forgot-password'] as $ruta) {
+            $html = $this->get($ruta)->assertOk()->getContent();
+            $this->assertStringContainsString($url, $html);
+            $this->assertStringContainsString('background-position: center top', $html);
+            $this->assertStringNotContainsString('assets/images/login-bg.jpg', $html);
+        }
+    }
+
+    public function test_solo_el_administrador_cambia_la_imagen_del_login(): void
+    {
+        Storage::fake('public');
+
+        $this->subirImagen($this->usuario('Recepcionista'), 'login_fondo')->assertForbidden();
+        $this->assertNull(ConfiguracionImagen::where('clave', 'login_fondo')->first());
+    }
+
+    // ── Los logos también cambian en el panel y en las pantallas de acceso ───
+
+    public function test_los_logos_subidos_tambien_cambian_en_el_panel_y_en_el_login(): void
+    {
+        Storage::fake('public');
+        $admin = $this->usuario('Administrador');
+
+        // Sin subir nada: los de siempre en el encabezado del panel.
+        $html = $this->actingAs($admin)->get('/profile')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('#class="logo-abbr" src="[^"]*assets_private/images/logo_mad\.png"#', $html);
+        $this->assertMatchesRegularExpression('#class="brand-title" src="[^"]*log_text_mad\.png"#', $html);
+
+        $this->subirImagen($admin, 'home_logo_emblema');
+        $this->subirImagen($admin, 'home_logo_texto');
+        $emblema = Storage::disk('public')->url(ConfiguracionImagen::where('clave', 'home_logo_emblema')->firstOrFail()->ruta);
+        $texto   = Storage::disk('public')->url(ConfiguracionImagen::where('clave', 'home_logo_texto')->firstOrFail()->ruta);
+
+        $html = $this->actingAs($admin)->get('/profile')->assertOk()->getContent();
+        $this->assertStringContainsString('class="logo-abbr" src="' . $emblema . '"', $html);
+        $this->assertStringContainsString('class="logo-compact" src="' . $texto . '"', $html);
+        $this->assertStringContainsString('class="brand-title" src="' . $texto . '"', $html);
+
+        auth()->logout();
+        $this->get('/login')->assertOk()->assertSee($texto, false);
+        $this->get('/forgot-password')->assertOk()->assertSee($texto, false);
     }
 }

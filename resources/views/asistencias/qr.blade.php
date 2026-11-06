@@ -66,7 +66,7 @@
 .mb-qr-lector {
     width: 100%;
     min-height: 260px;
-    border: 2px dashed #6366f1;
+    border: 2px dashed #ff6b1a;
     border-radius: .75rem;
     overflow: hidden;
     background: #0f172a;

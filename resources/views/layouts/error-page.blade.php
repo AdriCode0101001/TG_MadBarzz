@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>@yield('titulo', 'Error') · MadBarzz</title>
-  <link rel="icon" type="image/png" href="{{ asset('assets_private/images/logo_mad.png') }}">
+  <link rel="icon" href="{{ \App\Services\ImagenHomeService::logoEmblema() }}">
 
   <script>
     // Mismo mecanismo que layouts/private.blade.php: leer el tema guardado

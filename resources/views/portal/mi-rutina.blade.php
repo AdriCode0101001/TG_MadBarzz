@@ -58,7 +58,7 @@
     @else
         <div class="card mb-4">
             <div class="card-body d-flex align-items-center gap-3">
-                <span class="mb-section-ico" style="background:rgba(99,102,241,.14);color:#6366f1;width:48px;height:48px;font-size:1.3rem;">
+                <span class="mb-section-ico" style="background:rgba(255, 107, 26,.14);color:#ff6b1a;width:48px;height:48px;font-size:1.3rem;">
                     <i class="fa-solid fa-dumbbell"></i>
                 </span>
                 <div>
@@ -192,11 +192,11 @@
     text-decoration: none; color: inherit;
     transition: background .12s;
 }
-.mb-rut-entrenador:hover { background: rgba(99,102,241,.1); color: inherit; }
+.mb-rut-entrenador:hover { background: rgba(255, 107, 26,.1); color: inherit; }
 .mb-rut-entrenador--activo { background: rgba(30,201,139,.12); }
 .mb-rut-entrenador__avatar {
     width: 38px; height: 38px; border-radius: 50%; flex: none;
-    background: rgba(99,102,241,.15); color: #6366f1;
+    background: rgba(255, 107, 26,.15); color: #ff6b1a;
     display: flex; align-items: center; justify-content: center;
 }
 </style>

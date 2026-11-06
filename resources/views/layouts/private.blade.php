@@ -26,10 +26,63 @@
         // Leer tema guardado; si no hay ninguno, usar oscuro por defecto
         var _mbTheme = localStorage.getItem('theme') || 'dark';
         document.documentElement.setAttribute('data-theme', _mbTheme);
+        // Las reglas oscuras de la plantilla son "[data-theme-version=dark] .card", etc. (sin
+        // exigir <body>): al ponerlo YA en <html>, las tarjetas nacen oscuras. Antes el atributo
+        // llegaba recién con el <body> y las tarjetas se veían BLANCAS un instante al cargar.
+        document.documentElement.setAttribute('data-theme-version', _mbTheme);
+        // Menú lateral en "armado": oculto hasta quedar centrado y estable (ver script tras el menú).
+        document.documentElement.classList.add('mb-menu-pend');
+        setTimeout(function () { document.documentElement.classList.remove('mb-menu-pend'); }, 3000); // red de seguridad
+        // Es solo para la carga inicial: al terminar de armarse la página se quita, y desde ahí
+        // manda el atributo del <body> como siempre (así el interruptor claro/oscuro no cambia).
+        document.addEventListener('DOMContentLoaded', function () {
+            document.documentElement.removeAttribute('data-theme-version');
+        });
         window.dezSettingsOptions = window.dezSettingsOptions || {};
         window.dezSettingsOptions.version = _mbTheme;
     </script>
 
+    {{-- Sin "pantalla en blanco" al cambiar de sección: (1) el precargador de la
+         plantilla es un velo BLANCO a pantalla completa que se quedaba hasta que
+         terminaba de cargar todo (fuentes, imágenes), y en cada clic del menú se
+         veía un destello blanco; se oculta. (2) El fondo de <html> se pinta con el
+         color del tema desde el primer instante, así que ni siquiera mientras el
+         navegador arma la página aparece blanco en modo oscuro. --}}
+    <style>
+        #preloader { display: none !important; }
+        /* La plantilla arranca #main-wrapper con opacity:0 y lo muestra recién al
+           terminar de cargar todos los scripts: eso dejaba el panel vacío en cada
+           cambio de página. Se muestra de una, sin esperar. */
+        #main-wrapper { opacity: 1 !important; transition: none !important; }
+        html[data-theme="dark"], html[data-theme="dark"] body { background-color: #222327; }
+        /* Las tarjetas traen "transition: all .5s" desde un fondo blanco: sin esto se ven
+           aclarándose/oscureciéndose al cargar. Sin transición de entrada, nacen con su color. */
+        html[data-theme-version="dark"] .card { transition: none !important; }
+        /* Espacio al final del menú lateral: sin él, las últimas opciones (Ejercicios,
+           Reportes...) no pueden subir hasta el centro del panel porque ya no hay más
+           menú para desplazar. Ver el script que está justo después del menú. */
+        .deznav .deznav-scroll #menu { padding-bottom: 40vh; }
+        /* Los submenús nacen CERRADOS. Antes quedaban todos abiertos (el panel medía ~2000px) hasta
+           que el script de la plantilla cerraba los que no correspondían (~1000px): el contenido se
+           encogía de golpe y el panel "subía y bajaba" al cambiar de pantalla. El de la sección
+           actual se abre al instante con el script que está justo después del menú. */
+        .deznav .metismenu ul:not(.mm-show):not(.mm-collapsing) { display: none; }
+        /* "Ver sitio web": un poco más chico que el resto del menú y con una línea continua debajo del texto. */
+        .deznav .metismenu .mb-ver-sitio > a { font-size: .85rem; }
+        .deznav .metismenu .mb-ver-sitio > a > i { font-size: 1.1rem; }
+        .deznav .metismenu .mb-ver-sitio > a .nav-text {
+            font-size: .85rem;
+            text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 5px;
+        }
+        /* Logos del encabezado del panel: configurables desde "Imágenes de la Home". Se limita el
+           alto y se usa object-fit:contain para que cualquier proporción quepa sin deformarse. */
+        .nav-header .logo-abbr { max-height: 52px; width: auto; object-fit: contain; }
+        .nav-header .brand-title { max-height: 46px; width: auto; object-fit: contain; }
+        /* Mientras el menú se arma (fuentes, íconos, submenú) se mantiene OCULTO y sin transiciones: se
+           muestra ya centrado cuando el alto deja de cambiar. Así no se ve ningún vaivén. */
+        html.mb-menu-pend .deznav .deznav-scroll { visibility: hidden; }
+        html.mb-menu-pend .deznav, html.mb-menu-pend .deznav * { transition: none !important; }
+    </style>
     <meta name="keywords"
         content="admin, panel de administración, plantilla admin, bootstrap, bootstrap 5, plantilla admin bootstrap 5, fitness, admin fitness, moderno, panel de administración responsive, panel de ventas, sass, kit de interfaz, aplicación web">
     <meta name="description"
@@ -45,8 +98,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Favicon -->
-    <link rel="shortcut icon" type="image/png" href="{{ asset('assets_private/images/logo_mad.png') }}">
-    <link rel="icon" type="image/png" href="{{ asset('assets_private/images/logo_mad.png') }}">
+    <link rel="shortcut icon" href="{{ \App\Services\ImagenHomeService::logoEmblema() }}">
+    <link rel="icon" href="{{ \App\Services\ImagenHomeService::logoEmblema() }}">
     <!--<link rel="stylesheet" href="vendor/chartist/css/chartist.min.css">-->
     <link href="{{ asset('assets_private/vendor/bootstrap-select/css/bootstrap-select.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets_private/vendor/owl-carousel/owl.carousel.css') }}" rel="stylesheet">
@@ -62,10 +115,22 @@
     <link href="{{ asset('assets_private/css/app-ui.css') }}" rel="stylesheet">
     {{-- Piel "Filament" (paleta índigo/zinc): solo actúa en vistas con @section('body-class', 'mb-skin') --}}
     <link href="{{ asset('assets_private/css/mb-skin-filament.css') }}" rel="stylesheet">
+    {{-- Acento naranja de la marca sobre la plantilla (menú, encabezado, pie). Se carga al final para ganar. --}}
+    <link href="{{ asset('assets_private/css/mb-brand-orange.css') }}?v=2" rel="stylesheet">
     @stack('styles')
+    {{-- Las fuentes de Google se cargan SIN bloquear el dibujado de la página: antes
+         este <link> detenía todo el render hasta bajar la fuente (pantalla vacía si
+         la conexión iba lenta). Con media="print" + onload se aplican apenas llegan. --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&family=Roboto:wght@100;300;400;500;700;900&display=swap"
-        rel="stylesheet">
+        rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&family=Roboto:wght@100;300;400;500;700;900&display=swap"
+            rel="stylesheet">
+    </noscript>
 </head>
 
 {{-- La piel "Filament" (mb-skin) aplica a todo el sistema privado; ver mb-skin-filament.css --}}
@@ -110,9 +175,9 @@
         ***********************************-->
         <div class="nav-header">
             <span class="brand-logo" style="cursor:default;">
-                <img class="logo-abbr" src="{{ asset('assets_private/images/logo_mad.png') }}" alt="">
-                <img class="logo-compact" src="{{ asset('assets_private/images/log_text_mad.png') }}" alt="">
-                <img class="brand-title" src="{{ asset('assets_private/images/log_text_mad.png') }}" alt="">
+                <img class="logo-abbr" src="{{ \App\Services\ImagenHomeService::logoEmblema() }}" alt="">
+                <img class="logo-compact" src="{{ \App\Services\ImagenHomeService::logoTexto() }}" alt="">
+                <img class="brand-title" src="{{ \App\Services\ImagenHomeService::logoTexto() }}" alt="">
             </span>
 
             <div class="nav-control">
@@ -665,6 +730,7 @@
                                 request()->routeIs('bitacora.*')                     => ['fa-solid fa-clock-rotate-left',  'Bitácora de Auditoría'],
                                 request()->routeIs('login_lockouts.*')               => ['fa-solid fa-user-lock',          'Bloqueos de Login'],
                                 request()->routeIs('configuracion.imagenes_home.*')  => ['fa-solid fa-images',            'Imágenes de la Home'],
+                                request()->routeIs('configuracion.contenido_home.*') => ['fa-solid fa-pen-to-square',      'Contenido de la Home'],
                                 request()->routeIs('portal.membresia')               => ['fa-solid fa-id-badge',          'Mi Membresía'],
                                 request()->routeIs('portal.rutina')                  => ['fa-solid fa-dumbbell',          'Mi Rutina'],
                                 request()->routeIs('profile.*')                      => ['fa-solid fa-circle-user',       'Mi Perfil'],
@@ -946,9 +1012,23 @@
                                     @if ($userRol === 'Administrador')
                                         <li><a href="{{ route('calendario_musculos.index') }}"><i class="fa-solid fa-calendar-days me-2"></i>Calendario de Músculos</a></li>
                                         <li><a href="{{ route('ejercicios.index') }}"><i class="fa-solid fa-book-open me-2"></i>Ejercicios</a></li>
-                                        <li><a href="{{ route('configuracion.imagenes_home.index') }}"><i class="fa-solid fa-images me-2"></i>Imágenes de la Home</a></li>
                                     @endif
                                 @endif
+                            </ul>
+                        </li>
+                    @endif
+
+                    @if ($userRol === 'Administrador')
+                        <!-- Sitio Web - Solo Administrador: lo que se ve en la página pública (home y login) -->
+                        <li class="has-arrow">
+                            <a href="javascript:void()">
+                                <i class="fa-solid fa-globe"></i>
+                                <span class="nav-text">Sitio Web</span>
+                                <i class="fa-solid fa-chevron-right mb-menu-arr"></i>
+                            </a>
+                            <ul aria-expanded="false">
+                                <li><a href="{{ route('configuracion.imagenes_home.index') }}"><i class="fa-solid fa-images me-2"></i>Imágenes de la Home</a></li>
+                                <li><a href="{{ route('configuracion.contenido_home.edit') }}"><i class="fa-solid fa-pen-to-square me-2"></i>Contenido de la Home</a></li>
                             </ul>
                         </li>
                     @endif
@@ -974,7 +1054,73 @@
                             </ul>
                         </li>
                     @endif
+
+                    {{-- Ver el sitio público (home) sin cerrar sesión: abre en pestaña nueva,
+                         así el panel queda abierto. La home no desloguea a nadie. --}}
+                    <li class="mb-ver-sitio">
+                        <a href="{{ route('home') }}" target="_blank" rel="noopener">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            <span class="nav-text">Ver sitio web</span>
+                        </a>
+                    </li>
                 </ul>
+                {{-- Se ejecuta ANTES del primer dibujado: (1) abre la rama del menú de la pantalla actual
+                     y (2) la centra en el panel lateral, una sola vez y sin animación. Así no hay saltos
+                     (antes: se abría todo, se cerraba y se re-centraba varias veces). --}}
+                <script>
+                (function () {
+                    var menu = document.getElementById('menu');
+                    var cont = menu && menu.closest('.deznav-scroll');
+                    if (!menu || !cont) return;
+
+                    var ruta = location.pathname.replace(/\/+$/, '') || '/';
+                    var mejor = null, mejorLargo = -1;
+                    menu.querySelectorAll('a[href]').forEach(function (a) {
+                        var h = a.getAttribute('href') || '';
+                        if (!h || h.charAt(0) === '#' || h.indexOf('javascript') === 0) return;
+                        var p;
+                        try { p = new URL(a.href, location.origin).pathname.replace(/\/+$/, '') || '/'; } catch (e) { return; }
+                        if (p === '/') return;
+                        if ((ruta === p || ruta.indexOf(p + '/') === 0) && p.length > mejorLargo) { mejor = a; mejorLargo = p.length; }
+                    });
+                    if (!mejor) return;
+
+                    // Abrir la rama: cada <ul> ancestro queda visible y su <li> marcado como activo.
+                    var li = mejor.closest('li');
+                    while (li && li !== menu) {
+                        li.classList.add('mm-active');
+                        var ul = li.parentElement;
+                        if (ul && ul !== menu) ul.classList.add('mm-show');
+                        li = ul ? ul.closest('li') : null;
+                    }
+
+                    var tocadoAMano = false;
+                    cont.addEventListener('wheel', function () { tocadoAMano = true; }, { passive: true, once: true });
+                    cont.addEventListener('touchstart', function () { tocadoAMano = true; }, { passive: true, once: true });
+
+                    function centrar() {
+                        if (tocadoAMano) return;
+                        var rc = cont.getBoundingClientRect(), ra = mejor.getBoundingClientRect();
+                        cont.scrollTop += (ra.top - rc.top) - (rc.height / 2 - ra.height / 2);
+                    }
+                    function mostrar() { document.documentElement.classList.remove('mb-menu-pend'); try { performance.mark('mb-menu-listo'); } catch (e) {} }
+
+                    centrar();
+
+                    // Esperar a que el menú deje de cambiar de alto (fuentes e íconos que llegan tarde),
+                    // centrar UNA vez más y recién ahí mostrarlo. Tope: ~1.6 s.
+                    var inicio = Date.now(), ultimo = -1, estable = 0;
+                    function esperar() {
+                        var h = cont.scrollHeight;
+                        estable = (h === ultimo) ? estable + 1 : 0;
+                        ultimo = h;
+                        var listoLoad = document.readyState === 'complete';
+                        if ((listoLoad && estable >= 6) || Date.now() - inicio > 1600) { centrar(); mostrar(); return; }
+                        requestAnimationFrame(esperar);
+                    }
+                    requestAnimationFrame(esperar);
+                })();
+                </script>
             </div>
         </div>
         <!--**********************************
@@ -1441,6 +1587,14 @@ function mbAbrirAvisoDetalle(el) {
 
     document.getElementById('mbAvisoDetalleOverlay').style.display = 'flex';
 }
+
+// Tablas anchas: si la última columna es "Acciones", se marca para dejarla fija a la derecha (ver mb-brand-orange.css).
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.content-body table').forEach(function (t) {
+        var ths = t.querySelectorAll('thead th');
+        if (ths.length && /acciones/i.test(ths[ths.length - 1].textContent)) { t.classList.add('mb-sticky-actions'); }
+    });
+});
 function mbCerrarAvisoDetalle(e) {
     if (e) e.stopPropagation();
     var overlay = document.getElementById('mbAvisoDetalleOverlay');

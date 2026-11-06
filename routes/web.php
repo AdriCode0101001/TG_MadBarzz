@@ -39,7 +39,8 @@ use App\Http\Controllers\HuellaController;
 // volver atrás — ningún route apunta a ella.
 // -----------------------------------------------------------------------
 Route::get('/', function () {
-    $waLink = 'https://wa.me/59176372337?text=Hola,%20quiero%20unirme%20a%20la%20Calistenia%20MadBarzz.';
+    $contenidoHome = new \App\Services\ContenidoHomeService();
+    $waLink = $contenidoHome->whatsappLink();
     $membresias = \App\Models\Membresia::orderBy('precio')->get();
 
     // Horario real de entrenadores (Parte 2): arma la grilla pública a
@@ -62,7 +63,7 @@ Route::get('/', function () {
     // entrenador o cambiarle la foto, sin tocar código.
     $entrenadoresPublicos = (new \App\Services\EntrenadorPublicoService())->activos(1);
 
-    return view('welcome-gymon', compact('waLink', 'membresias', 'diasHorario', 'franjasHorario', 'gridHorario', 'imagenesHome', 'entrenadoresPublicos'));
+    return view('welcome-gymon', compact('waLink', 'contenidoHome', 'membresias', 'diasHorario', 'franjasHorario', 'gridHorario', 'imagenesHome', 'entrenadoresPublicos'));
 })->name('home');
 
 // Foto pública de un entrenador (home): sin auth a propósito, ver
@@ -77,16 +78,16 @@ Route::get('/terminos',   [\App\Http\Controllers\LegalController::class, 'termin
 // -----------------------------------------------------------------------
 // Redirects de compatibilidad: estas URLs eran de la home vieja o de la
 // vista previa mientras el diseño GymOn dark no era la parte pública real.
-// Ahora que "/", "/login" y "/register" YA muestran ese diseño, quedan como
+// Ahora que "/" y "/login" YA muestran ese diseño, quedan como
 // alias en vez de borrarlas (por si alguien las tiene guardadas).
 // -----------------------------------------------------------------------
 Route::redirect('/public', '/', 301); // home vieja (layouts.public / welcome.blade.php, ya eliminadas)
 Route::redirect('/preview-gymon', '/', 301);
-Route::redirect('/preview-registro', '/register', 301);
+Route::redirect('/preview-registro', '/login', 301);
 Route::redirect('/preview-login-registro', '/login', 301);
 
 // -----------------------------------------------------------------------
-// Autenticación (Breeze): register/login/logout/password viven SOLO en
+// Autenticación (Breeze): login/logout/password viven SOLO en
 // routes/auth.php (requerido al final de este archivo) — ahí están
 // envueltas en el middleware 'guest'/'auth' correcto. No duplicar acá.
 // -----------------------------------------------------------------------
@@ -226,6 +227,12 @@ Route::middleware(['auth', 'role:Administrador'])->group(function () {
     // placeholders de siempre (ver ImagenHomeService).
     Route::get('configuracion/imagenes-home',        [ImagenHomeController::class, 'index']) ->name('configuracion.imagenes_home.index');
     Route::post('configuracion/imagenes-home/{clave}', [ImagenHomeController::class, 'update'])->name('configuracion.imagenes_home.update');
+
+    // Textos y enlaces editables de la home (publicación de Instagram, redes,
+    // contacto, WhatsApp): solo el Administrador. Sin ruta de borrado a
+    // propósito — la publicación de Instagram siempre tiene que existir.
+    Route::get('configuracion/contenido-home',  [\App\Http\Controllers\ContenidoHomeController::class, 'edit'])  ->name('configuracion.contenido_home.edit');
+    Route::post('configuracion/contenido-home', [\App\Http\Controllers\ContenidoHomeController::class, 'update'])->name('configuracion.contenido_home.update');
 
     // Bitácora de Auditoría (Etapa 3): historial de activity_log, solo lectura,
     // exclusivo del Administrador — la protección real es este middleware de

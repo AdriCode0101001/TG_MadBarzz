@@ -41,7 +41,10 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            // Relativa a propósito: así las imágenes subidas (home, avisos) cargan igual si se abre el
+            // sitio por localhost, por 127.0.0.1:8000, por un túnel o por el dominio real. Antes dependía
+            // de APP_URL y, si no coincidía con la dirección usada para entrar, la imagen no cargaba.
+            'url' => '/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
