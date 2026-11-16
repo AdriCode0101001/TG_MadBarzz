@@ -87,6 +87,12 @@
               </div>
             </div>
 
+            {{-- CAPTCHA Cloudflare Turnstile --}}
+            <div class="mb-3">
+              <x-turnstile-widget />
+            </div>
+            @error('cf-turnstile-response')<div class="mb-err">{{ $message }}</div>@enderror
+
             <button type="submit" class="mb-submit"><i class="fa-solid fa-right-to-bracket me-2"></i> Iniciar sesión</button>
           </form>
 

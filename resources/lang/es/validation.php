@@ -164,6 +164,7 @@ return [
 'numeric' => 'El campo :attribute debe ser un número.',
 
 'password' => 'La contraseña es incorrecta.',
+'current_password' => 'La contraseña actual es incorrecta.',
 
 'present' => 'El campo :attribute debe estar presente.',
 
@@ -228,6 +229,7 @@ return [
     'telefono_numero'       => 'teléfono',
     'telefono_codigo'       => 'código de país',
     'email'                 => 'correo electrónico',
+    'punto_atencion'        => 'punto de atención',
     'name'                  => 'nombre de usuario',
     'nombre_completo'       => 'nombres',
     'apellido_paterno'      => 'apellido paterno',
@@ -277,6 +279,15 @@ return [
     'password' => [
         'min'         => 'La contraseña debe tener al menos :min caracteres.',
         'min.string'  => 'La contraseña debe tener al menos :min caracteres.',
+    ],
+    'current_password' => [
+        'current_password' => 'La contraseña actual es incorrecta.',
+    ],
+    'cf-turnstile-response' => [
+        'required' => 'Completá la verificación de seguridad.',
+    ],
+    'precio' => [
+        'gt' => 'El precio debe ser mayor a cero.',
     ],
 ],
 

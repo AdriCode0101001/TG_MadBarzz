@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Auth;
 
 use App\Services\LoginLockoutService;
+use Coderflex\LaravelTurnstile\Rules\TurnstileCheck;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -29,6 +30,22 @@ class LoginRequest extends FormRequest
         return [
             'email'    => ['required', 'string'],
             'password' => ['required', 'string'],
+            'cf-turnstile-response' => ['required', new TurnstileCheck()],
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'email' => 'correo o usuario',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'cf-turnstile-response.required' => 'Completá la verificación de seguridad.',
+            'cf-turnstile-response.turnstile' => 'La verificación de seguridad falló. Intentá de nuevo.',
         ];
     }
 

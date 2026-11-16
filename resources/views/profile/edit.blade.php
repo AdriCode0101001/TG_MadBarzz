@@ -16,9 +16,33 @@
                         <div class="alert alert-success border-0 rounded-3">Perfil actualizado correctamente.</div>
                     @endif
 
-                    <form method="POST" action="{{ route('profile.update') }}">
+                    <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
                         @csrf
                         @method('PATCH')
+
+                        {{-- Foto de perfil --}}
+                        <div class="mb-3 text-center">
+                            <label class="form-label d-block">Foto de perfil</label>
+                            <div class="position-relative d-inline-block">
+                                @if(Auth::user()->foto)
+                                    <img id="preview-foto" src="{{ route('usuario.foto', Auth::user()->id) }}"
+                                         class="rounded-circle border border-3 border-primary"
+                                         style="width:120px;height:120px;object-fit:cover;" alt="Foto de perfil">
+                                @else
+                                    <img id="preview-foto" src="{{ asset('assets_private/images/profile/17.jpg') }}"
+                                         class="rounded-circle border border-3 border-secondary"
+                                         style="width:120px;height:120px;object-fit:cover;" alt="Sin foto">
+                                @endif
+                            </div>
+                            <div class="mt-2">
+                                <label for="foto" class="btn btn-sm btn-outline-primary">
+                                    <i class="fa-solid fa-camera me-1"></i> Cambiar foto
+                                </label>
+                                <input type="file" name="foto" id="foto" class="d-none" accept="image/jpeg,image/png,image/webp">
+                            </div>
+                            @error('foto')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                            <small class="text-muted d-block mt-1">JPG, PNG o WebP. Máx 2 MB.</small>
+                        </div>
 
                         <div class="mb-3">
                             <label for="name" class="form-label">Nombre de usuario</label>
@@ -93,3 +117,20 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.getElementById('foto')?.addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+        alert('La imagen no debe superar los 2 MB.');
+        this.value = '';
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => document.getElementById('preview-foto').src = e.target.result;
+    reader.readAsDataURL(file);
+});
+</script>
+@endpush

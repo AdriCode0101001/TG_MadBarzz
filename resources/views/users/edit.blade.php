@@ -85,33 +85,14 @@
                                    placeholder="Confirme la contraseña">
                         </div>
 
-                        <!-- Rol -->
+                        <!-- Rol (solo lectura — se asigna al crear, no se cambia después) -->
                         <div class="col-md-6">
-                            <label for="rol_id" class="form-label fs-16 fw-bold text-dark dark-text-white">
+                            <label class="form-label fs-16 fw-bold text-dark dark-text-white">
                                 Rol
                             </label>
-
-                            @if(Auth::user()->rol->nombre == 'Administrador')
-                                <!-- El admin puede cambiar el rol -->
-                                <select id="rol_id" 
-                                        class="form-control @error('rol_id') is-invalid @enderror"
-                                        name="rol_id" required>
-                                    <option value="">Seleccione un rol</option>
-                                    @foreach ($roles as $rol)
-                                        <option value="{{ $rol->id }}" {{ old('rol_id', $usuario->rol_id) == $rol->id ? 'selected' : '' }}>
-                                            {{ $rol->nombre }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            @else
-                                <!-- Los demás solo ven el rol -->
-                                <input type="text" class="form-control" value="{{ $usuario->rol->nombre ?? 'Sin rol' }}" disabled>
-                                <input type="hidden" name="rol_id" value="{{ $usuario->rol_id }}">
-                            @endif
-
-                            @error('rol_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <input type="text" class="form-control" value="{{ $usuario->rol->nombre ?? 'Sin rol' }}" disabled>
+                            <input type="hidden" name="rol_id" value="{{ $usuario->rol_id }}">
+                            <small class="text-muted">El rol se asigna al crear el usuario y no se puede cambiar.</small>
                         </div>
 
                     </div>
@@ -124,7 +105,7 @@
                             <div class="d-flex align-items-center gap-3 flex-wrap">
                                 <div id="preview-edit" style="width:90px;height:90px;border-radius:50%;overflow:hidden;border:2px dashed #ccc;display:flex;align-items:center;justify-content:center;background:#f5f5f5;flex-shrink:0;">
                                     @if($usuario->foto)
-                                        <img src="{{ asset($usuario->foto) }}" style="width:100%;height:100%;object-fit:cover;">
+                                        <img src="{{ route('usuario.foto', $usuario->id) }}" style="width:100%;height:100%;object-fit:cover;">
                                     @else
                                         <i class="fa-solid fa-user" style="font-size:2rem;color:#bbb;"></i>
                                     @endif

@@ -97,13 +97,12 @@ public function index(Request $request)
         $request->validate([
             'name'   => 'required|string|max:100|unique:users,name,' . $usuario->id,
             'email'  => 'required|email|unique:users,email,' . $usuario->id,
-            'rol_id' => 'required|exists:roles,id',
             'foto'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         $usuario->name    = $request->name;
         $usuario->email   = $request->email;
-        $usuario->rol_id  = $request->rol_id;
+        // rol_id NO se toca — se asigna solo al crear
 
         if ($request->hasFile('foto')) {
             if ($usuario->foto) {
@@ -132,5 +131,18 @@ public function index(Request $request)
 
 
         return redirect()->route('users.index')->with('success', 'Usuario eliminado lógicamente.');
+    }
+
+    /**
+     * Sirve la foto de perfil del usuario desde el disco privado.
+     * La ruta ya tiene middleware auth, así que solo usuarios logueados acceden.
+     */
+    public function foto(User $user)
+    {
+        $foto = $user->foto;
+
+        abort_unless($foto && Storage::disk('privado')->exists($foto), 404);
+
+        return Storage::disk('privado')->response($foto);
     }
 }

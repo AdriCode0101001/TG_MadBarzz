@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // (los formularios de personas/clientes/personal ya no dependen de JS)
         $middleware->web(append: [
             NormalizarTelefono::class,
+            \App\Http\Middleware\SecurityHeaders::class,
         ]);
 
         // Confía en el proxy local (túneles como Cloudflare/ngrok, o un

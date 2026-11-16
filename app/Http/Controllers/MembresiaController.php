@@ -22,7 +22,7 @@ class MembresiaController extends Controller
     {
         $request->validate([
             'tipo_membresia' => 'required|string|max:50',
-            'precio' => 'required|numeric|min:0',
+            'precio' => 'required|numeric|gt:0',
         ]);
 
         Membresia::create($request->all());
@@ -40,7 +40,7 @@ class MembresiaController extends Controller
     {
         $request->validate([
             'tipo_membresia' => 'required|string|max:50',
-            'precio' => 'required|numeric|min:0',
+            'precio' => 'required|numeric|gt:0',
         ]);
 
         $membresia = Membresia::findOrFail($id);

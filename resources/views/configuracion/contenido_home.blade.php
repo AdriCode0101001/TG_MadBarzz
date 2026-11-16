@@ -7,7 +7,7 @@
 @endphp
 <div class="col-12">
 
-    <x-page-header title="Contenido de la Home" subtitle="Publicación de Instagram, redes, contacto, datos legales y WhatsApp del sitio público" icon="fa-solid fa-pen-to-square" />
+    <x-page-header title="Contenido de la Home" subtitle="Publicación de Instagram, redes sociales, contacto y WhatsApp del sitio público" icon="fa-solid fa-pen-to-square" />
 
     @if(session('success'))
         <div class="alert alert-success border-0 rounded-3 mb-4">{{ session('success') }}</div>
@@ -132,47 +132,6 @@
             </div>
         </div>
 
-        {{-- ── Datos legales ────────────────────────────────────────────── --}}
-        <div class="card mb-4">
-            <div class="card-header"><h5 class="mb-0"><i class="fa-solid fa-scale-balanced me-2"></i>Datos legales (Términos y Condiciones y Política de Privacidad)</h5></div>
-            <div class="card-body">
-                <p class="text-muted mb-3" style="font-size:.9rem;">
-                    Estos datos reemplazan automáticamente los avisos <strong>[COMPLETAR]</strong> que hoy se ven en las páginas
-                    <a href="{{ route('legal.terminos') }}" target="_blank" rel="noopener">Términos y Condiciones</a> y
-                    <a href="{{ route('legal.privacidad') }}" target="_blank" rel="noopener">Política de Privacidad</a>.
-                    Si dejas un campo vacío, ese aviso sigue apareciendo. Las demás cláusulas pendientes (mora, reglamento interno,
-                    jurisdicción, etc.) son decisiones legales que hay que definir con un abogado.
-                </p>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="legal_razon_social" class="form-label">Razón social</label>
-                        <input type="text" name="legal_razon_social" id="legal_razon_social" maxlength="255"
-                               class="form-control @error('legal_razon_social') is-invalid @enderror" value="{{ $v('legal_razon_social') }}">
-                        @error('legal_razon_social')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="legal_nit" class="form-label">NIT</label>
-                        <input type="text" name="legal_nit" id="legal_nit" maxlength="30"
-                               class="form-control @error('legal_nit') is-invalid @enderror" value="{{ $v('legal_nit') }}">
-                        @error('legal_nit')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="legal_correo" class="form-label">Correo de contacto formal</label>
-                        <input type="email" name="legal_correo" id="legal_correo" maxlength="255"
-                               class="form-control @error('legal_correo') is-invalid @enderror" value="{{ $v('legal_correo') }}">
-                        @error('legal_correo')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        <small class="text-muted">Para temas de privacidad y consultas legales. Si lo dejas vacío se usa el correo de la sección Contacto, si lo pusiste.</small>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="legal_fecha_publicacion" class="form-label">Fecha de publicación ("Última actualización")</label>
-                        <input type="date" name="legal_fecha_publicacion" id="legal_fecha_publicacion" max="{{ now()->toDateString() }}"
-                               class="form-control @error('legal_fecha_publicacion') is-invalid @enderror" value="{{ $v('legal_fecha_publicacion') }}">
-                        @error('legal_fecha_publicacion')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-                </div>
-            </div>
-        </div>
-
         {{-- ── WhatsApp ─────────────────────────────────────────────────── --}}
         <div class="card mb-4">
             <div class="card-header"><h5 class="mb-0"><i class="fa-brands fa-whatsapp me-2"></i>WhatsApp (¿Tenés dudas? y todos los botones de la home)</h5></div>
@@ -203,10 +162,6 @@
         <button type="submit" class="btn btn-primary">
             <i class="fa-solid fa-save me-1"></i> Guardar cambios
         </button>
-        {{-- Salir sin guardar: es un enlace (no envía el formulario), así que no cambia nada. --}}
-        <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary ms-2">
-            <i class="fa-solid fa-arrow-right-from-bracket me-1"></i> Salir sin guardar
-        </a>
     </form>
 </div>
 

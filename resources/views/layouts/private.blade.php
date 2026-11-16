@@ -827,7 +827,11 @@
 
                             <li class="nav-item header-profile" style="position:relative;">
                                 <a class="nav-link" href="javascript:void(0)" onclick="mbToggleProfile(event)">
-                                    <img src="{{ asset('assets_private/images/profile/17.jpg') }}" width="20" alt="">
+                                    @if(Auth::user()->foto)
+                                        <img src="{{ route('usuario.foto', Auth::user()->id) }}" width="20" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+                                    @else
+                                        <img src="{{ asset('assets_private/images/profile/17.jpg') }}" width="20" alt="">
+                                    @endif
                                     <div class="header-info">
                                         <span class="text-black">
                                             {{-- Aquí se muestra el NOMBRE DE USUARIO (users.name), para todos los roles --}}

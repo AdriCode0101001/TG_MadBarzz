@@ -121,6 +121,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Foto de perfil servida desde el disco privado (solo usuarios logueados)
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('usuario/{user}/foto', [UserController::class, 'foto'])->name('usuario.foto');
+});
+
 // -----------------------------------------------------------------------
 // NOTA DE SEGURIDAD (hallazgo 4.1 de la auditoría, corregido): acá existía
 // una ruta genérica GET /archivos/privados/{path} que servía CUALQUIER
