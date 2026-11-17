@@ -79,8 +79,11 @@ return [
             \Spatie\Backup\Notifications\Notifications\UnhealthyBackupWasFoundNotification::class => ['mail'],
             \Spatie\Backup\Notifications\Notifications\CleanupHasFailedNotification::class       => ['mail'],
 
-            // Éxito: descomenta si quieres confirmación diaria
-            // \Spatie\Backup\Notifications\Notifications\BackupWasSuccessfulNotification::class => ['mail'],
+            // Éxito: el array vacío silencia la notificación (no envía nada) pero
+            // permite que el paquete encuentre la clase, evitando el error
+            // NotificationCouldNotBeSent en el log. Para recibir confirmación
+            // diaria, cambiar [] por ['mail'].
+            \Spatie\Backup\Notifications\Notifications\BackupWasSuccessfulNotification::class => [],
         ],
 
         'notifiable' => \Spatie\Backup\Notifications\Notifiable::class,
